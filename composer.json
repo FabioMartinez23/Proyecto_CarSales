@@ -1,0 +1,13 @@
+{
+    "name": "famar/proyecto_septiembre_02",
+    "description": "Sistema Carsales",
+    "autoload": {
+        "psr-4": {
+            "Famar\\ProyectoSeptiembre02\\": "src/"
+        }
+    },
+    "require": {
+        "phpmailer/phpmailer": "^6.9",
+        "dompdf/dompdf": "^3.0"
+    }
+}
