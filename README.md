@@ -43,7 +43,7 @@ Para importar la base:
 
 Para acceder al sistema:
 
-Usuario: admin Contraseña: admin123
+Usuario: famartinez Contraseña: fabio1234
 
 
 (Podés encontrar esta info también en el archivo `acceso.txt`)
