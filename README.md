@@ -41,12 +41,13 @@ Para importar la base:
 
 ## 🔐 Usuario de prueba
 
-Para acceder al sistema:
+Para acceder al sistema de prueba:
 
-Usuario: famartinez Contraseña: fabio1234
+Usuario de prueba: famartinez 
+Pass de prueba: fabio1234
 
 
-(Podés encontrar esta info también en el archivo `acceso.txt`)
+(Podés encontrar esta info también en el archivo `credenciales.txt`)
 
 ---
 
