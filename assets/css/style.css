@@ -306,6 +306,11 @@ div.contenido-tarjeta p{
     font-size: 0.9em;
 }
 
+/* FORMULARIOS DE COMPRA Y VENTA */ 
+
+#collapseOne {
+    background-color: #DBD7D2;
+}
 
 
 /*.no-editable{

@@ -295,7 +295,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
                                 <div class="col-md-4">
                                     <label for="tipo_sexo" class="form-label">Tipo de Sexo</label>
-                                    <select class="form-select editable" id="id_tipo_sexo" name="tipo_sexo_idtipo_sexo">
+                                    <select class="form-select editable" id="id_tipo_sexo_1" name="tipo_sexo_idtipo_sexo">
                                         <option value="">Seleccionar Tipo de Sexo</option>
                                         <?php foreach($result_tipo_sexo as $tipo_sexo): ?>
                                             <option value="<?php echo $tipo_sexo['idtipo_sexo']; ?>"><?php echo $tipo_sexo['descripcion']; ?></option>

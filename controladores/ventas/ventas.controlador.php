@@ -85,7 +85,9 @@ class OperacionesControlador {
                 echo json_encode(['error' => 'ID de persona no encontrado.']);
             }
         } else {
+            ob_clean();
             echo json_encode(['error' => 'No se encontraron Clientes con ese DNI y Tipo de Sexo.']);
+            exit;
         }
     }
 
@@ -151,6 +153,7 @@ class OperacionesControlador {
         
                 echo json_encode($response);
             } else {
+                ob_clean();
                 echo json_encode(['error' => 'No se encontró la ficha técnica para este vehículo.']);
             }
         }        

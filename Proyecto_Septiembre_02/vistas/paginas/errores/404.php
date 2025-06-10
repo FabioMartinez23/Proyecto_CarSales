@@ -1,1 +1,0 @@
-<img src="./assets/img/error404.jpg" alt="">

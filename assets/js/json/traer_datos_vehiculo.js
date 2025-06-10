@@ -34,6 +34,7 @@ document.getElementById("buscar_auto_btn").addEventListener("click", function() 
                 document.getElementById("id_anio").value = vehiculoData.anio || '';
                 document.getElementById("id_kilometraje").value = vehiculoData.kilometraje || '';
                 document.getElementById("id_precio").value = data.precio?.precio || '';
+                document.getElementById("idvehiculos").value = data.vehiculoData.idvehiculos || '';
 
                 // Actualizar selects
                 document.getElementById("id_colores").value = vehiculoData.idcolores || '';

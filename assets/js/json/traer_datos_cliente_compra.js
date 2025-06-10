@@ -43,11 +43,18 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
 
             console.log("Campo id_documento:", document.getElementById("id_documento"));
             console.log("Campo id_domicilio:", document.getElementById("id_domicilio"));
+            console.log("Campo id_tipo_sexo:", document.getElementById("id_tipo_sexo"));
             console.log("Campo id_contacto:", document.getElementById("id_contacto"));
+
 
             // Rellenar el formulario con los datos recibidos
             document.getElementById("id_nombre").value = data.persona?.nombre || '';
-            document.getElementById("id_apellido").value = data.persona?.apellido || '';
+            document.getElementById("id_apellido").value = data.persona?.apellido || '';            console.log("Select sexo antes:", document.getElementById("id_tipo_sexo_1").innerHTML);
+            console.log("Valor recibido:", data.persona?.tipo_sexo_idtipo_sexo);
+
+            document.getElementById("id_tipo_sexo_1").value = data.persona?.tipo_sexo_idtipo_sexo || '';
+
+            console.log("Select sexo después (value):", document.getElementById("id_tipo_sexo_1").value);
             document.getElementById("id_fecha_nacimiento").value = data.persona?.fecha_nacimiento || '';
             document.getElementById("id_tipo_documento").value = data.documento?.idTipo_documento || '';
             document.getElementById("id_tipo_contacto").value = data.contacto?.idtipo_contacto || '';
@@ -76,11 +83,13 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
             }
 
             // Cerrar el modal
-            let modal = bootstrap.Modal.getInstance(document.getElementById("buscarClienteModal"));
-            if (modal) {
-                modal.hide();
-            }
+            let modalElement = document.getElementById("buscarClienteModal");
+            let modal = bootstrap.Modal.getInstance(modalElement);
 
+            if (modal) {
+            document.activeElement.blur(); // opcional: quitar foco para evitar warnings
+            modal.hide(); // ✅ correcta forma de cerrar
+            }
         }
     })
     .catch(error => {
