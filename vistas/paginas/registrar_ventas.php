@@ -416,7 +416,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                             <button style="margin-bottom: 15px;" id="buscar_auto_btn" type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#buscarAutoModal">Buscar Auto</button>
                         </div>
                         <div class="col-md-8 col-lg-12">
-                            <input type="hidden" name="vehiculos_idvehiculos" id="idvehiculos">
+                            <input type="hidden" name="vehiculos_idvehiculos" id="idvehiculos_1">
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label for="id_patente" class="form-label">Patente</label>

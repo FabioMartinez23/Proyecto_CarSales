@@ -74,7 +74,7 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                         <td><?= $venta['nombre_marca']." ".$venta['nombre_modelo'];?></td>
                         <td><?= $venta['patente'];?></td>
                         <td><?= $venta['nombre_pago'];?></td>
-                        <td><?= date('d-m-Y', strtotime($compra['fecha_venta'])); ?></td>
+                        <td><?= date('d-m-Y', strtotime($venta['fecha_venta'])); ?></td>
                         <td>
                             <a href="index.php?page=detalle_ventas&idventa=<?= $venta['idventas']; ?>" class="text-primary" title="Ver Más">
                                 <i class="fas fa-eye"></i>
