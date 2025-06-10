@@ -35,12 +35,12 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="#">Gestión de Ventas</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ventas</li>
+        <li class="breadcrumb-item active" aria-current="page">Ventas Concretadas</li>
     </ol>
 </nav>
 
     <div class="mt-5 hacer_padding">
-        <h1 class="text-center">Ventas</h1>
+        <h1 class="text-center">Ventas Concretadas</h1>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a type="button" href="index.php?page=registrar_ventas" class="btn mt-2 mb-2 btn-action">Registrar Nueva Venta</a>
 

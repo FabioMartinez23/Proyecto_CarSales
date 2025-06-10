@@ -430,13 +430,13 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
         <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Vehículos</li>
+        <li class="breadcrumb-item active" aria-current="page">Vehículos Disponibles</li>
     </ol>
 </nav>
 
 
     <div class="col hacer_padding">
-        <h1 class="text-center mb-4">Vehículos</h1>
+        <h1 class="text-center mb-4">Vehículos Disponibles</h1>
 
         <!-- Contenedor para centrar el botón y el buscador -->
         <div class="d-flex justify-content-center align-items-center mb-4">

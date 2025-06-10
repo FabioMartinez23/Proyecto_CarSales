@@ -33,7 +33,7 @@
                             <a class="dropdown-item dropdown-toggle" href="#">Gestión de Vehiculos</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="index.php?page=registrar_vehiculos">Registrar Vehículos</a></li>
-                                <li><a class="dropdown-item" href="index.php?page=listado_vehiculos">Vehículos</a></li>
+                                <li><a class="dropdown-item" href="index.php?page=listado_vehiculos">Vehículos Disponibles</a></li>
                                 <li><a class="dropdown-item" href="index.php?page=gestion_stock">Gestión de Stock</a></li>
                                 <!-- <li><a class="dropdown-item" href="index.php?page=listado_precios">Actualización de Precios</a></li> -->
                             </ul>
