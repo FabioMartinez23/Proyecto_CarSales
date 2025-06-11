@@ -49,6 +49,10 @@ if(isset($_POST['action'])){
         $usuario_controlador = new UsuarioControlador();
         $usuario_controlador->cambiar_password();
     }
+    if ($_POST['action'] == 'actualizar'){
+        $usuario_controlador = new UsuarioControlador();
+        $usuario_controlador->actualizar();
+    }
     if ($_POST['action'] == 'actualizar_cliente'){
         $usuario_controlador = new UsuarioControlador();
         $usuario_controlador->actualizar_cliente();
@@ -353,6 +357,31 @@ class UsuarioControlador {
         } else {
             // Si no se encontró el usuario, redirigir con un mensaje de error
             header('location: ../../index.php?page=listado_empleados&mensaje=Empleado no encontrado.&status=error');
+        }
+    }
+
+    public function actualizar(){
+
+        $persona = new Persona();
+        $persona->setIdpersonas($_POST['idpersonas']);
+        $persona->setNombre($_POST['nombre']);
+        $persona->setApellido($_POST['apellido']);
+        $persona->setFecha_nacimiento($_POST['fecha_nacimiento']);
+        $persona->setTipo_sexo_idtipo_sexo($_POST['tipo_sexo_idtipo_sexo']);
+        $persona->actualizar_persona();
+        $personas_idpersonas = $persona->getIdpersonas($_POST['idpersonas']);
+
+        if (!$personas_idpersonas){
+            header('location: ../../index.php?page=listado_usuarios&mensaje=Error al cargar Persona.&status=error');
+            return;
+        }else{
+            $usuarios = new Usuario();
+            $usuarios->setIdUsuarios($_POST['idusuarios']);
+            $usuarios->setUsername($_POST['username']);
+            $usuarios->setEmail($_POST['email']);
+            $usuarios->setPersonas_idpersonas($personas_idpersonas);
+            $usuarios->actualizar_usuario();
+            header('location: ../../index.php?page=listado_usuarios&mensaje=Cliente modificado correctamente.&status=success');
         }
     }
 

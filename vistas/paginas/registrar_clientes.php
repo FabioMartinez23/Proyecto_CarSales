@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 
 
 $usuario1 = new Usuario();
+$usuario_editar = [];
 if(isset($_GET['idusuarios'])){
     $usuario_editar = $usuario1->traer_usuario_por_id($_GET['idusuarios']);
 }
@@ -60,7 +61,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
             <?php if(isset($_GET['idusuarios'])){ ?>
                 <input type="hidden" name="action" value="actualizar_cliente"/>
                 <input type="hidden" name="idusuarios" value="<?= $_GET['idusuarios'] ?>"/>
-                <input type="hidden" name="idpersonas" <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['personas_idpersonas'];}} ?> >
+                <input type="hidden" name="idpersonas" value="<?= $usuario_editar['personas_idpersonas'] ?? '' ?>">
             <?php } else { ?>
                 <input type="hidden" name="action" value="guardar_cliente"/>
             <?php } ?>
@@ -70,14 +71,14 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <h3 style="text-decoration: underline;">Datos Personales</h3>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['nombre'];}} ?> type="text" name="nombre" class="form-control" id="id_nombre" placeholder="nombre">
+                            <input value="<?= $usuario_editar['nombre'] ?? '' ?>" type="text" name="nombre" class="form-control" id="id_nombre" placeholder="nombre">
                             <label for="floatingInput">Nombre</label>
                             <div class="invalid-feedback">Por favor ingrese nombre.</div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['apellido'];}} ?> type="text" name="apellido" class="form-control" id="id_apellido" placeholder="apellido">
+                            <input value="<?= $usuario_editar['apellido'] ?? '' ?>" type="text" name="apellido" class="form-control" id="id_apellido" placeholder="apellido">
                             <label for="floatingInput">Apellido</label>
                             <div class="invalid-feedback">Por favor ingrese apellido.</div>
                         </div>
@@ -87,7 +88,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['fecha_nacimiento'];}} ?> type="date" name="fecha_nacimiento" class="form-control" id="id_fecha_nacimiento" onchange="verificarEdad()">
+                            <input value="<?= $usuario_editar['fecha_nacimiento'] ?? '' ?>" type="date" name="fecha_nacimiento" class="form-control" id="id_fecha_nacimiento" onchange="verificarEdad()">
                             <label for="floatingInput">Fecha de Nacimiento</label>
                             <div class="invalid-feedback">Por favor ingrese fecha de nacimiento valida.</div>
                         </div>
@@ -98,20 +99,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                         <div class="form-floating mb-3 mt-3">
                             <select name="tipo_sexo_idtipo_sexo" id="id_tipo_sexo" class="form-select">
                                 <option value="">Seleccione un Sexo</option>
-                                <?php foreach($result_tipo_sexo as $tipo_sexo){ ?>
-                                    <option value="<?php echo $tipo_sexo['idtipo_sexo']; ?>"
-                                    <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['tipo_sexo_idtipo_sexo'] == $tipo_sexo['idtipo_sexo']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $tipo_sexo['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_tipo_sexo as $sexo): ?>
+                                        <option value="<?= $sexo['idtipo_sexo'] ?>"
+                                            <?= (isset($usuario_editar['tipo_sexo_idtipo_sexo']) && $usuario_editar['tipo_sexo_idtipo_sexo'] == $sexo['idtipo_sexo']) ? 'selected' : '' ?>>
+                                            <?= $sexo['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Sexo</label>
                             <div class="invalid-feedback">Por favor ingrese un sexo.</div>
@@ -123,7 +116,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['valor_documento'];}} ?> type="text" name="documento" class="form-control" id="id_documento" placeholder="documento">
+                            <input value="<?= $usuario_editar['valor_documento'] ?? '' ?>" type="text" name="documento" class="form-control" id="id_documento" placeholder="documento">
                             <label for="floatingInput">Documento</label>
                             <div class="invalid-feedback">Por favor ingrese valor en documento.</div>
                         </div>
@@ -134,20 +127,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                         <div class="form-floating mb-3 mt-3">
                             <select name="tipo_documento_idtipo_documento" id="id_tipo_documento" class="form-select">
                                 <option value="">Seleccione un Tipo de Documento</option>
-                                <?php foreach($result_tipo_documento as $tipo_documento){ ?>
-                                    <option value="<?php echo $tipo_documento['idTipo_documento']; ?>"
-                                    <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['Tipo_documento_idTipo_documento'] == $tipo_documento['idTipo_documento']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $tipo_documento['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_tipo_documento as $documento): ?>
+                                        <option value="<?= $documento['idTipo_documento'] ?>"
+                                            <?= (isset($usuario_editar['Tipo_documento_idTipo_documento']) && $usuario_editar['Tipo_documento_idTipo_documento'] == $documento['idTipo_documento']) ? 'selected' : '' ?>>
+                                            <?= $documento['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Tipo de Documento</label>
                             <div class="invalid-feedback">Por favor ingrese un tipo de documento.</div>
@@ -166,7 +151,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <h3 style="text-decoration: underline;">Datos Domicilio</h3>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value='".$usuario1['nombre_domicilio']."'";}} ?> type="text" name="domicilio" class="form-control" id="id_domicilio" placeholder="domicilio">
+                            <input value="<?= $usuario_editar['nombre_domicilio'] ?? '' ?>" type="text" name="domicilio" class="form-control" id="id_domicilio" placeholder="domicilio">
                             <label for="floatingInput">Domicilio</label>
                             <div class="invalid-feedback">Por favor ingrese un domicilio.</div>
                         </div>
@@ -175,20 +160,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="form-floating mb-3 mt-3">
                         <select name="tipo_domicilio_idtipo_domicilio" id="id_tipo_domicilio" class="form-select">
                             <option value="">Seleccione un Tipo de Domicilio</option>
-                            <?php foreach($result_tipo_domicilio as $tipo_domicilio){ ?>
-                                <option value="<?php echo $tipo_domicilio['idtipo_domicilio']; ?>"
-                                <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['tipo_domicilio_idtipo_domicilio'] == $tipo_domicilio['idtipo_domicilio']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $tipo_domicilio['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_tipo_domicilio as $domicilio): ?>
+                                        <option value="<?= $domicilio['idtipo_domicilio'] ?>"
+                                            <?= (isset($usuario_editar['tipo_domicilio_idtipo_domicilio']) && $usuario_editar['tipo_domicilio_idtipo_domicilio'] == $domicilio['idtipo_domicilio']) ? 'selected' : '' ?>>
+                                            <?= $domicilio['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Tipo de Domicilio</label>
                             <div class="invalid-feedback">Por favor ingrese un tipo de domicilio.</div>
@@ -201,20 +178,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="form-floating mb-3 mt-3">
                         <select name="barrios_idbarrios" id="idbarrios" class="form-select">
                             <option value="">Seleccione un Barrio</option>
-                            <?php foreach($result_barrio as $barrio){ ?>
-                                <option value="<?php echo $barrio['idbarrios']; ?>"
-                                <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['barrios_idbarrios'] == $barrio['idbarrios']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $barrio['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_barrio as $barrio): ?>
+                                        <option value="<?= $barrio['idbarrios'] ?>"
+                                            <?= (isset($usuario_editar['barrios_idbarrios']) && $usuario_editar['barrios_idbarrios'] == $barrio['idbarrios']) ? 'selected' : '' ?>>
+                                            <?= $barrio['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Barrio</label>
                             <div class="invalid-feedback">Por favor ingrese un barrio.</div>
@@ -224,20 +193,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="form-floating mb-3 mt-3">
                         <select onchange="validar_localidad(this.value)" name="localidades_idlocalidades" id="idlocalidades" class="form-select">
                             <option value="">Seleccione una Localidad</option>
-                            <?php foreach($result_localidad as $localidad){ ?>
-                                <option value="<?php echo $localidad['idlocalidades']; ?>"
-                                <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['localidades_idlocalidades'] == $localidad['idlocalidades']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $localidad['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_localidad as $localidad): ?>
+                                        <option value="<?= $localidad['idlocalidades'] ?>"
+                                            <?= (isset($usuario_editar['localidades_idlocalidades']) && $usuario_editar['localidades_idlocalidades'] == $localidad['idlocalidades']) ? 'selected' : '' ?>>
+                                            <?= $localidad['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Localidad</label>
                             <div class="invalid-feedback">Por favor ingrese una localidad.</div>
@@ -250,20 +211,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="form-floating mb-3 mt-3">
                         <select onchange="validar_provincia(this.value)" name="provinicias_idprovincias" id="idprovincias" class="form-select">
                             <option value="">Seleccione una Provincia</option>
-                            <?php foreach($result_provincia as $provincia){ ?>
-                                <option value="<?php echo $provincia['idprovincias']; ?>"
-                                <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['provincias_idprovincias'] == $provincia['idprovincias']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $provincia['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_provincia as $provincia): ?>
+                                        <option value="<?= $provincia['idprovincias'] ?>"
+                                            <?= (isset($usuario_editar['provincias_idprovincias']) && $usuario_editar['provincias_idprovincias'] == $provincia['idprovincias']) ? 'selected' : '' ?>>
+                                            <?= $provincia['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Provincia</label>
                             <div class="invalid-feedback">Por favor ingrese una provincia.</div>
@@ -273,20 +226,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="form-floating mb-3 mt-3">
                         <select onchange="validar_pais(this.value)" name="paises_idpaises" id="id_pais" class="form-select">
                             <option value="">Seleccione un Pais</option>
-                            <?php foreach($result_pais as $pais){ ?>
-                                <option value="<?php echo $pais['idpaises']; ?>"
-                                <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['paises_idpaises'] == $pais['idpaises']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $pais['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_pais as $pais): ?>
+                                        <option value="<?= $pais['idpaises'] ?>"
+                                            <?= (isset($usuario_editar['paises_idpaises']) && $usuario_editar['paises_idpaises'] == $pais['idpaises']) ? 'selected' : '' ?>>
+                                            <?= $pais['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Pais</label>
                             <div class="invalid-feedback">Por favor ingrese un pais.</div>
@@ -305,7 +250,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <h3 style="text-decoration: underline;">Datos Contacto</h3>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['valor_contacto'];}} ?> type="text" name="contacto" class="form-control" id="id_contacto" placeholder="contacto">
+                            <input value="<?= $usuario_editar['valor_contacto'] ?? '' ?>" type="text" name="contacto" class="form-control" id="id_contacto" placeholder="contacto">
                             <label for="floatingInput">Contacto</label>
                             <div class="invalid-feedback">Por favor ingrese un valor en contacto.</div>
                         </div>
@@ -315,20 +260,12 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                         <div class="form-floating mb-3 mt-3">
                             <select name="tipo_contacto_idtipo_contacto" id="id_tipo_contacto" class="form-select">
                                 <option value="">Seleccione un Tipo de Contacto</option>
-                                <?php foreach($result_tipo_contacto as $tipo_contacto){ ?>
-                                    <option value="<?php echo $tipo_contacto['idtipo_contacto']; ?>"
-                                    <?php
-                                        if (isset($usuario_editar)) {
-                                            foreach($usuario_editar as $usuario1) {
-                                                if ($usuario1['tipo_contactos_idtipo_contactos'] == $tipo_contacto['idtipo_contacto']) {
-                                                    echo 'selected';
-                                                }
-                                            }
-                                        }
-                                        ?>>
-                                        <?php echo $tipo_contacto['descripcion']; ?>
-                                    </option>
-                                    <?php } ?>
+                                    <?php foreach($result_tipo_contacto as $tipo_contacto): ?>
+                                        <option value="<?= $tipo_contacto['idtipo_contacto'] ?>"
+                                            <?= (isset($usuario_editar['tipo_contactos_idtipo_contactos']) && $usuario_editar['tipo_contactos_idtipo_contactos'] == $tipo_contacto['idtipo_contacto']) ? 'selected' : '' ?>>
+                                            <?= $tipo_contacto['descripcion'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             <label for="floatingInput">Tipo de Contacto</label>
                             <div class="invalid-feedback">Por favor ingrese un tipo de contacto.</div>
@@ -340,14 +277,14 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <h3 style="text-decoration: underline;">Datos Usuario</h3>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['username'];}} ?> type="text" name="username" class="form-control" id="id_username" onfocusout="validate_username(event)" placeholder="username">
+                            <input value="<?= $usuario_editar['username'] ?? '' ?>" type="text" name="username" class="form-control" id="id_username" onfocusout="validate_username(event)" placeholder="username">
                             <label for="floatingInput">Username</label>
                             <div class="invalid-feedback">Por favor ingrese un username.</div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['email'];}} ?> type="email" name="email" class="form-control" id="id_email" onfocusout="validate_email(event)" placeholder="email">
+                            <input value="<?= $usuario_editar['email'] ?? '' ?>" type="email" name="email" class="form-control" id="id_email" onfocusout="validate_email(event)" placeholder="email">
                             <label for="floatingInput">Email</label>
                             <div class="invalid-feedback">Por favor ingrese un correo electrónico válido (debe tener un @ y terminar en .com o .com.ar).</div>
                         </div>

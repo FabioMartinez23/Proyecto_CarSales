@@ -8,9 +8,12 @@ $perfil = new Perfil();
 $perfiles = $perfil->traer_perfiles();
 
 $usuario1 = new Usuario();
-if(isset($_GET['idusuarios'])){
+$usuario_editar = [];
+if (isset($_GET['idusuarios'])) {
     $usuario_editar = $usuario1->traer_usuario_por_id($_GET['idusuarios']);
 }
+
+
 
 
 $usuario = new Usuario();
@@ -52,70 +55,60 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
         <?php if(isset($_GET['idusuarios'])){ ?>
                 <input type="hidden" name="action" value="actualizar"/>
                 <input type="hidden" name="idusuarios" value="<?= $_GET['idusuarios'] ?>"/>
-                <input type="hidden" name="idpersonas" <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['personas_idpersonas'];}} ?> >
+                <input type="hidden" name="idpersonas" value="<?= $usuario_editar['personas_idpersonas'] ?? '' ?>">
             <?php } else { ?>
                 <input type="hidden" name="action" value="guardar"/>
             <?php } ?>
 
             <div class="form-floating mb-3 mt-2">
-                <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['nombre'];}} ?> type="text" name="nombre" class="form-control" id="id_nombre" aria-describedby="emailHelp">
+                <input value="<?= $usuario_editar['nombre'] ?? '' ?>" type="text" name="nombre" class="form-control" id="id_nombre" aria-describedby="emailHelp">
                 <label for="exampleInputEmail1" class="form-label">Nombre</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
-                <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['apellido'];}} ?> type="text" name="apellido" class="form-control" id="id_apellido" aria-describedby="emailHelp">
+                <input value="<?= $usuario_editar['apellido'] ?? '' ?>" type="text" name="apellido" class="form-control" id="id_apellido" aria-describedby="emailHelp">
                 <label for="exampleInputEmail1" class="form-label">Apellido</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
-                <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['fecha_nacimiento'];}} ?> type="date" name="fecha_nacimiento" class="form-control" id="id_fecha_nacimiento" aria-describedby="emailHelp" onchange="verificarEdad()">
+                <input value="<?= $usuario_editar['fecha_nacimiento'] ?? '' ?>" type="date" name="fecha_nacimiento" class="form-control" id="id_fecha_nacimiento" aria-describedby="emailHelp" onchange="verificarEdad()">
                 <label for="exampleInputEmail1" class="form-label">Fecha de Nacimiento</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
                 <select name="tipo_sexo_idtipo_sexo" id="id_tipo_sexo" class="form-select">
                     <option value="">Seleccione un Sexo</option>
-                    <?php
-                    foreach($result_tipo_sexo as $tipo_sexo){
-                        // Verificamos si estamos editando y si el valor de tipo_sexo coincide con el valor del usuario
-                        $selected = "";
-                        if (isset($usuario_editar) && $usuario1['tipo_sexo_idtipo_sexo'] == $tipo_sexo['idtipo_sexo']) {
-                            $selected = "selected";
-                        }
-                        ?>
-                        <option value="<?php echo $tipo_sexo['idtipo_sexo']?>" <?php echo $selected; ?>>
-                            <?php echo $tipo_sexo['descripcion']?>
+                    <?php foreach($result_tipo_sexo as $sexo): ?>
+                        <option value="<?= $sexo['idtipo_sexo'] ?>"
+                            <?= (isset($usuario_editar['tipo_sexo_idtipo_sexo']) && $usuario_editar['tipo_sexo_idtipo_sexo'] == $sexo['idtipo_sexo']) ? 'selected' : '' ?>>
+                            <?= $sexo['descripcion'] ?>
                         </option>
-                        <?php
-                    }
-                    ?>
+                    <?php endforeach; ?>
                 </select>
-            <label for="id_tipo_sexo" class="form-label">Sexo</label>
+                <label for="id_tipo_sexo">Sexo</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
-                <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['username'];}} ?> type="text" name="username" onfocusout="validate_username(event)" class="form-control" id="id_username" aria-describedby="emailHelp">
+                <input value="<?= $usuario_editar['username'] ?? '' ?>" type="text" name="username" onfocusout="validate_username(event)" class="form-control" id="id_username" aria-describedby="emailHelp">
                 <label for="exampleInputEmail1" class="form-label">Username</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
-                <input <?php if(isset($_GET['idusuarios'])){ foreach($usuario_editar as $usuario1){ echo "value=".$usuario1['email'];}} ?> type="email" name="email" onfocusout="validate_email(event)" class="form-control" id="id_email" aria-describedby="emailHelp">
+                <input value="<?= $usuario_editar['email'] ?? '' ?>" type="email" name="email" onfocusout="validate_email(event)" class="form-control" id="id_email" aria-describedby="emailHelp">
                 <label for="exampleInputEmail1" class="form-label">Email</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
                 <select name="perfiles_idperfiles" id="id_perfiles" class="form-select">
                     <option value="">Seleccione un Perfil</option>
-                    <?php
-                    foreach($perfiles as $perfil){
-                        ?>
-                    <option value="<?php echo $perfil['idperfiles']?>"><?php echo $perfil['descripcion']?></option>
-                    <?php
-                    }
-                    ?>
+                    <?php foreach ($perfiles as $p): ?>
+                        <option value="<?= $p['idperfiles'] ?>"
+                            <?= (isset($usuario_editar['perfiles_idperfiles']) && $usuario_editar['perfiles_idperfiles'] == $p['idperfiles']) ? 'selected' : '' ?>>
+                            <?= $p['descripcion'] ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
-                
-            <label for="disabledSelect" class="form-label">Perfiles</label>
+                <label for="id_perfiles">Perfiles</label>
             </div>
 
             <button type="submit" class="btn btn-primary btn-action" onclick="return validarFormulario()">
