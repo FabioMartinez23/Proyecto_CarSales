@@ -7,8 +7,6 @@ $usuario1 = new Usuario();
 $usuario_editar = [];
 if(isset($_GET['idusuarios'])){
     $usuario_editar = $usuario1->traer_usuario_por_id($_GET['idusuarios']);
-    var_dump($usuario_editar);
-    exit();
 }
 
 $tipo_contacto = new Tipo_Contactos();

@@ -125,7 +125,7 @@ class OperacionesControlador {
 
                 echo json_encode($response);
             } else {
-                echo json_encode(['error' => 'ID de persona no encontrado.']);
+                echo json_encode(['error' => 'Vehiculo vendido! o No encontrado']);
             }
         }
 

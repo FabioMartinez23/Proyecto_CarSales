@@ -494,25 +494,52 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
             </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                    Datos de la Venta
-                </button>
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Datos de la Venta
+                    </button>
                 </h2>
                 <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                     <div class="accordion-body">
                         <div class="row g-3">
+                            <!-- Pregunta con radios -->
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label d-block">¿Tiene un vehículo como parte de pago?</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="parte_de_pago" id="parte_pago_si" value="si">
+                                    <label class="form-check-label" for="parte_pago_si">Sí</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="parte_de_pago" id="parte_pago_no" value="no" checked>
+                                    <label class="form-check-label" for="parte_pago_no">No</label>
+                                </div>
+                            </div>
+
+                            <!-- Input + botón ocultos -->
+                            <div class="col-md-12 mb-3" id="parte_pago_contenedor" style="display: none;">
+                                <label for="vehiculo_busqueda">Buscar vehículo:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="vehiculo_busqueda" name="vehiculo_busqueda" placeholder="Ingrese datos del vehículo">
+                                    <button class="btn btn-primary" type="button" id="buscarVehiculo">Buscar</button>
+                                </div>
+                            </div>
+
+                            <!-- Tipo de pago -->
                             <div class="col-md-6 mb-3">
                                 <label for="tipoPago" class="form-label">Tipo de Pago:</label>
                                 <select class="form-select" id="tipoPago" name="tipo_pago">
                                     <?php foreach($resulta_tipo_pago as $tipo_pagos): ?>
-                                            <option value="<?php echo $tipo_pagos['idtipo_pago']; ?>"><?php echo $tipo_pagos['descripcion']; ?></option>
-                                        <?php endforeach; ?>
+                                        <option value="<?php echo $tipo_pagos['idtipo_pago']; ?>"><?php echo $tipo_pagos['descripcion']; ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
+
+                            <!-- Monto -->
                             <div class="col-md-6 mb-3">
                                 <label for="monto" class="form-label">Monto:</label>
                                 <input type="text" class="form-control" id="id_precio" name="id_precio" readonly>
                             </div>
+
+                            <!-- Observaciones -->
                             <div class="col-12 mb-3">
                                 <label for="observaciones" class="form-label">Observaciones:</label>
                                 <textarea class="form-control" id="observaciones" name="observaciones"></textarea>
@@ -521,13 +548,12 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="d-flex justify-content-center mt-4">
+
+            <!-- Botones finales -->
+            <div class="d-flex justify-content-center mt-4">
                 <a type="button" class="btn btn-secondary me-2" href="index.php?page=listado_ventas">Volver a la Lista de Ventas</a>
-                <button type="submit" class="btn btn-action">
-                    Registrar Venta
-                </button>
-        </div>
+                <button type="submit" class="btn btn-action">Registrar Venta</button>
+            </div>
     </form>
 </div>
 
@@ -547,6 +573,14 @@ $(document).ready(function() {
         // Aquí puedes añadir validaciones si lo deseas
         // e.preventDefault(); // No uses esto aquí si deseas que el formulario se envíe
     });
+});
+
+document.getElementById('parte_pago_si').addEventListener('change', function () {
+    document.getElementById('parte_pago_contenedor').style.display = 'block';
+});
+
+document.getElementById('parte_pago_no').addEventListener('change', function () {
+    document.getElementById('parte_pago_contenedor').style.display = 'none';
 });
 
 </script>
