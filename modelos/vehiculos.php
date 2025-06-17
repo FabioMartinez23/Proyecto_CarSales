@@ -96,6 +96,16 @@ class Vehiculos extends Paginacion{
         return null; 
     }
 
+    public function traer_vehiculo_por_patente_ventas($patente){
+        $conexion = new Conexion();
+        $query = "SELECT *, marcas.idmarcas, marcas.nombre as nombre_marca,modelos.idmodelos, modelos.nombre as nombre_modelo,tipo_vehiculos.idtipo_vehiculos, tipo_vehiculos.nombre as nombre_tipo_vehiculo FROM vehiculos INNER JOIN modelos on vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas on modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos on vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos INNER JOIN precios_vehiculos on vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos INNER JOIN compras on vehiculos.idvehiculos = compras.vehiculo_idvehiculo WHERE patente = '$patente' AND activo_vehiculo = 1 AND activo_precio = 1";
+        $resultado = $conexion->consultar($query);
+        if ($resultado->num_rows > 0) {
+            return $resultado->fetch_assoc();
+        }
+        return null; 
+    }
+
 
     public function traer_vehiculos_filtrados($filtros, $inicio, $cantidad) {
         $query = "SELECT vehiculos.*,colores.idcolores, colores.descripcion as nombre_color, marcas.idmarcas, marcas.nombre as nombre_marca,modelos.idmodelos,modelos.nombre as nombre_modelo,tipo_vehiculos.idtipo_vehiculos, tipo_vehiculos.nombre as nombre_tipo FROM vehiculos INNER JOIN modelos on vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN colores on vehiculos.colores_idcolores = colores.idcolores INNER JOIN marcas on modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos on vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos WHERE 1=1"; // Base de la consulta

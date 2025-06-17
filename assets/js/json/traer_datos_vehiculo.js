@@ -43,9 +43,20 @@ document.getElementById("buscar_auto_btn").addEventListener("click", function() 
                 document.getElementById("id_tipo_vehiculos").value = vehiculoData.idtipo_vehiculos || '';
             }
 
-            // Cerrar el modal después de procesar la primera solicitud
-            let modal = bootstrap.Modal.getInstance(document.getElementById("buscarAutoModal"));
+            let modalElement = document.getElementById("buscarAutoModal");
+            let modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+
             modal.hide();
+
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                // Devuelve foco
+                document.getElementById('buscar_auto_btn').focus();
+                
+                // Limpia scroll y backdrop
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            });
         }
     })
     .catch(error => {

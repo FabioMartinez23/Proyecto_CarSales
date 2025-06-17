@@ -515,12 +515,31 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                             </div>
 
                             <!-- Input + botón ocultos -->
-                            <div class="col-md-12 mb-3" id="parte_pago_contenedor" style="display: none;">
-                                <label for="vehiculo_busqueda">Buscar vehículo:</label>
+                            <div class="col-md-7 mb-3" id="parte_pago_contenedor" style="display: none;">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="vehiculo_busqueda" name="vehiculo_busqueda" placeholder="Ingrese datos del vehículo">
-                                    <button class="btn btn-primary" type="button" id="buscarVehiculo">Buscar</button>
+                                    <input type="text" id="buscar_patente" name="buscar_patente" class="form-control" placeholder="Buscar patente...">
+                                    <button type="button" id="btn_buscar_patente" class="btn btn-primary">Buscar</button>
+                                    <input type="hidden" id="idvehiculo_parte_pago" name="idvehiculo_parte_pago">
+                                    <input type="hidden" id="idcompras" name="idcompras">
                                 </div>
+                            </div>
+
+                            <!-- Tabla oculta por defecto -->
+                            <div id="resultado_busqueda" style="display: none;">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Compra</th>
+                                            <th>Fecha</th>
+                                            <th>Patente</th>
+                                            <th>Marca</th>
+                                            <th>Modelo</th>
+                                            <th>Año</th>
+                                            <th>Precio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla_resultado"></tbody>
+                                </table>
                             </div>
 
                             <!-- Tipo de pago -->
@@ -557,6 +576,14 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
     </form>
 </div>
 
+<!-- Jquery -->
+<script src="assets/js/jquery-3.7.1.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/datatables.min.js"></script>
+<script src="assets/js/sweetalert2.all.min.js"></script>
+
 <script>
 $(document).ready(function() {
     $('#buscar_cliente_btn').click(function(e) {
@@ -574,16 +601,95 @@ $(document).ready(function() {
         // e.preventDefault(); // No uses esto aquí si deseas que el formulario se envíe
     });
 });
+</script>
 
-document.getElementById('parte_pago_si').addEventListener('change', function () {
-    document.getElementById('parte_pago_contenedor').style.display = 'block';
-});
+<script>
+    document.getElementById('parte_pago_si').addEventListener('change', function () {
+        document.getElementById('parte_pago_si').value;
+        document.getElementById('parte_pago_contenedor').style.display = 'block';
+    });
 
-document.getElementById('parte_pago_no').addEventListener('change', function () {
-    document.getElementById('parte_pago_contenedor').style.display = 'none';
-});
+    document.getElementById('parte_pago_no').addEventListener('change', function () {
+        document.getElementById('parte_pago_no').value;
+        document.getElementById('parte_pago_contenedor').style.display = 'none';
+    });
 
 </script>
+
+<script>
+    $(document).ready(function () {
+        $('#btn_buscar_patente').on('click', function () {
+            console.log("Botón clickeado"); // Prueba
+            buscarVehiculo();
+        });
+
+        function buscarVehiculo() {
+            const patente = $('#buscar_patente').val().trim();
+
+            if (patente.length > 0) {
+                console.log("Buscando patente:", patente); // Prueba
+                $.ajax({
+                    url: 'controladores/ventas/buscar_vehiculo_venta.php',
+                    type: 'POST',
+                    data: { patente: patente },
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log("Respuesta AJAX:", data);
+                        if (data && data.length > 0) {
+                            let vehiculo = data[0];  // Tomar el primer objeto
+                            // cargando los inputs ocultos
+                            $('#idvehiculo_parte_pago').val(vehiculo.idvehiculos);
+                            $('#idcompras').val(vehiculo.idcompras);
+                            let fila = `
+                                <tr>
+                                    <td>${vehiculo.idcompras}</td>
+                                    <td>${vehiculo.fecha_compra}</td>
+                                    <td>${vehiculo.patente}</td>
+                                    <td>${vehiculo.nombre_marca}</td>
+                                    <td>${vehiculo.nombre_modelo}</td>
+                                    <td>${vehiculo.anio}</td>
+                                    <td>${vehiculo.precio}</td>
+                                </tr>
+                            `;
+                            $('#tabla_resultado').html(fila);
+                            $('#resultado_busqueda').fadeIn();
+                        } else {
+                            $('#resultado_busqueda').hide();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error AJAX:", error);
+                    }
+                });
+            } else {
+                $('#resultado_busqueda').hide();
+            }
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const radioSi = document.getElementById("parte_pago_si");
+        const radioNo = document.getElementById("parte_pago_no");
+        const contenedor = document.getElementById("parte_pago_contenedor");
+
+        // Escuchar cambios
+        radioSi.addEventListener("change", function () {
+            if (this.checked) {
+                contenedor.style.display = "block";
+            }
+        });
+
+        radioNo.addEventListener("change", function () {
+            if (this.checked) {
+                contenedor.style.display = "none";
+            }
+        });
+    });
+</script>
+
 
 <script src="assets/js/json/traer_datos_cliente.js"></script>
 <script src="assets/js/json/traer_datos_vehiculo.js"></script>

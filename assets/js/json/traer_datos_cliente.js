@@ -18,34 +18,27 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
         body: formData
     })
     .then(response => {
-        console.log("Estado de la respuesta:", response.status); // Verificar el código de estado
+        console.log("Estado de la respuesta:", response.status);
         if (!response.ok) {
             throw new Error('Error en la respuesta del servidor: ' + response.statusText);
         }
-        return response.text(); // Obtener respuesta como texto para depuración
+        return response.text();
     })
     .then(text => {
-        //console.log("Respuesta del servidor (texto):", text); // Mostrar la respuesta cruda
         let data;
         try {
-            data = JSON.parse(text); // Intentar convertir la respuesta a JSON
+            data = JSON.parse(text);
             console.log("Datos JSON:", data);
         } catch (e) {
             console.error("La respuesta no es un JSON válido:", e);
             alert('El tipo de sexo es incorrecto.');
-            return; // Salir de la función si hay error en el JSON
+            return;
         }
 
-        // Verificar si el servidor envió un error
         if (data.error) {
-            alert(data.error); // Mostrar el mensaje de error
+            alert(data.error);
         } else {
-
-            console.log("Campo id_documento:", document.getElementById("id_documento"));
-            console.log("Campo id_domicilio:", document.getElementById("id_domicilio"));
-            console.log("Campo id_contacto:", document.getElementById("id_contacto"));
-
-            // Rellenar el formulario con los datos recibidos
+            // Rellenar el formulario
             document.getElementById("id_nombre").value = data.persona?.nombre || '';
             document.getElementById("id_apellido").value = data.persona?.apellido || '';
             document.getElementById("id_fecha_nacimiento").value = data.persona?.fecha_nacimiento || '';
@@ -64,13 +57,13 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
             } else {
                 console.error("El valor de documento no está disponible");
             }
-            
+
             if (data.domicilio && data.domicilio.nombre_domicilio) {
                 document.getElementById("id_domicilio").value = data.domicilio.nombre_domicilio;
             } else {
                 console.error("El valor de domicilio no está disponible");
             }
-            
+
             if (data.contacto && data.contacto.valor) {
                 document.getElementById("id_contacto").value = data.contacto.valor;
             } else {
@@ -78,27 +71,33 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
             }
 
             // Guardar los IDs en campos ocultos
-            document.getElementById("id_personas").value = data.persona?.idpersonas || ''; // Almacena el ID de persona
-            document.getElementById("id_usuarios").value = data.usuario?.idusuarios || ''; // Almacena el ID de usuario
-            document.getElementById("id_contactos").value = data.contacto?.idcontactos || ''; // Almacena el ID de contacto
-            document.getElementById("id_domicilios").value = data.domicilio?.iddomicilios || ''; // Almacena el ID de domicilio
-            document.getElementById("id_documentos").value = data.documento?.iddocumentos || ''; // Almacena el ID de documento
+            document.getElementById("id_personas").value = data.persona?.idpersonas || '';
+            document.getElementById("id_usuarios").value = data.usuario?.idusuarios || '';
+            document.getElementById("id_contactos").value = data.contacto?.idcontactos || '';
+            document.getElementById("id_domicilios").value = data.domicilio?.iddomicilios || '';
+            document.getElementById("id_documentos").value = data.documento?.iddocumentos || '';
+            
+            let modalElement = document.getElementById("buscarClienteModal");
+            let modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
 
-            // Cerrar el modal
-            let modal = bootstrap.Modal.getInstance(document.getElementById("buscarClienteModal"));
-            if (modal) {
-                modal.hide();
-            }
+            modal.hide();
 
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                // Devuelve foco
+                document.getElementById('buscar_cliente_btn').focus();
+                
+                // Limpia scroll y backdrop
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            });
         }
     })
     .catch(error => {
         console.error("Error al buscar cliente:", error);
-        alert('Hubo un error al procesar la solicitud.'); // Mensaje de alerta al usuario
+        alert('Hubo un error al procesar la solicitud.');
     });
-
 });
-
 
 
 

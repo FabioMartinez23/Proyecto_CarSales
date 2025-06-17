@@ -18,8 +18,13 @@ class PrecioVehiculo extends Paginacion{
 
     public function actualizar_precio(){
         $conexion = new Conexion;
-        $query = "INSERT INTO precios_vehiculos (precio, fecha_precio, vehiculos_idvehiculos) VALUES ('$this->precio', NOW(), '$this->vehiculos_idvehiculos')";
-        return $conexion->insertar($query);
+        // 1) Poner a 0 el activo_precio del precio actual
+        $query1 = "UPDATE precios_vehiculos SET activo_precio = 0 WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos' AND activo_precio = 1";
+        $conexion->insertar($query1);
+
+        // 2) Insertar el nuevo precio con activo_precio = 1
+        $query2 = "INSERT INTO precios_vehiculos (precio, fecha_precio, vehiculos_idvehiculos, activo_precio) VALUES ('$this->precio', NOW(), '$this->vehiculos_idvehiculos', 1)";
+        return $conexion->insertar($query2);
     }
 
     public function modificar_precio(){
