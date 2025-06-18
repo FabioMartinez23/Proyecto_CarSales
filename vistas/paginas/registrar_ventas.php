@@ -604,19 +604,6 @@ $(document).ready(function() {
 </script>
 
 <script>
-    document.getElementById('parte_pago_si').addEventListener('change', function () {
-        document.getElementById('parte_pago_si').value;
-        document.getElementById('parte_pago_contenedor').style.display = 'block';
-    });
-
-    document.getElementById('parte_pago_no').addEventListener('change', function () {
-        document.getElementById('parte_pago_no').value;
-        document.getElementById('parte_pago_contenedor').style.display = 'none';
-    });
-
-</script>
-
-<script>
     $(document).ready(function () {
         $('#btn_buscar_patente').on('click', function () {
             console.log("Botón clickeado"); // Prueba

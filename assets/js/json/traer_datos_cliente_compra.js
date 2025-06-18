@@ -48,6 +48,7 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
 
 
             // Rellenar el formulario con los datos recibidos
+            document.getElementById("id_personas").value = data.persona?.idpersonas || '';
             document.getElementById("id_nombre").value = data.persona?.nombre || '';
             document.getElementById("id_apellido").value = data.persona?.apellido || '';            console.log("Select sexo antes:", document.getElementById("id_tipo_sexo_1").innerHTML);
             console.log("Valor recibido:", data.persona?.tipo_sexo_idtipo_sexo);

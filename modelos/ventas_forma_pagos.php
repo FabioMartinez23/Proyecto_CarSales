@@ -20,6 +20,16 @@ class VentaFormaPago {
         return $conexion->insertar($query);
     }
 
+    public function traer_vehiculo_forma_pago($ventas_idventas){
+        $conexion = new Conexion();
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, tipo_vehiculos.nombre as nombre_tipo_vehiculo FROM ventas_forma_de_pago INNER JOIN compras ON ventas_forma_de_pago.compras_idcompras = compras.idcompras INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos INNER JOIN precios_vehiculos ON vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos WHERE ventas_idventas = $ventas_idventas AND  activo_precio = 1";
+        $resultado = $conexion->consultar($query);
+        if ($resultado->num_rows > 0) {
+            return $resultado->fetch_assoc();
+        }
+        return null;
+    }
+
     /**
      * Get the value of idventas_forma_de_pago
      */ 

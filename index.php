@@ -13,6 +13,7 @@ require_once('modelos/ficha_tecnica.php');
 require_once('modelos/precios_vehiculos.php');
 require_once('modelos/vender_vehiculos.php');
 require_once('modelos/comprar_vehiculos.php');
+require_once('modelos/ventas_forma_pagos.php');
 require_once('modelos/tablas_maestras/modelo_vehiculo.php');
 require_once('modelos/tablas_maestras/marca.php');
 require_once('modelos/tablas_maestras/color.php');

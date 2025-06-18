@@ -29,44 +29,50 @@ if (isset($_POST['action'])) {
             // Validar que el usuario tenga al menos 18 años
             $fecha_nacimiento = new DateTime($_POST['fecha_nacimiento']);
             $hoy = new DateTime();
-            $edad = $hoy->diff($fecha_nacimiento)->y; // Calcula la edad en años
-    
+            $edad = $hoy->diff($fecha_nacimiento)->y;
+
             if ($edad < 18) {
                 header('location: ../../index.php?page=registrar_compras&mensaje=Debes ser mayor de 18 años para registrarte.&status=error');
                 return;
             }
 
-            $persona = new Persona();
-            $persona->setNombre($_POST['nombre']);
-            $persona->setApellido($_POST['apellido']);
-            $persona->setFecha_nacimiento($_POST['fecha_nacimiento']);
-            $persona->setTipo_sexo_idtipo_sexo($_POST['tipo_sexo_idtipo_sexo']);
-        
-            if (!$persona->agregar_persona()) {
-                header('location: ../../index.php?page=registrar_compras&mensaje=Error al cargar la persona.&status=error');
-                return;
+            // Si no hay id_personas, registrar nueva persona
+            if (empty($_POST['id_personas'])) {
+                $persona = new Persona();
+                $persona->setNombre($_POST['nombre']);
+                $persona->setApellido($_POST['apellido']);
+                $persona->setFecha_nacimiento($_POST['fecha_nacimiento']);
+                $persona->setTipo_sexo_idtipo_sexo($_POST['tipo_sexo_idtipo_sexo']);
+
+                if (!$persona->agregar_persona()) {
+                    header('location: ../../index.php?page=registrar_compras&mensaje=Error al cargar la persona.&status=error');
+                    return;
+                }
+
+                $personas_idpersonas = $persona->getIdpersonas();
+
+                $contactos = new Contacto();
+                $contactos->setPersonas_idPersonas($personas_idpersonas);
+                $contactos->setValor($_POST['contacto']);
+                $contactos->setTipo_contactos_idtipo_contactos($_POST['tipo_contacto_idtipo_contacto']);
+                $contactos->agregar_contato();
+
+                $documento = new Documento();
+                $documento->setPersonas_idPersonas($personas_idpersonas);
+                $documento->setTipo_documento_idTipo_documento($_POST['tipo_documento_idtipo_documento']);
+                $documento->setValor($_POST['documento']);
+                $documento->agregar_documento();
+
+                $domicilio = new Domicilios();
+                $domicilio->setPersonas_idPersonas($personas_idpersonas);
+                $domicilio->setDescripcion($_POST['domicilio']);
+                $domicilio->setTipo_domicilio_idtipo_domicilio($_POST['tipo_domicilio_idtipo_domicilio']);
+                $domicilio->setBarrios_idbarrios($_POST['barrios_idbarrios']);
+                $domicilio->agregar_domicilio();
+            } else {
+                // Usar ID de persona existente
+                $personas_idpersonas = $_POST['id_personas'];
             }
-
-            $personas_idpersonas = $persona->getIdpersonas();
-
-            $contactos = new Contacto();
-            $contactos->setPersonas_idPersonas($personas_idpersonas);
-            $contactos->setValor($_POST['contacto']);
-            $contactos->setTipo_contactos_idtipo_contactos($_POST['tipo_contacto_idtipo_contacto']);
-            $contactos->agregar_contato();
-        
-            $documento = new Documento();
-            $documento->setPersonas_idPersonas($personas_idpersonas);
-            $documento->setTipo_documento_idTipo_documento($_POST['tipo_documento_idtipo_documento']);
-            $documento->setValor($_POST['documento']);
-            $documento->agregar_documento();
-        
-            $domicilio = new Domicilios();
-            $domicilio->setPersonas_idPersonas($personas_idpersonas);
-            $domicilio->setDescripcion($_POST['domicilio']);
-            $domicilio->setTipo_domicilio_idtipo_domicilio($_POST['tipo_domicilio_idtipo_domicilio']);
-            $domicilio->setBarrios_idbarrios($_POST['barrios_idbarrios']);
-            $domicilio->agregar_domicilio();
         
             // Validar datos del vehículo
             if (empty($_POST['patente']) || empty($_POST['chasis']) || empty($_POST['motor']) || empty($_POST['año']) || 

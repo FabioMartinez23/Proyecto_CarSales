@@ -18,7 +18,7 @@ if ($resultado_compra) {
             <li class="list-group-item"><strong>Nombre:</strong> <?=$resultado_compra['nombre']." ".$resultado_compra['apellido']; ?></li>
             <li class="list-group-item"><strong>DNI:</strong> <?=$resultado_compra['valor_documento']; ?></li>
             <li class="list-group-item"><strong>Teléfono:</strong> <?=$resultado_compra['valor_contacto']; ?></li>
-            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_compra['nombre_domicilio']; ?></li>
+            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_compra['nombre_domicilio'].' - Barrio: '.$resultado_compra['nombre_barrio'].' - Localidad: '.$resultado_compra['nombre_localidad'].' - Provincia: '.$resultado_compra['nombre_provincia']; ?></li>
         </ul>
 
         <h2>Datos del Auto</h2>

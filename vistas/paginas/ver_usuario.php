@@ -31,7 +31,7 @@ if ($resultado_usuario) {
         <h2>Datos de Domicilio</h2>
         <ul class="list-group mb-4">
             <li class="list-group-item"><strong>Tipo de Domicilio:</strong> <?=$resultado_usuario['nombre_tipo_domicilio']; ?></li>
-            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_usuario['nombre_domicilio'].' - '.$resultado_usuario['nombre_localidad'].' - '.$resultado_usuario['nombre_provincia']; ?></li>
+            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_usuario['nombre_domicilio'].' - Barrio: '.$resultado_usuario['nombre_barrio'].' - Localidad: '.$resultado_usuario['nombre_localidad'].' - Provincia: '.$resultado_usuario['nombre_provincia']; ?></li>
         </ul>
 
         <div class="text-center">

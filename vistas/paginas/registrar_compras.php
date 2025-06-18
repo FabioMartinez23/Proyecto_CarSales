@@ -243,6 +243,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
 
         <!-- Inputs ocultos para almacenar datos del modal -->
+        <input type="hidden" id="id_personas" name="id_personas">
         <input type="hidden" id="vencimiento_bateria" name="vencimiento_bateria">
         <input type="hidden" id="vencimiento_rto" name="vencimiento_rto">
         <input type="hidden" id="vencimiento_service" name="vencimiento_service">
