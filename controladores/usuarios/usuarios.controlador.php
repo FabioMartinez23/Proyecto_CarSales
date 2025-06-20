@@ -419,7 +419,10 @@ class UsuarioControlador {
             $documento = new Documento();
             $documento->setPersonas_idPersonas($personas_idpersonas);
             $documento->setTipo_documento_idTipo_documento($_POST['tipo_documento_idtipo_documento']);
-            $documento->setValor($_POST['documento']);
+
+            // Eliminar los puntos
+            $documento_sin_puntos = str_replace('.', '', $_POST['documento']);
+            $documento->setValor($documento_sin_puntos);
             $documento->agregar_documento();
 
             $domicilio = new Domicilios();
@@ -474,7 +477,10 @@ class UsuarioControlador {
         $documento = new Documento();
         $documento->setPersonas_idPersonas($personas_idpersonas);
         $documento->setTipo_documento_idTipo_documento($_POST['tipo_documento_idtipo_documento']);
-        $documento->setValor($_POST['documento']);
+
+        // Eliminar los puntos
+        $documento_sin_puntos = str_replace('.', '', $_POST['documento']);
+        $documento->setValor($documento_sin_puntos);
         $documento->agregar_documento();
 
         $domicilio = new Domicilios();
