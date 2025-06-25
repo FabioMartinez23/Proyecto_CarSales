@@ -705,7 +705,7 @@ require_once('modelos/modulos.php');
             }
 
         
-        $paginas_publicas = ['inicio', 'nosotros', 'contacto', 'login', 'registrarse', 'form_contacto', 'comprar_vehiculo', 'olvidar_contraseña', 'recuperar_password'];
+        $paginas_publicas = ['inicio', 'nosotros', 'contacto', 'login', 'registrarse', 'form_contacto', 'comprar_vehiculo', 'olvidar_contraseña', 'recuperar_password', 'verificar_email'];
     
         // Comprobamos si se ha solicitado una página
         if (isset($_GET['page'])) {

@@ -90,7 +90,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
             <div class="form-floating mb-3 mt-2">
                 <input value="<?= $usuario_editar['username'] ?? '' ?>" type="text" name="username" onfocusout="validate_username(event)" class="form-control" id="id_username" aria-describedby="emailHelp">
-                <label for="exampleInputEmail1" class="form-label">Username</label>
+                <label for="exampleInputEmail1" class="form-label">Nombre de Usuario</label>
             </div>
 
             <div class="form-floating mb-3 mt-2">
@@ -128,11 +128,11 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
         <table class="table table-hover">
             <thead>
                 <tr>
-                <th>Username</th>
+                <th>Nombre de Usuario</th>
                 <th>Email</th>
                 <th>Perfil</th>
                 <th>Modificar</th>
-                <th>Resetear Pass</th>
+                <th>Resetear Contraseña</th>
                 <th>Eliminar</th>
                 </tr>
             </thead>

@@ -4,14 +4,14 @@
     <form id="id_form" method="POST" action="controladores/login.controlador.php">
         <input type="hidden" name="action" value="login">
         <div class="form-floating mb-3 mt-3">
-            <input type="text" class="form-control" id="username" placeholder="Ingresar Username" name="username">
-            <label for="floatingInput">Username</label>
-            <p id="id_usuario_parrafo" style="color:red; display:none;">Usuario Requerido</p>
+            <input type="text" class="form-control" id="username" placeholder="Ingresar Nombre de Usuario" name="username">
+            <label for="floatingInput">Nombre de Usuario</label>
+            <p id="id_usuario_parrafo" style="color:red; display:none;">Nombre de Usuario Requerido</p>
         </div>
         <div class="form-floating mb-3">
             <input type="password" class="form-control" id="password" placeholder="Ingresar Contraseña" name="password">
-            <label for="floatingInput">Password</label>
-            <p id="id_password_parrafo" style="color:red; display:none;">Password Requerido</p>
+            <label for="floatingInput">Contraseña</label>
+            <p id="id_password_parrafo" style="color:red; display:none;">Contraseña Requerida</p>
         </div>
         <div class="d-flex justify-content-center">
             <button onclick="validate()" class="btn me-4 btn-action" type="button">Ingresar</button>

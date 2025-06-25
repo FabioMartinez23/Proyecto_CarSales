@@ -175,7 +175,16 @@ public function validar_email_para_contraseña($email) {
         return false;  // Retornar false si no se encontró el email
 }
 
+public function obtener_id_por_username($username) {
+        $conexion = new Conexion();
+        $query = "SELECT idusuarios FROM usuarios WHERE username = '$username'";
+        $resultado = $conexion->consultar($query);
 
+        if ($resultado && $resultado->num_rows > 0) {
+                return $resultado->fetch_assoc()['idusuarios'];
+        }
+        return false;
+}
 
 
 /**

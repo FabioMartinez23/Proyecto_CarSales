@@ -36,18 +36,18 @@ if (isset($_GET['token'])) {
 
                 <div class="form-floating mb-3 mt-3">
                     <input type="password" class="form-control" id="new_password" placeholder="Ingrese su nueva contraseña" name="new_password">
-                    <label for="new_password" class="form-label">Nuevo Password:</label>
+                    <label for="new_password" class="form-label">Nueva Contraseña:</label>
                     <div class="invalid-feedback" id="passwordError"></div>
                 </div>
 
                 <div class="form-floating mb-3 mt-3">
                     <input type="password" class="form-control" id="new_password_confirm" placeholder="Confirme su nueva contraseña" name="new_password_confirm">
-                    <label for="new_password_confirm" class="form-label">Confirmar Nuevo Password:</label>
+                    <label for="new_password_confirm" class="form-label">Confirmar Nueva Contraseña:</label>
                     <div class="invalid-feedback" id="confirmPasswordError"></div>
                 </div>
 
                 <div class="d-grid gap-2 col-6 mx-auto">
-                    <button class="btn btn-action" type="submit">Cambiar Password</button>
+                    <button class="btn btn-action" type="submit">Confirmar Contraseña Nueva</button>
                 </div>
             </form>
         <?php else: ?>

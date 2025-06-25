@@ -1,4 +1,7 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+require '../vendor/autoload.php';
+require_once('../modelos/conexion.php');
 require_once('../modelos/usuarios.php');
 require_once('../modelos/perfiles.php');
 require_once('../modelos/personas.php');
@@ -25,6 +28,10 @@ class LoginControlador {
         $resultado = $usuario->validar_usuario();
         if($resultado->num_rows > 0){
             while($row = $resultado->fetch_assoc()){
+                if ($row['verificado_email'] == 0) {
+                    header('location: ../index.php?page=login&mensaje=Debes verificar tu correo antes de ingresar.&status=warning');
+                    return;
+                }
                 if(password_verify($_POST['password'], $row['password'])){
                     $_SESSION['username'] = $row['username'];
                     $_SESSION['idusuarios'] = $row['idusuarios'];
@@ -55,23 +62,28 @@ class LoginControlador {
         }
     }
 
-    public function registrarse(){
-
-        if(empty($_POST['username']) || empty($_POST['email']) || empty($_POST['perfiles_idperfiles']) || empty($_POST['nombre']) || empty($_POST['apellido']) || empty($_POST['fecha_nacimiento']) || empty($_POST['tipo_sexo_idtipo_sexo'])){
+    public function registrarse() {
+        if (
+            empty($_POST['username']) || empty($_POST['email']) || 
+            empty($_POST['perfiles_idperfiles']) || empty($_POST['nombre']) || 
+            empty($_POST['apellido']) || empty($_POST['fecha_nacimiento']) || 
+            empty($_POST['tipo_sexo_idtipo_sexo'])
+        ) {
             header('location: ../index.php?page=registrarse&mensaje=Todos los datos son obligatorios.&status=warning');
             return;
         }
 
-            // Validar que el usuario tenga al menos 18 años
-            $fecha_nacimiento = new DateTime($_POST['fecha_nacimiento']);
-            $hoy = new DateTime();
-            $edad = $hoy->diff($fecha_nacimiento)->y; // Calcula la edad en años
-    
-            if ($edad < 18) {
-                header('location: ../index.php?page=registrarse&mensaje=Debes ser mayor de 18 años para registrarte.&status=warning');
-                return;
-            }
-            
+        // Validar edad mínima
+        $fecha_nacimiento = new DateTime($_POST['fecha_nacimiento']);
+        $hoy = new DateTime();
+        $edad = $hoy->diff($fecha_nacimiento)->y;
+
+        if ($edad < 18) {
+            header('location: ../index.php?page=registrarse&mensaje=Debes ser mayor de 18 años para registrarte.&status=warning');
+            return;
+        }
+
+        // Crear persona
         $persona = new Persona();
         $persona->setNombre($_POST['nombre']);
         $persona->setApellido($_POST['apellido']);
@@ -80,18 +92,76 @@ class LoginControlador {
         $persona->agregar_persona();
         $personas_idpersonas = $persona->getIdpersonas();
 
-        if (!$personas_idpersonas){
+        if (!$personas_idpersonas) {
             header('location: ../index.php?page=registrarse&mensaje=Error al cargar Persona.&status=error');
             return;
-        }else{
-            $usuarios = new Usuario();
-            $usuarios->setUsername($_POST['username']);
-            $usuarios->setEmail($_POST['email']);
-            $usuarios->setPassword($_POST['username']);
-            $usuarios->setPerfiles_id($_POST['perfiles_idperfiles']);
-            $usuarios->setPersonas_idpersonas($personas_idpersonas);
-            $usuarios->guardar();
-            header('location: ../index.php?page=login&mensaje=Usuario registrado correctamente.&status=success');
+        }
+
+        // Crear usuario
+        $usuarios = new Usuario();
+        $usuarios->setUsername($_POST['username']);
+        $usuarios->setEmail($_POST['email']);
+        $usuarios->setPassword($_POST['username']); // Cambiar luego a algo más seguro
+        $usuarios->setPerfiles_id($_POST['perfiles_idperfiles']);
+        $usuarios->setPersonas_idpersonas($personas_idpersonas);
+        $usuarios->guardar();
+
+        // Obtener ID del usuario recién creado
+        $id_usuario = $usuarios->obtener_id_por_username($_POST['username']); // Método que deberías tener en Usuario.php
+
+        if (!$id_usuario) {
+            header('location: ../index.php?page=registrarse&mensaje=Error al registrar usuario.&status=error');
+            return;
+        }
+
+        // Generar token y guardarlo
+        require_once('../modelos/conexion.php');
+        $conexion = new Conexion();
+        $token = bin2hex(random_bytes(32));
+        $fechaExpiracion = date('Y-m-d H:i:s', strtotime('+1 day'));
+
+        $conexion->consultar("INSERT INTO tokens_recuperacion (token,fecha_expiracion, Usuarios_idusuarios)
+                            VALUES ('$token','$fechaExpiracion', $id_usuario)");
+
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'famartinez2611994@gmail.com';
+            $mail->Password = 'axsr vtnf hguy jwtq'; // Usar app password en producción
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
+            $mail->CharSet = 'UTF-8';
+
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
+            $mail->setFrom('famartinez2611994@gmail.com', 'CarSales - Verificación');
+            $mail->addAddress($_POST['email']);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Verifica tu correo electrónico';
+            $mail->Body = "
+                <h3>¡Bienvenido/a a CarSales!</h3>
+                <p>Para activar tu cuenta, por favor hacé clic en el siguiente enlace:</p>
+                <a href='http://localhost/2do_Cuatrimestre/PP_2/Proyecto_Septiembre_02/index.php?page=verificar_email&token=$token'>
+                    Verificar Email
+                </a>
+                <p>Este enlace expirará en 24 horas.</p>
+            ";
+
+            $mail->send();
+
+            header('location: ../index.php?page=login&mensaje=Usuario registrado correctamente. Revisa tu email para verificar tu cuenta.&status=success');
+        } catch (Exception $e) {
+            header('location: ../index.php?page=login&mensaje=Error al enviar correo de verificación.&status=error');
         }
     }
 }

@@ -74,10 +74,10 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <th>Nombre</th>
                     <th>Apellido</th>
                     <th>Email</th>
-                    <th>Username</th>
+                    <th>Nombre de Usuario</th>
                     <th>Fecha de Alta</th>
                     <th>Modificar</th>
-                    <th>Resetear Pass</th>
+                    <th>Resetear Contraseña</th>
                     <th>Eliminar</th>
                     <th>Ver</th>
                     </tr>

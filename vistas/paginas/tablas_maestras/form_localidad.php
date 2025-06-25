@@ -15,7 +15,7 @@ $localidad = new Localidades();
 $result_localidad = $localidad->traer_localidad();
 
 if(isset($_GET['idlocalidades'])){
-    $provincia_editar = $localidad->traer_localidad_id($_GET['idlocalidades']);
+    $localidad_editar = $localidad->traer_localidad_id($_GET['idlocalidades']);
 }
 
 $localidades = new Localidades();

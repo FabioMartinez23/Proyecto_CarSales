@@ -278,8 +278,8 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                     <div class="col-md-6">
                         <div class="form-floating mb-3 mt-3">
                             <input value="<?= $usuario_editar['username'] ?? '' ?>" type="text" name="username" class="form-control" id="id_username" onfocusout="validate_username(event)" placeholder="username">
-                            <label for="floatingInput">Username</label>
-                            <div class="invalid-feedback">Por favor ingrese un username.</div>
+                            <label for="floatingInput">Nombre de Usuario</label>
+                            <div class="invalid-feedback">Por favor ingrese un Nombre de Usuario.</div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -317,7 +317,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
                     <li><strong>Contacto:</strong> <span id="confirmContacto"></span></li>
                     <li><strong>Tipo de Contacto:</strong> <span id="confirmTipoContacto"></span></li>
-                    <li><strong>Username:</strong> <span id="confirmUsername"></span></li>
+                    <li><strong>Nombre de Usuario:</strong> <span id="confirmUsername"></span></li>
                     <li><strong>Email:</strong> <span id="confirmEmail"></span></li>
                 </ul>
 

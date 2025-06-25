@@ -62,7 +62,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <div class="col-md-6">
                     <div class="form-floating mb-3 mt-3">
                         <input type="text" name="username" onfocusout="validate_username(event)" class="form-control" id="username" placeholder="Escribir Username">
-                        <label for="username" class="form-label">Username</label>
+                        <label for="username" class="form-label">Nombre de Usuario</label>
                     </div>
                 </div>
                 <div class="col-md-6">
