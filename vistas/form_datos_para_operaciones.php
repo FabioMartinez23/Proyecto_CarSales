@@ -36,6 +36,9 @@ session_start();
             <a class="nav-link active" aria-current="page" href="form_datos_para_operaciones.php?page=form_tipo_pago">Tipo de Pagos</a>
             </li>
             <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="form_datos_para_operaciones.php?page=form_tipo_anulacion">Tipo de Anulaciones</a>
+            </li>
+            <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="form_datos_para_operaciones.php?page=form_tipo_puesto">Tipo de Puestos/Trabajos</a>
             </li>
         </ul>
@@ -71,6 +74,7 @@ session_start();
             if(isset($_GET['page'])){
                     if($_GET['page'] == 'form_tipo_pago'
                     || $_GET['page'] == 'form_tipo_puesto'
+                    || $_GET['page'] == 'form_tipo_anulacion'
                     ){
                         include('paginas/tablas_maestras/'.$_GET['page'].'.php');
                     }

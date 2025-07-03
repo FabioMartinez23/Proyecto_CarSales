@@ -118,6 +118,7 @@ session_start();
                     || $_GET['page'] == 'form_provincia'    
                     || $_GET['page'] == 'form_pais'
                     || $_GET['page'] == 'form_tipo_pago'
+                    || $_GET['page'] == 'form_tipo_anulacion'
                     || $_GET['page'] == 'form_tipo_puesto'    
                     || $_GET['page'] == 'form_modulo'    
                     || $_GET['page'] == 'form_perfiles'

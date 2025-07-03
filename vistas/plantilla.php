@@ -859,6 +859,8 @@ require_once('modelos/modulos.php');
                         mensaje = '¿Estás seguro de que deseas eliminar este elemento?';
                     } else if (accion === 'resetear') {
                         mensaje = '¿Estás seguro de que deseas resetear la contraseña?';
+                    } else if (accion === 'anular'){
+                        mensaje = '¿Estás seguro que deseas anular la venta?';
                     }
 
                     mostrarModal(mensaje, accion, formId);

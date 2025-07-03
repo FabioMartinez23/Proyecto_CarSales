@@ -489,6 +489,35 @@ function validate_tipo_pago(event){
     
 }
 
+// TIPO DE ANULACION
+function validate_tipo_anulacion(event){
+    console.log(event.target.value);
+    $.ajax({
+        url: "../controladores/tablas_maestras/tablas_maestras.validaciones.ajax.php",
+        type: 'post',
+        data: {
+            'descripcion': event.target.value,
+            'action': 'tipo_anulacion.ajax'
+        },
+        success: function(response){
+            console.log(response);
+            let data = JSON.parse(response);
+            if(data.data == 'error'){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'El Tipo de Anulación ya existe.',
+                    showConfirmButton: true
+                });
+                document.getElementById('idtipo_anulacion').value = '';
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            console.log(textStatus, errorThrown);
+        }
+    })
+    
+}
 
 
 
@@ -717,6 +746,20 @@ function validar_vacio_tipo_pago(){
     if(tipo_pago.value.length == 0){
         tipo_pago.classList.add('validation-error')
         id_tipo_pago_parrafo.style.display = 'block';
+        return;
+    }
+    form.submit();
+}
+
+// TIPO DE ANULACION
+function validar_vacio_tipo_anulacion(){
+    tipo_anulacion = document.getElementById('idtipo_anulacion');
+    id_tipo_anulacion_parrafo = document.getElementById('id_tipo_anulacion_parrafo');
+    form = document.getElementById('id_form_tipo_anulacion');
+
+    if(tipo_anulacion.value.length == 0){
+        tipo_anulacion.classList.add('validation-error')
+        id_tipo_anulacion_parrafo.style.display = 'block';
         return;
     }
     form.submit();

@@ -15,6 +15,7 @@ require_once('../../modelos/perfiles.php');
 require_once('../../modelos/tablas_maestras/tipo_de_puesto.php');
 require_once('../../modelos/tablas_maestras/color.php');
 require_once('../../modelos/tablas_maestras/tipo_pago.php');
+require_once('../../modelos/tablas_maestras/tipo_anulacion.php');
 require_once('../../modelos/tablas_maestras/localidad.php');
 require_once('../../modelos/tablas_maestras/barrio.php');
 require_once('../../modelos/tablas_maestras/modulo.php');
@@ -172,6 +173,18 @@ if(isset($_POST['action'])){
             $tipo_pago = new Tipo_Pagos();
             $tipo_pago->setDescripcion($_POST['descripcion']);
             $resultado = $tipo_pago->validar_tipo_pago();
+                if($resultado->num_rows > 0){
+    
+                    $form_data['data'] = 'error';
+                }else{
+    
+                    $form_data['data'] = 'success';
+                }
+                break;
+        case 'tipo_anulacion.ajax':
+            $tipo_anulacion = new Tipo_Anulaciones();
+            $tipo_anulacion->setDescripcion($_POST['descripcion']);
+            $resultado = $tipo_anulacion->validar_tipo_anulacion();
                 if($resultado->num_rows > 0){
     
                     $form_data['data'] = 'error';

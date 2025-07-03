@@ -41,6 +41,16 @@ class VenderVehiculo{
         return null;
     }
 
+    public function traer_venta_para_anular($idventas){
+        $conexion = new Conexion();
+        $query = "SELECT * FROM ventas WHERE idventas = $idventas";
+        $resultado = $conexion->consultar($query);
+        if ($resultado->num_rows > 0) {
+            return $resultado->fetch_assoc();
+        }
+        return null;
+    }
+
 
     public function buscar_ventas($buscador){
         $conexion = new Conexion();

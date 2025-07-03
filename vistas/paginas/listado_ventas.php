@@ -76,6 +76,9 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                         <td><?= $venta['nombre_pago'];?></td>
                         <td><?= date('d-m-Y', strtotime($venta['fecha_venta'])); ?></td>
                         <td>
+                            <a href="index.php?page=anular_ventas&idventa=<?= $venta['idventas']; ?>" class="text-danger me-2" title="Anular Venta">
+                                <i class="fa-solid fa-ban"></i>
+                            </a>
                             <a href="index.php?page=detalle_ventas&idventa=<?= $venta['idventas']; ?>" class="text-primary" title="Ver Más">
                                 <i class="fas fa-eye"></i>
                             </a>

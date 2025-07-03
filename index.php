@@ -26,6 +26,7 @@ require_once('modelos/tablas_maestras/tipo_contacto.php');
 require_once('modelos/tablas_maestras/tipo_domicilio.php');
 require_once('modelos/tablas_maestras/tipo_documento.php');
 require_once('modelos/tablas_maestras/tipo_pago.php');
+require_once('modelos/tablas_maestras/tipo_anulacion.php');
 require_once('modelos/documentos.php');
 require_once('modelos/tablas_maestras/pais.php');
 require_once('modelos/tablas_maestras/provincia.php');
