@@ -50,7 +50,7 @@
                                 <li><a class="dropdown-item" href="index.php?page=listado_ventas">Registrar Ventas</a></li>
                             </ul>
                         </li>
-                        <li><a class="dropdown-item" href="index.php?page=form_financiamiento">Gestión de Financiamiento</a></li>
+                        <!-- <li><a class="dropdown-item" href="index.php?page=form_financiamiento">Gestión de Financiamiento</a></li> -->
                     </ul>
                 </li>
                 <li class="nav-item dropdown">

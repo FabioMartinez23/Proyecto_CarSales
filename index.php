@@ -2,6 +2,7 @@
 
 
 require_once('modelos/usuarios.php');
+require_once('modelos/empleados.php');
 require_once('modelos/personas.php');
 require_once('modelos/contactos.php');
 require_once('modelos/domicilio.php');

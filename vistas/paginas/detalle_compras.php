@@ -45,7 +45,7 @@ if ($resultado_compra) {
 
         <div class="text-center">
             <a href="index.php?page=listado_compras" class="btn btn-dark">Volver</a>
-            <a href="reportes_pdf/detalle_compra.php?idcompra=<?=$_GET['idcompra'];?>" class="btn btn-success">Descargar en PDF</a>
+            <a href="reportes_pdf/detalle_compra.php?idcompra=<?=$_GET['idcompra'];?>" class="btn btn-success">Descargar Boleto Compra/Venta</a>
         </div>
     </div>
 
