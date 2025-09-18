@@ -84,7 +84,7 @@ if ($resultado_venta) {
                 <a href="index.php?page=listado_ventas" class="btn btn-dark">Volver</a>
 
                 <?php if (isset($_GET['idanulacion'])): ?>
-                    <a href="reportes_pdf/detalle_anulacion.php?idanulacion=<?= $_GET['idanulacion']; ?>" class="btn btn-success">Descargar Anulación en PDF</a>
+                    <a href="reportes_pdf/detalle_anulacion.php?idanulacion=<?= $_GET['idanulacion']; ?>" target="_blank" class="btn btn-success">Descargar Anulación en PDF</a>
                 <?php else: ?>
                     <button onclick="confirmarAccion(event, 'anular', 'formulario-anulacion')" type="submit" class="btn btn-danger">Anular Venta</button>
                 <?php endif; ?>

@@ -22,6 +22,13 @@ foreach($result_cant_ventas as $total_ventas){
     $total_ventas_count = $total_ventas['total'];
 }
 
+$cantidad_anuladas = new VenderVehiculo();
+$result_cant_anuladas = $cantidad_anuladas->cantidad_ventas_anuladas();
+foreach($result_cant_anuladas as $total_anuladas){
+    $total_anuladas_count = $total_anuladas['total'];
+}
+
+
 // Verifica si la sesión contiene las variables necesarias
 if (!isset($_SESSION['username']) || !isset($_SESSION['idusuarios']) || !isset($_SESSION['descripcion'])) {
     header('location: ../index.php?page=login&mensaje=Debes iniciar sesión primero.&status=warning');
@@ -58,13 +65,13 @@ $fecha_actual = utf8_encode(strftime('%A, %d de %B de %Y')); // utf8_encode codi
     </h1>
 </header>
 
-<div class="hacer_padding">
+<div class="hacer_padding" >
     <?php 
 if($_SESSION['descripcion'] == 'Administrador' || $_SESSION['descripcion'] == 'Empleado'){
     echo '<main class="my-4">
         <!-- Resumen principal -->
         <section class="stats d-flex justify-content-between">
-            <div class="card text-center p-3" onclic=\"windows.location.href="index.php?page=listado_vehiculos"\">
+            <div class="card text-center p-3" onclick="window.location.href=\'index.php?page=listado_vehiculos\'">
                 <h2>'.$total_vehiculos_count.'</h2>
                 <p>Vehículos Disponibles</p>
             </div>
@@ -73,8 +80,8 @@ if($_SESSION['descripcion'] == 'Administrador' || $_SESSION['descripcion'] == 'E
                 <p>Ventas Concretadas</p>
             </div>
             <div class="card text-center p-3">
-                <h2>87.5%</h2>
-                <p>Reportes y Estadísticas</p>
+                <h2>'.$total_anuladas_count.'</h2>
+                <p>Ventas Anuladas</p>
             </div>
             <div class="card text-center p-3">
                 <h2>'.$total_usuarios_count.'</h2>
