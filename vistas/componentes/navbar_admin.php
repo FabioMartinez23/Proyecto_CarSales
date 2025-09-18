@@ -115,7 +115,11 @@
                             <li><a class="dropdown-item" href="#">Notificaciones</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <?php while ($usuario = $resultado->fetch_assoc()): ?>
-                                <li><a class="dropdown-item" href="#">Nuevo usuario registrado - Username: <?php echo htmlspecialchars($usuario['username']); ?></a></li>
+                                <li>
+                                <a class="dropdown-item" href="index.php?page=ver_usuario&accion=ver_cliente&usuario=<?php echo $usuario['idusuarios']; ?>">
+                                    Nuevo usuario registrado - Username: <?php echo htmlspecialchars($usuario['username']); ?>
+                                </a>
+                                </li>
                             <?php endwhile; ?>
                         <?php else: ?>
                             <li><a class="dropdown-item" href="#">No hay notificaciones</a></li>

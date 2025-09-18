@@ -449,7 +449,14 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
                 <button class="btn btn-success btn-sm" type="submit" onclick="buscador()">Buscar</button>
             </div>
         </div>
-
+        <div class="d-flex mb-2">
+            <form method="GET" action="controladores/vehiculos/exportar_excel.php" class="d-inline">
+                <input type="hidden" name="buscador" value="<?= $_GET['buscador'] ?? '' ?>">
+                <button type="submit" class="btn btn-success btn-sm">
+                    Exportar a Excel
+                </button>
+            </form>
+        </div>
         <!-- Tabla centrada -->
         <div class="table-responsive">
             <table class="table table-hover text-center align-middle">

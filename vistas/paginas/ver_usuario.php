@@ -52,6 +52,6 @@ if ($resultado_usuario) {
 
 <?php 
 } else {
-    echo "<div class='alert alert-danger'>No se encontró ningun usuario.</div>";
+    echo "<div class='alert alert-danger'>No se encontró ningun usuario o no completo su perfil.</div>";
 }
 ?>
