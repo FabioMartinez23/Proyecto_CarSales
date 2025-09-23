@@ -2,6 +2,8 @@
 ini_set('display_errors', 0);
 session_start();
 
+require_once 'session_check.php';
+
 if (isset($_SESSION['idusuarios']) && isset($_SESSION['Personas_idPersonas'])){
     $idusuarios = $_SESSION['idusuarios'];
     $personas_idpersonas = $_SESSION['Personas_idPersonas'];

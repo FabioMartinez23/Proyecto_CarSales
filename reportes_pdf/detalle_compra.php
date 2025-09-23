@@ -57,13 +57,13 @@ if ($resultado_compra) {
   <h1>BOLETO DE COMPRA VENTA AUTOMOTOR</h1>
 
   <p>
-    Conste en el presente que entre el Señor: <?= $resultado_empleado['nombre'].' '.$resultado_empleado['apellido']; ?> como <strong>VENDEDOR</strong> 
-    y el Señor: <?= $resultado_compra['nombre'].' '.$resultado_compra['apellido']; ?> como <strong>COMPRADOR</strong> 
+    Conste en el presente que entre el Señor: <?= $resultado_compra['nombre'].' '.$resultado_compra['apellido']; ?> como <strong>VENDEDOR</strong> 
+    y el Señor: <?= $resultado_empleado['nombre'].' '.$resultado_empleado['apellido']; ?> como <strong>COMPRADOR</strong> 
     se conviene lo siguiente:
   </p>
 
   <p>
-    El Señor: <?= $resultado_empleado['nombre'].' '.$resultado_empleado['apellido']; ?> vende un: 
+    El Señor: <?= $resultado_compra['nombre'].' '.$resultado_compra['apellido']; ?> vende un: 
     <strong>VEHÍCULO AUTOMOTOR</strong> en las condiciones vistas.
   </p>
 
@@ -143,24 +143,24 @@ if ($resultado_compra) {
         <td><strong>VENDEDOR</strong></td>
       </tr>
       <tr>
-        <td>Nombre y Apellido: <?= $resultado_compra['nombre'].' '.$resultado_compra['apellido']; ?></td>
         <td>Nombre y Apellido: <?= $resultado_empleado['nombre'].' '.$resultado_empleado['apellido']; ?></td>
+        <td>Nombre y Apellido: <?= $resultado_compra['nombre'].' '.$resultado_compra['apellido']; ?></td>
       </tr>
       <tr>
-        <td>DNI: <?= $resultado_compra['valor_documento']; ?></td>
         <td>DNI: <?= $resultado_empleado['valor_documento']; ?></td>
+        <td>DNI: <?= $resultado_compra['valor_documento']; ?></td>
       </tr>
       <tr>
-        <td>Domicilio: <?= $resultado_compra['nombre_domicilio'].' - Barrio '.$resultado_compra['nombre_barrio']; ?></td>
         <td>Domicilio: <?= $resultado_empleado['nombre_domicilio']; ?></td>
+        <td>Domicilio: <?= $resultado_compra['nombre_domicilio'].' - Barrio '.$resultado_compra['nombre_barrio']; ?></td>
       </tr>
       <tr>
-        <td>Localidad: <?= $resultado_compra['nombre_localidad'].', '.$resultado_compra['nombre_provincia']; ?></td>
         <td>Localidad: <?= $resultado_empleado['nombre_localidad'].', '.$resultado_empleado['nombre_provincia']; ?></td>
+        <td>Localidad: <?= $resultado_compra['nombre_localidad'].', '.$resultado_compra['nombre_provincia']; ?></td>
       </tr>
       <tr>
-        <td>Teléfono: <?= $resultado_compra['valor_contacto']; ?></td>
         <td>Teléfono: <?= $resultado_empleado['valor_contacto']; ?></td>
+        <td>Teléfono: <?= $resultado_compra['valor_contacto']; ?></td>
       </tr>
     </table>
 

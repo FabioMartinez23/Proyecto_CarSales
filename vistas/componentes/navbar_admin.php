@@ -102,30 +102,34 @@
                 }
                 ?>
 
-                <!-- Notificación con ícono de campana sin flecha -->
+                <!-- Notificación con ícono de campana -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
                         <i class="fa-regular fa-bell"></i>
-                        <?php if ($new_notifications > 0): ?>
-                            <span class="badge bg-danger" id="label-count"><?php echo $new_notifications; ?></span>
-                        <?php endif; ?>
+                        <span class="badge bg-danger" id="label-count"><?php echo $new_notifications; ?></span>
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="notificationDropdown">
-                        <?php if ($total > 0): ?>
-                            <li><a class="dropdown-item" href="#">Notificaciones</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <?php while ($usuario = $resultado->fetch_assoc()): ?>
-                                <li>
-                                <a class="dropdown-item" href="index.php?page=ver_usuario&accion=ver_cliente&usuario=<?php echo $usuario['idusuarios']; ?>">
-                                    Nuevo usuario registrado - Username: <?php echo htmlspecialchars($usuario['username']); ?>
-                                </a>
-                                </li>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <li><a class="dropdown-item" href="#">No hay notificaciones</a></li>
-                        <?php endif; ?>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown"
+                    style="width: 350px; max-height: 400px; overflow-y: auto;">
+                        <li class="dropdown-item text-center">Notificaciones</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <div id="lista-notificaciones">
+                            <?php if ($total > 0): ?>
+                                <?php while ($usuario = $resultado->fetch_assoc()): ?>
+                                    <li class="dropdown-item">
+                                        <a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=<?php echo $usuario['idusuarios']; ?>">
+                                            Nuevo usuario registrado - Username: <?php echo htmlspecialchars($usuario['username']); ?>
+                                        </a>
+                                    </li>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <li class="dropdown-item">No hay notificaciones</li>
+                            <?php endif; ?>
+                        </div>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-center" href="#">Ver todas</a></li>
                     </ul>
                 </li>
+
 
 
 
@@ -155,6 +159,42 @@
             });
         });
     });
+</script>
+
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script>
+Pusher.logToConsole = true;
+
+var pusher = new Pusher('c28c5dc6a68db65e2590', {
+    cluster: 'us2'
+});
+
+var channel = pusher.subscribe('notificaciones');
+
+let badge = document.getElementById('label-count');
+let lista = document.getElementById('lista-notificaciones');
+let contador = parseInt(badge.textContent) || 0;
+
+channel.bind('nuevo-evento', function(data) {
+    contador++;
+    badge.textContent = contador;
+
+    let li = document.createElement('li');
+    li.classList.add('dropdown-item', 'p-2', 'text-wrap');
+    li.innerHTML = `
+        <a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=${data.idusuario}">
+            <strong>[${data.tipo}]</strong> ${data.mensaje}<br>
+            <small class="text-muted">${data.fecha}</small>
+        </a>
+    `;
+    lista.prepend(li);
+});
+
+// Resetear contador al abrir el dropdown
+document.getElementById('notificationDropdown').addEventListener('click', function() {
+    contador = 0;
+    badge.textContent = '0';
+});
 </script>
 
 

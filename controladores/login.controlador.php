@@ -1,6 +1,7 @@
 <?php
 use PHPMailer\PHPMailer\PHPMailer;
 require '../vendor/autoload.php';
+use Pusher\Pusher;
 require_once('../modelos/conexion.php');
 require_once('../modelos/usuarios.php');
 require_once('../modelos/perfiles.php');
@@ -108,6 +109,29 @@ class LoginControlador {
 
         // Obtener ID del usuario recién creado
         $id_usuario = $usuarios->obtener_id_por_username($_POST['username']); // Método que deberías tener en Usuario.php
+
+        // -------------------- Pusher --------------------
+        $options = [
+            'cluster' => 'us2',
+            'useTLS' => true
+        ];
+
+        $pusher = new Pusher(
+            'c28c5dc6a68db65e2590',   // key
+            '90c5eb55b40bc7f10daa',   // secret
+            '2054403',                 // app_id
+            $options
+        );
+
+        $data = [
+            'tipo' => 'alta_cliente',
+            'mensaje' => 'Nuevo usuario: ' . $_POST['username'],
+            'idusuario' => $id_usuario,
+            'fecha' => date('Y-m-d H:i:s')
+        ];
+
+        $pusher->trigger('notificaciones', 'nuevo-evento', $data);
+        // --------------------------------------------------
 
         if (!$id_usuario) {
             header('location: ../index.php?page=registrarse&mensaje=Error al registrar usuario.&status=error');

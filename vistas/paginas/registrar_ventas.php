@@ -4,6 +4,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once 'session_check.php';
+
+if (isset($_SESSION['idusuarios'])){
+    $idusuarios = $_SESSION['idusuarios'];
+} else {
+    header('Location: vistas/paginas/errores/404.php'); // Redirigir a una página de error
+    exit();
+}
+
 // PARTE PERSONAS
 
 $tipo_sexo = new Tipo_Sexos();
@@ -267,6 +276,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
     </div>
     <form id="ventaForm" action="controladores/ventas/registrar_venta.controlador.php" method="POST">
         <input type="hidden" id="venta" name="action" value="registrar_venta">
+        <input type="hidden" name="idempleado" value="<?php echo $idusuarios?>">
         <div class="accordion" id="accordionExample">
             <div class="accordion-item">
                 <h2 class="accordion-header">

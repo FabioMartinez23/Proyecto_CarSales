@@ -48,6 +48,7 @@ if (isset($_POST['action'])) {
         $registrar_venta->setTipo_pago_idtipo_pago($_POST['tipo_pago']);
         $registrar_venta->setVehiculo_idvehiculo($_POST['vehiculos_idvehiculos']);
         $registrar_venta->setRegistro_clientes_idregistro_clientes($cliente_id);
+        $registrar_venta->setEmpleados_idempleados($_POST['idempleado']);
 
         if (!$idventa = $registrar_venta->agregar_venta()) {
             header('location: ../../index.php?page=registrar_ventas&mensaje=Error al registrar la venta.&status=error');

@@ -4,6 +4,8 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once 'session_check.php'; 
+
 $cantidad_vehiculos = new Vehiculos();
 $result_cant_vehiculos = $cantidad_vehiculos->traer_cantidad_vehiculo();
 foreach($result_cant_vehiculos as $total_vehiculos){

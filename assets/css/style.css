@@ -48,6 +48,18 @@ h2, h3 {
     color: #E8E8E8 !important;
 }
 
+/* Links dentro del dropdown */
+#lista-notificaciones li a {
+    color: #fff !important;        /* Blanco */
+    text-decoration: none;          /* Sin subrayado */
+    display: block;                 /* Ocupa todo el ancho del li */
+    white-space: normal;            /* Permite romper líneas */
+    word-wrap: break-word;
+}
+
+#lista-notificaciones li a:hover {
+    background-color: #495057;      /* Fondo oscuro al pasar el mouse */
+}
 
 .dropdown-item:hover {
     background-color: #52658F !important;
