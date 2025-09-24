@@ -82,8 +82,6 @@
                     <a class="nav-link" href="index.php?page=form_mis_datos">Mis Datos</a>
                 </li>
                 <?php
-                session_start();
-
                 // Convertir la fecha actual al formato Y-m-d
                 $fecha_actual = date('Y-m-d');
 
@@ -108,8 +106,7 @@
                         <i class="fa-regular fa-bell"></i>
                         <span class="badge bg-danger" id="label-count"><?php echo $new_notifications; ?></span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown"
-                    style="width: 350px; max-height: 400px; overflow-y: auto;">
+                    <ul class="dropdown-menu" aria-labelledby="notificationDropdown" style="width: 300px;">
                         <li class="dropdown-item text-center">Notificaciones</li>
                         <li><hr class="dropdown-divider"></li>
                         <div id="lista-notificaciones">
@@ -117,7 +114,7 @@
                                 <?php while ($usuario = $resultado->fetch_assoc()): ?>
                                     <li class="dropdown-item">
                                         <a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=<?php echo $usuario['idusuarios']; ?>">
-                                            Nuevo usuario registrado - Username: <?php echo htmlspecialchars($usuario['username']); ?>
+                                            Nuevo usuario - Username: <?php echo htmlspecialchars($usuario['username']); ?>
                                         </a>
                                     </li>
                                 <?php endwhile; ?>
@@ -161,7 +158,7 @@
     });
 </script>
 
-<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script src="assets/js/pusher.min.js"></script>
 <script>
 Pusher.logToConsole = true;
 
@@ -176,17 +173,16 @@ let lista = document.getElementById('lista-notificaciones');
 let contador = parseInt(badge.textContent) || 0;
 
 channel.bind('nuevo-evento', function(data) {
+    console.log("Notificación recibida:", data);
+
+    // Actualizar badge
     contador++;
     badge.textContent = contador;
 
+    // Crear elemento para el dropdown
     let li = document.createElement('li');
-    li.classList.add('dropdown-item', 'p-2', 'text-wrap');
-    li.innerHTML = `
-        <a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=${data.idusuario}">
-            <strong>[${data.tipo}]</strong> ${data.mensaje}<br>
-            <small class="text-muted">${data.fecha}</small>
-        </a>
-    `;
+    li.classList.add('dropdown-item');
+    li.innerHTML = `<a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=${data.idusuario}">[${data.tipo}] ${data.mensaje}<small>${data.fecha}</small></a>`;
     lista.prepend(li);
 });
 

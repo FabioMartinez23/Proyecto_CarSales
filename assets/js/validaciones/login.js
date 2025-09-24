@@ -1,23 +1,38 @@
+function validateLogin() {
+    const nombre_usuario = document.getElementById('username');
+    const password = document.getElementById('password');
+    const form = document.getElementById('id_form');
 
-function validate(){
+    let valido = true;
 
-    nombre_usuario = document.getElementById('username');
-    password = document.getElementById('password');
-    form = document.getElementById('id_form');
+    // Resetear clases previas
+    nombre_usuario.classList.remove('is-invalid');
+    password.classList.remove('is-invalid');
 
-    id_usuario_parrafo = document.getElementById('id_usuario_parrafo');
-    id_password_parrafo = document.getElementById('id_password_parrafo');
-
-    if(nombre_usuario.value.length == 0){
-        nombre_usuario.classList.add('validation-error')
-        id_usuario_parrafo.style.display = 'block';
-        return;
+    // Validar usuario
+    if (nombre_usuario.value.trim() === "") {
+        mostrarError(nombre_usuario);
+        valido = false;
     }
-    if(password.value.length == 0){
-        password.classList.add('validation-error')
-        id_password_parrafo.style.display = 'block';
-        return;
+
+    // Validar password
+    if (password.value.trim() === "") {
+        mostrarError(password);
+        valido = false;
     }
-    form.submit();
+
+    // Si todo está correcto, enviar formulario
+    if (valido) {
+        form.submit();
+    }
 }
 
+/**
+ * Marca un input como inválido y lo quita en 3 segundos
+ */
+function mostrarError(input) {
+    input.classList.add('is-invalid');
+    setTimeout(() => {
+        input.classList.remove('is-invalid');
+    }, 2000); // 3 segundos
+}

@@ -29,7 +29,7 @@ if (isset($_GET['token'])) {
 <div class="row hacer_padding">
     <div class="col login">
         <?php if ($mostrarFormulario): ?>
-            <h1>Recuperar Contraseña</h1>
+            <h1 class="text-center">Recuperar Contraseña</h1>
             <form id="resetPasswordForm" method="POST" action="controladores/usuarios/usuarios.controlador.php">
                 <input type="hidden" name="action" value="recuperar_password">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">

@@ -8,14 +8,18 @@
         <div class="form-floating mb-3 mt-3">
             <input type="text" class="form-control" id="username" placeholder="Ingresar Nombre de Usuario" name="username">
             <label for="username">Nombre de Usuario</label>
-            <p id="id_usuario_parrafo" style="color:red; display:none;">Nombre de Usuario Requerido</p>
+            <div id="id_usuario_parrafo" class="invalid-feedback">
+                Nombre de Usuario Requerido
+            </div>
         </div>
 
         <!-- Contraseña con botón ojo -->
         <div class="form-floating mb-3 position-relative">
             <input type="password" class="form-control" id="password" placeholder="Ingresar Contraseña" name="password">
             <label for="password">Contraseña</label>
-            <p id="id_password_parrafo" style="color:red; display:none;">Contraseña Requerida</p>
+            <div id="id_password_parrafo" class="invalid-feedback">
+                Contraseña Requerida
+            </div>
 
             <!-- Icono clickeable -->
             <span class="position-absolute top-50 end-0 translate-middle-y me-2 toggle-password" style="cursor:pointer;">
@@ -35,7 +39,7 @@
 
         <!-- Botones -->
         <div class="d-flex justify-content-center">
-            <button onclick="validate()" class="btn me-4 btn-action" type="button">Ingresar</button>
+            <button onclick="validateLogin()" class="btn me-4 btn-action" type="button">Ingresar</button>
             <a href="index.php?page=olvidar_contraseña">¿Olvidaste tu contraseña?</a>
         </div>
     </form>

@@ -67,7 +67,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3 mt-3">
-                        <input type="email" class="form-control" id="email" name="email" placeholder="ejemplo@correo.com">
+                        <input type="email" onfocusout="validate_email(event)" class="form-control" id="idemail" name="email" placeholder="ejemplo@correo.com">
                         <label for="email" class="form-label">Correo Electrónico</label>
                         <div class="invalid-feedback">Por favor, ingrese un correo válido.</div>
                     </div>
@@ -94,9 +94,9 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
 <script>
 function validarEmail() {
-    const emailInput = document.getElementById('email');
+    const emailInput = document.getElementById('idemail');
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|com\.ar)$/;
-
+    
     // Verificar si el correo cumple el patrón
     if (!emailPattern.test(emailInput.value)) {
         emailInput.classList.add('is-invalid');  // Añadir borde rojo

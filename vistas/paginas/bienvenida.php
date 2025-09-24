@@ -49,22 +49,20 @@ $fecha_actual = utf8_encode(strftime('%A, %d de %B de %Y')); // utf8_encode codi
 
 ?>
 <header class="dashboard-header">
-    <h1>
-        <?php 
-            $usuario = new Usuario();
-            $idusuario = $_SESSION['idusuarios'];
-            $resultado = $usuario->traer_usuarios_y_personas($idusuario);
+    <?php 
+        $usuario = new Usuario();
+        $idusuario = $_SESSION['idusuarios'];
+        $resultado = $usuario->traer_usuarios_y_personas($idusuario);
 
-            if (!empty($resultado) && isset($_SESSION['username'])) {
-                foreach($resultado as $datos){
-                    echo '<h1>¡Bienvenido, ' . $datos['nombre'] . ' ' . $datos['apellido'].'!</h1>';
-                    echo '<p>Hoy es: <span id="currentDate">' . ucfirst($fecha_actual) . '</span></p>';
-                }
-            } else {
-                echo 'Error';
+        if (!empty($resultado) && isset($_SESSION['username'])) {
+            foreach($resultado as $datos){
+                echo '<h1>¡Bienvenido, ' . $datos['nombre'] . ' ' . $datos['apellido'].'!</h1>';
+                echo '<p>Hoy es: <span id="currentDate">' . ucfirst($fecha_actual) . '</span></p>';
             }
-        ?>
-    </h1>
+        } else {
+            echo 'Error';
+        }
+    ?>
 </header>
 
 <div class="hacer_padding" >

@@ -1,7 +1,6 @@
 
 
 body{
-    background-image: url(assets/img/principal_1.jpg);
     background-color: #E8E8E8;
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
@@ -20,6 +19,10 @@ h2, h3 {
     font-size: 20px; /* Ajustar según la jerarquía */
     font-weight: 500;
     color: #444;
+}
+
+.dashboard-header h1 {
+    color: #E8E8E8;
 }
 
 .navbar {
@@ -57,10 +60,6 @@ h2, h3 {
     word-wrap: break-word;
 }
 
-#lista-notificaciones li a:hover {
-    background-color: #495057;      /* Fondo oscuro al pasar el mouse */
-}
-
 .dropdown-item:hover {
     background-color: #52658F !important;
     color: #E8E8E8 !important;
@@ -78,31 +77,269 @@ h2, h3 {
 }
 
 .container{
+    display: block; /* o flex/inline-block dependiendo del diseño */
+    width: 100%; /* o una anchura específica */
+    /*min-height: 100vh; Si quieres que siempre ocupe al menos la altura de la ventana */
+    box-sizing: border-box;
     background-color: #DBD7D2;
     color: #000000;
     border-radius: 10px;
     margin: 20px auto;
-    /*box-shadow: 0.5px 0.5px 5px black;*/
+    padding: 0;
+    height: auto;
+    box-shadow: 2px 2px 10px black;
+}
+
+/* Encabezado */
+
+#encabezado {
+    height: 400px;
+    background: linear-gradient(to top right, #ffffff, #52658F);
+    color: #000;
+}
+
+#encabezado div {
+    align-items: center;
+    margin: auto;
+}
+
+#encabezado h1 {
+    padding-top: 20px;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#encabezado p {
+    font-size: 1.2rem;
+}
+
+#encabezado a {
+    margin-bottom: 20px;
+}
+
+/* Catálogo */
+#catalogo div {
+    align-items: center;
+    margin: auto;
+}
+
+#catalogo h2 {
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.catalog-item {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    animation-delay: 0s;
+}
+
+.catalog-item.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 
-.login{
+/* Animación opcional (puedes usar transition o @keyframes) */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Testimonios */
+#testimonios div {
+    height: 400px;
+    align-items: center;
+    margin: auto;
+}
+#testimonios blockquote {
+    font-style: italic;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-left: 5px solid #007bff;
+}
+
+/* Header Styles */
+.dashboard-header {
+    background-color: #003366;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 32px;
+}
+
+.dashboard-header p {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+/* Stats Section - contenedor de la cartas*/
+.stats {
+    display: flex;
+    gap: 20px;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.card {
+    background: linear-gradient(to top right, #ffffff, #52658F);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    max-width: 300px;
+    cursor: pointer;
+}
+
+.card:hover{
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+.card h2 {
+    color: #003366;
+    margin: 0;
+    font-size: 2rem;
+}
+
+.card p {
+    color: #4d4d4d;
+    margin-top: 10px;
+    font-size: 1rem;
+}
+
+.card-2 {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 2px 2px 10px black;
+    flex: 1;
+    max-width: 400px;
+}
+
+.card-img-top {
+    height: 173px;
+    width: 258px;
+}
+
+/* Charts Section */
+.charts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.charts canvas {
+    max-width: 100%;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+/* Quick Actions Section */
+.quick-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.quick-actions .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.quick-actions .btn-primary {
+    background-color: #333A56;
+    color: white;
+    border: none;
+}
+
+.quick-actions .btn-primary:hover {
+    background-color: #52658F;
+    color: #fafbfc;
+    box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* LOGIN */
+.login {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding-bottom: 40px;
-    padding-top: 10px;
+    border-radius: 10px;
+    padding: 10px 20px; /* Mantén un espacio alrededor, si es necesario */
+    margin: 20px auto; /* Centra horizontal y verticalmente */
+    max-width: 400px;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 10px black;
 }
 
 .hacer_padding{
     padding: 20px;
 }
 
+/* BOTONES */
+
+.btn-action {
+    background-color: #333A56; /* azul oscuro */
+    color: #E8E8E8;
+    border: none;
+}
+
+.btn-action:hover {
+    box-shadow: 2px 2px 10px black;
+    background-color: #52658F;
+    color: #E8E8E8;
+}
+
 .btn:hover{
     box-shadow: 2px 2px 10px black;
 }
 
+.pagination .page-link {
+    color: #fff;
+    background-color: #333A56;
+    border: 1px solid #333A56;
+}
+
+.pagination .page-link:hover {
+    color: #ffffff;
+    background-color: #52658F;
+    border-color: #52658F;
+}
+
+.pagination .page-item.active .page-link {
+    color: #ffffff;
+    background-color: #52658F;
+    border-color: #52658F;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #888888;
+    background-color: #f0f0f0;
+    border-color: #dddddd;
+}
+
+/* MODAL E IMAGENES */
 .modal{
     color: #000;
 }
@@ -128,41 +365,28 @@ max-width: 100%;
     border-color: #dc3545 !important;
 }
 
-
-
-/* RESPONSIVE */
-
-@media (max-width: 1180px){
-    .navbar ul li:hover{
-    background-color: #52658F;
-    transition: all ease 0.5s;
-    border-radius: 5px;
-}
-}
-
 /* PROBLEMA CON EL SELECT2 EN LISTADO MODULOS */
 .select2-selection__rendered {
-    color: #000 !important; /* Cambia a negro el texto seleccionado */
+    color: #000 !important; 
 }
 
 .select2-container--default .select2-selection--single {
-    background-color: #fff; /* Fondo blanco */
-    color: #000; /* Texto negro */
+    background-color: #fff;
+    color: #000;
     border: 1px solid #ced4da;
     border-radius: 4px;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: #000; /* Asegura que el texto se vea */
+    color: #000;
 }
 
 .select2-container--default .select2-results__option--highlighted {
-    background-color: #52658F; /* Fondo resaltado para opciones */
-    color: #fff; /* Texto blanco para opciones resaltadas */
+    background-color: #52658F;
+    color: #fff;
 }
 
 /* DASHBOARD */
-
 .main-content {
 margin-top: 80px;
 padding: 20px;
@@ -190,13 +414,10 @@ padding: 20px;
     cursor: pointer;
 }
 
-
 .tarjeta i {
     font-size: 4rem;
     opacity: 0.2;
 }
-
-
 
 .tarjeta:nth-child(1):hover {
     box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.4);
@@ -238,15 +459,17 @@ div.contenido-tarjeta p{
     font-weight: bold;
 }
 
+/* TABLAS DE CONTENIDOS */
 .table{
     border: 1px solid black;
 }
 
 .table th{
     background-color: #52658F;
-    color: white;
+    color: black;
 }
 
+/* INPUTS SELECT Y LABEL */
 .form-control {
     box-shadow: 0.5px 0.5px 5px black;
 }
@@ -255,14 +478,24 @@ div.contenido-tarjeta p{
     box-shadow: 0.5px 0.5px 5px black;
 }
 
+.form-label-list {
+    font-size: 16px;
+    font-weight: bold;
+    border-bottom: 2px solid #000;
+}
+
+
+/* CARTAS DE REPORTES */
 .card{
-    box-shadow: 0.5px 0.5px 5px black;
+    box-shadow: 0.5px 0.5px black;
 }
 
 .card-report {
     box-shadow: 0.5px -2px 5px black; /* Sombra solo en la parte superior y los costados */
 }
 
+
+/* GRAFICOS */
 .gf-sexo{
     box-shadow: 0.5px 0.5px 5px black;
 }
@@ -271,33 +504,49 @@ div.contenido-tarjeta p{
     box-shadow: 0.5px 0.5px 5px black;
 }
 
+
 .hidden {
     display: none;
 }
 
+/* PIE DE PAGINA O FOOTER */
 .footer_principal {
     background-color: #333A56;
+    color: #ced4da;
+    width: auto;
 }
 
-/* Estilos personalizados para un campo de entrada completamente transparente */
+.footer_principal a {
+    text-decoration: none;
+}
+
+.footer_principal a:hover {
+    background-color: #52658F;
+    padding: 5px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+/* MODIFICACION DE INPUT PARA MIS DATOS  */
 .form-control-no-edit {
-    background-color: transparent; /* Sin fondo */
-    color: #000000; /* Color del texto */
-    border: none; /* Sin borde */
-    outline: none; /* Sin contorno cuando se selecciona */
-    box-shadow: none; /* Sin sombra alrededor */
-    caret-color: #f0f0f0; /* Color del cursor */
+    background-color: transparent;
+    color: #000000;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    caret-color: #f0f0f0;
     cursor: default;
 }
 
 /* Para el estado de enfoque (click) - sin borde ni fondo */
 .form-control-no-edit:focus {
-    background-color: transparent; /* Sin fondo al hacer clic */
-    outline: none; /* Sin contorno al hacer clic */
-    box-shadow: none; /* Sin sombra en el borde al hacer clic */
+    background-color: transparent;
+    outline: none;
+    box-shadow: none;
 }
 
 
+/* MODIFICACIONES DE IMAGENES Y DOCUMENTOS EN EL MODAL DE CARGAR */
 .image-item, .document-item {
     display: inline-block;
     width: 150px;
@@ -312,15 +561,63 @@ div.contenido-tarjeta p{
     object-fit: cover;
 }
 
+
 .btn-delete {
     color: red;
     text-decoration: none;
     font-size: 0.9em;
 }
 
+/* BREAD CRUMB */
+.breadcrumb-glass {
+    display: flex;
+    list-style: none;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    color: #333;
+    width: auto;
+}
+
+.breadcrumb-glass .breadcrumb-item a {
+    text-decoration: none;
+    color: #333A56;
+    font-weight: bold;
+}
+
+.breadcrumb-glass .breadcrumb-item.active {
+    color: #333;
+}
+
+.breadcrumb-glass .breadcrumb-item::after {
+    content: "▶";
+    margin: 0 8px;
+    color: #333A56;
+}
+
+.breadcrumb-glass .breadcrumb-item:last-child::after {
+    content: "";
+}
+
 /* FORMULARIOS DE COMPRA Y VENTA */ 
 
+.accordion {
+    box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.4);
+}
+
 #collapseOne {
+    background-color: #DBD7D2;
+}
+
+#collapseTwo {
+    background-color: #DBD7D2;
+}
+
+#collapseThree {
     background-color: #DBD7D2;
 }
 
@@ -367,3 +664,12 @@ div.contenido-tarjeta p{
     background-color: #e2e2e2; /* Cambia el color de fondo al pasar el mouse
 }*/
 
+/* RESPONSIVE */
+
+@media (max-width: 1180px){
+    .navbar ul li:hover{
+    background-color: #52658F;
+    transition: all ease 0.5s;
+    border-radius: 5px;
+}
+}
