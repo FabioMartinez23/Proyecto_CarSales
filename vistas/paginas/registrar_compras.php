@@ -4,6 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+if (isset($_SESSION['idusuarios'])){
+    $idusuarios = $_SESSION['idusuarios'];
+}
+
 // PARTE PERSONAS
 
 $tipo_sexo = new Tipo_Sexos();
@@ -240,7 +244,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
     </div>
     <form id="CompraForm" action="controladores/compras/registrar_compra.controlador.php" method="POST">
         <input type="hidden" id="compra" name="action" value="registrar_compra">
-
+        <input type="hidden" name="idempleado" value="<?php echo $idusuarios?>">
 
         <!-- Inputs ocultos para almacenar datos del modal -->
         <input type="hidden" id="id_personas" name="id_personas">

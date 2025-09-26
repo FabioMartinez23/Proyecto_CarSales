@@ -50,10 +50,27 @@ class Fichas_Tenicas{
     }
     
 
-    public function actualizar_ficha_tecnica(){
+    public function actualizar_ficha_tecnica() {
+        $query = "UPDATE ficha_tecnica SET 
+                    carroceria_idcarroceria = '$this->carroceria_idcarroceria',
+                    neumaticos_idneumaticos = '$this->neumaticos_idneumaticos',
+                    cristales_idcristales = '$this->cristales_idcristales',
+                    vencimiento_rto = '$this->vencimiento_RTO',
+                    vencimiento_bateria = '$this->vencimiento_bateria',
+                    vencimiento_service = '$this->vencimiento_service',
+                    form_08 = '$this->form_08',
+                    form_12 = '$this->form_12',
+                    titulo_vehiculo = '$this->titulo_vehiculo',
+                    cedula_vehiculo = '$this->cedula_vehiculo',
+                    seguro = '$this->seguro',
+                    municipalidad = '$this->municipalidad',
+                    informe_dominio = '$this->informe_dominio',
+                    form_13i = '$this->form_13i',
+                    prenda = '$this->prenda'
+                WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'";
+        
         $conexion = new Conexion();
-        $query = "UPDATE ficha_tecnica SET, vencimiento_bateria = '$this->vencimiento_bateria', vencimiento_service = '$this->vencimiento_service', vencimiento_RTO = '$this->vencimiento_RTO' WHERE idvehiculos = '$this->idficha_tecnica'";
-        return $conexion->actualizar($query);
+        return $conexion->consultar($query);
     }
 
     public function traer_fichas_tecnicas(){
@@ -73,7 +90,12 @@ class Fichas_Tenicas{
         return null; 
     }
 
-
+    public function buscar_por_vehiculo($vehiculo_id) {
+        $conexion = new Conexion();
+        $query = "SELECT * FROM ficha_tecnica WHERE vehiculos_idvehiculos = $vehiculo_id LIMIT 1";
+        $resultado = $conexion->consultar($query);
+        return $resultado->num_rows > 0;
+    }
 
     /**
      * Get the value of idficha_tecnica

@@ -4,13 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'session_check.php';
-
 if (isset($_SESSION['idusuarios'])){
     $idusuarios = $_SESSION['idusuarios'];
-} else {
-    header('Location: vistas/paginas/errores/404.php'); // Redirigir a una página de error
-    exit();
 }
 
 // PARTE PERSONAS
@@ -69,8 +64,6 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
 
 ?>
-
-
 
 
 <!-- Modal Cliente -->
@@ -583,16 +576,9 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                 <a type="button" class="btn btn-secondary me-2" href="index.php?page=listado_ventas">Volver a la Lista de Ventas</a>
                 <button type="submit" class="btn btn-action">Registrar Venta</button>
             </div>
+        </div>    
     </form>
 </div>
-
-<!-- Jquery -->
-<script src="assets/js/jquery-3.7.1.js"></script>
-<!-- Latest compiled JavaScript -->
-<script src="assets/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/select2.min.js"></script>
-<script src="assets/js/datatables.min.js"></script>
-<script src="assets/js/sweetalert2.all.min.js"></script>
 
 <script>
 $(document).ready(function() {

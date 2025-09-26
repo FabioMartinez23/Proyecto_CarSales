@@ -73,7 +73,7 @@ if ($resultado_venta) {
 
         <div class="text-center">
             <a href="index.php?page=listado_ventas" class="btn btn-dark">Volver</a>
-            <a href="reportes_pdf/detalle_venta.php?idventa=<?=$_GET['idventa'];?>" target="_blank" class="btn btn-success">Descargar en PDF</a>
+            <a href="reportes_pdf/detalle_venta.php?idventa=<?=$_GET['idventa'];?>" target="_blank" class="btn btn-success">Descargar Botelo Compra/Venta</a>
         </div>
     </div>
 

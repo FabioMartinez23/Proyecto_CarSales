@@ -63,6 +63,14 @@ $result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
 $precio_vehiculo = new PrecioVehiculo();
 $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
 
+$carroceria = new Carrocerias();
+$result_carroceria =  $carroceria->traer_carroceria();
+
+$cristal = new Cristales();
+$result_cristal = $cristal->traer_cristal();
+
+$neumatico = new Neumaticos();
+$result_neumatico = $neumatico->traer_neumatico();
 
 
 ?>
@@ -145,11 +153,6 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="switch08" name="switch_08">
                                     <label class="form-check-label" for="switch08">Formulario 08</label>
-                                    <!-- Campo para cargar la imagen -->
-                                    <div id="imageInputContainer" class="hidden mt-3">
-                                        <label for="imageUpload" class="form-label">Elige una imagen:</label>
-                                        <input type="file" id="imageUpload" accept="image/*" class="form-control">
-                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -208,27 +211,25 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
                             <div class="col-md-6 mb-3">
                                 <label for="descripcionCarroceria" class="form-label">Descripción de la Carrocería:</label>
                                 <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
-                                    <option value="Excelente">Excelente</option>
-                                    <option value="Buena">Buena</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Mala">Mala</option>
+                                <?php foreach($result_carroceria as $carroceria): ?>
+                                    <option value="<?php echo $carroceria['idcarroceria']; ?>"><?php echo $carroceria['descripcion_carroceria']; ?></option>
+                                <?php endforeach;?>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="descripcionNeumaticos" class="form-label">Descripción de los Neumáticos:</label>
                                 <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
-                                    <option value="Nuevos">Nuevos</option>
-                                    <option value="Buen Estado">Buen Estado</option>
-                                    <option value="Desgaste Medio">Desgaste Medio</option>
-                                    <option value="Desgastados">Desgastados</option>
+                                <?php foreach($result_neumatico as $neumatico): ?>
+                                    <option value="<?php echo $neumatico['idneumaticos']; ?>"><?php echo $neumatico['descripcion_neumaticos']; ?></option>
+                                <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="descripcionCristales" class="form-label">Descripción de Cristales:</label>
                                 <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
-                                    <option value="Sin Rayas">Sin Rayas</option>
-                                    <option value="Con Rayas">Con Rayas</option>
-                                    <option value="Rotura">Rotura</option>
+                                <?php foreach($result_cristal as $cristal): ?>
+                                    <option value="<?php echo $cristal['idcristales']; ?>"><?php echo $cristal['descripcion_cristales']; ?></option>
+                                <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -576,24 +577,79 @@ document.addEventListener('DOMContentLoaded', function () {
     var fichaTecnicaModal = document.getElementById('fichaTecnicaModal');
 
     fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
-    // Botón que disparó el modal
-    var button = event.relatedTarget;
-    
-    // Extraer la información de los atributos data-*
-    var marca = button.getAttribute('data-marca');
-    var modelo = button.getAttribute('data-modelo');
-    var idvehiculo = button.getAttribute('data-idvehiculo');
+        var button = event.relatedTarget;
 
-    // Actualizar el título con la marca y el modelo
-    var marcaModeloText = marca + ' - ' + modelo;
-    var marcaModeloVehiculo = document.getElementById('marcaModeloVehiculo');
-    marcaModeloVehiculo.textContent = marcaModeloText;
+        var marca = button.getAttribute('data-marca');
+        var modelo = button.getAttribute('data-modelo');
+        var idvehiculo = button.getAttribute('data-idvehiculo');
 
-    // Actualizar el campo hidden con el id del vehículo
-    var inputIdVehiculo = document.getElementById('vehiculos_idvehiculos');
-    inputIdVehiculo.value = idvehiculo;
+        var marcaModeloVehiculo = document.getElementById('marcaModeloVehiculo');
+        marcaModeloVehiculo.textContent = marca + ' - ' + modelo;
+
+        // ⚠️ Reforzar SIEMPRE estos hidden
+        var inputIdVehiculo = document.getElementById('vehiculos_idvehiculos');
+        inputIdVehiculo.value = idvehiculo;
+
+        document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "guardar";
+
+        // 🔑 Traer ficha técnica por AJAX
+        let formData = new FormData();
+        formData.append("action", "consultar_ficha_tecnica");
+        formData.append("id_vehiculo", idvehiculo);
+
+        fetch('controladores/ventas/ventas.controlador.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+                if (!data.error && data.ficha_tecnica) {
+                    let f = data.ficha_tecnica;
+
+                    // Si existe ficha, cambiamos el action a "actualizar"
+                    document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "actualizar";
+
+                    document.getElementById("vencimientoBateria").value = f.vencimiento_bateria?.split(" ")[0] || '';
+                    document.getElementById("vencimientoRTO").value = f.vencimiento_RTO?.split(" ")[0] || '';
+                    document.getElementById("vencimientoService").value = f.vencimiento_service?.split(" ")[0] || '';
+
+                    document.getElementById("switch08").checked = f.form_08 === "1";
+                    document.getElementById("switch12").checked = f.form_12 === "1";
+                    document.getElementById("switchTitulo").checked = f.titulo_vehiculo === "1";
+                    document.getElementById("switchCedula").checked = f.cedula_vehiculo === "1";
+                    document.getElementById("switchSeguro").checked = f.seguro === "1";
+                    document.getElementById("switchMunicipalidad").checked = f.municipalidad === "1";
+                    document.getElementById("switchDominio").checked = f.informe_dominio === "1";
+                    document.getElementById("switchMultas").checked = f.form_13i === "1";
+                    document.getElementById("switchPrenda").checked = f.prenda === "1";
+
+                    document.getElementById("descripcionCarroceria").value = f.carroceria_idcarroceria || '';
+                    document.getElementById("descripcionNeumaticos").value = f.neumaticos_idneumaticos || '';
+                    document.getElementById("descripcionCristales").value = f.cristales_idcristales || '';
+                } else {
+                    // Si no hay ficha → limpiar SOLO visibles
+                    document.querySelectorAll("#fichaTecnicaModal input, #fichaTecnicaModal select").forEach(el => {
+                        if (el.type === "checkbox") {
+                            el.checked = false;
+                        } else if (el.type === "date" || el.tagName === "SELECT" || el.type === "text") {
+                            el.value = "";
+                        }
+                    });
+
+                    // ⚠️ Reforzar hidden (no perderlos nunca)
+                    inputIdVehiculo.value = idvehiculo;
+                    document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "guardar";
+                }
+            } catch (e) {
+                console.error("Error parseando JSON:", e, text);
+            }
+        })
+        .catch(err => console.error("Error AJAX ficha técnica:", err));
     });
 });
+
 </script>
 
 <script>

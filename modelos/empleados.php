@@ -15,8 +15,41 @@ class Empleado{
         $this->Usuarios_idUsuarios = $Usuarios_idUsuarios;
     }
 
-    public function agregar_legajo(){
+    public function traerEmpleadoPorUsuario($idusuario) {
+        $conexion = new Conexion();
+        $query = "SELECT idempleados FROM empleados WHERE Usuarios_idusuarios = $idusuario LIMIT 1";
+        $resultado = $conexion->consultar($query);
+        if ($resultado && $resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            return $row['idempleados'];
+        }
+        return null;
+    }
 
+    public function obtenerUltimoLegajo() {
+        $conexion = new Conexion();
+        $query = "SELECT legajo FROM empleados WHERE legajo IS NOT NULL ORDER BY idempleados DESC LIMIT 1";
+        $resultado = $conexion->consultar($query);
+        if ($resultado && $resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            return $row['legajo'];
+        }
+        return null;
+    }
+
+    public function asignarLegajoYPuesto($idusuario, $legajo, $idtipo_puesto) {
+        $conexion = new Conexion();
+        $query = "INSERT INTO empleados (legajo, tipo_de_puestos_idtipo_de_puestos, Usuarios_idusuarios)
+                VALUES ('$legajo', $idtipo_puesto, $idusuario)";
+        return $conexion->consultar($query);
+    }
+
+    public function actualizarLegajoYPuesto($idempleados, $legajo, $idtipo_puesto) {
+        $conexion = new Conexion();
+        $query = "UPDATE empleados 
+                SET legajo = '$legajo', tipo_de_puestos_idtipo_de_puestos = $idtipo_puesto
+                WHERE idempleados = $idempleados";
+        return $conexion->consultar($query);
     }
 
     public function consultar_empleado_id($idempleados){
@@ -27,5 +60,85 @@ class Empleado{
             return $resultado->fetch_assoc();
         }
         return null;
+    }
+
+    /**
+     * Get the value of idempleados
+     */ 
+    public function getIdempleados()
+    {
+        return $this->idempleados;
+    }
+
+    /**
+     * Set the value of idempleados
+     *
+     * @return  self
+     */ 
+    public function setIdempleados($idempleados)
+    {
+        $this->idempleados = $idempleados;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of legajo
+     */ 
+    public function getLegajo()
+    {
+        return $this->legajo;
+    }
+
+    /**
+     * Set the value of legajo
+     *
+     * @return  self
+     */ 
+    public function setLegajo($legajo)
+    {
+        $this->legajo = $legajo;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of tipo_de_puestos_idtipo_de_puestos
+     */ 
+    public function getTipo_de_puestos_idtipo_de_puestos()
+    {
+        return $this->tipo_de_puestos_idtipo_de_puestos;
+    }
+
+    /**
+     * Set the value of tipo_de_puestos_idtipo_de_puestos
+     *
+     * @return  self
+     */ 
+    public function setTipo_de_puestos_idtipo_de_puestos($tipo_de_puestos_idtipo_de_puestos)
+    {
+        $this->tipo_de_puestos_idtipo_de_puestos = $tipo_de_puestos_idtipo_de_puestos;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of Usuarios_idUsuarios
+     */ 
+    public function getUsuarios_idUsuarios()
+    {
+        return $this->Usuarios_idUsuarios;
+    }
+
+    /**
+     * Set the value of Usuarios_idUsuarios
+     *
+     * @return  self
+     */ 
+    public function setUsuarios_idUsuarios($Usuarios_idUsuarios)
+    {
+        $this->Usuarios_idUsuarios = $Usuarios_idUsuarios;
+
+        return $this;
     }
 }

@@ -76,9 +76,19 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                         <td><?= $venta['nombre_pago'];?></td>
                         <td><?= date('d-m-Y', strtotime($venta['fecha_venta'])); ?></td>
                         <td>
-                            <a href="index.php?page=anular_ventas&idventa=<?= $venta['idventas']; ?>" class="text-danger me-2" title="Anular Venta">
-                                <i class="fa-solid fa-ban"></i>
-                            </a>
+                            <?php if ($_SESSION['descripcion'] === "Administrador") { ?>
+                                <a href="index.php?page=anular_ventas&idventa=<?= $venta['idventas']; ?>" 
+                                class="text-danger me-2 btn-anular" 
+                                title="Anular Venta">
+                                    <i class="fa-solid fa-ban"></i>
+                                </a>
+                            <?php } else { ?>
+                                <a href="javascript:void(0);" 
+                                class="text-muted btn-no-permiso" 
+                                title="No autorizado">
+                                    <i class="fa-solid fa-ban"></i>
+                                </a>
+                            <?php } ?>
                             <a href="index.php?page=detalle_ventas&idventa=<?= $venta['idventas']; ?>" class="text-primary" title="Ver Más">
                                 <i class="fas fa-eye"></i>
                             </a>
@@ -89,8 +99,8 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                     ?>
                 </tbody>
             </table>
-                        <!-- Paginación centrada -->
-                        <nav aria-label="..." class="d-flex justify-content-center">
+            <!-- Paginación centrada -->
+            <nav aria-label="..." class="d-flex justify-content-center">
                 <ul class="pagination">
                     <!-- Botón "Anterior" -->
                     <li class="page-item <?php if ($pagina_actual <= 1) { echo 'disabled'; } ?>">
@@ -120,4 +130,18 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
         location.href='index.php?page=listado_ventas&buscador='+buscador;
         }
 
+    </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".btn-no-permiso").forEach(btn => {
+            btn.addEventListener("click", () => {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Acceso denegado',
+                    text: 'No tiene autorización para anular ventas.'
+                });
+            });
+        });
+    });
     </script>

@@ -323,7 +323,6 @@ $result_tipo_documento = $tipo_documento->traer_tipo_documento();
         </div>
     </form>
     </div>
-
 </div>
 
 <script src="assets/js/validaciones/mis_datos/validar_pais.ajax.js"></script>
@@ -383,5 +382,14 @@ document.getElementById('guardarBtn').onclick = function() {
     let mask_dni = IMask(dni, maskDni);
 </script>
 
-
+<?php if (isset($_GET['mensaje'])): ?>
+<script>
+Swal.fire({
+    icon: '<?php echo $_GET['status'] ?? "info"; ?>',
+    title: 'Atención',
+    text: '<?php echo $_GET['mensaje']; ?>',
+    confirmButtonText: 'Entendido'
+});
+</script>
+<?php endif; ?>
 

@@ -1,6 +1,7 @@
 <?php
 
 ini_set('display_errors', 1);
+session_start();
 require_once('../../modelos/contactos.php');
 require_once('../../modelos/domicilio.php');
 require_once('../../modelos/documentos.php');
@@ -40,6 +41,12 @@ class MisDatosControlador{
         $domicilio->setBarrios_idbarrios($_POST['barrios_idbarrios']);
         $domicilio->setTipo_domicilio_idtipo_domicilio($_POST['idtipo_domicilio']);
         $domicilio->agregar_domicilio();
+
+        // ✅ Actualizar verificado_perfil
+        require_once('../../modelos/usuarios.php');
+        $usuario = new Usuario();
+        $usuario->verificar_perfil($_SESSION['idusuarios']);
+
         header('location: ../../index.php?page=form_mis_datos&mensaje=Los datos fueron guardados correctamente.&status=success');
     }
 
@@ -73,6 +80,11 @@ class MisDatosControlador{
             echo "Error al actualizar el domicilio";
             exit();
         }
+
+        // ✅ Actualizar verificado_perfil
+        require_once('../../modelos/usuarios.php');
+        $usuario = new Usuario();
+        $usuario->verificar_perfil($_SESSION['idusuarios']);
 
         header('location: ../../index.php?page=form_mis_datos&mensaje=Los datos fueron modificados.&status=success');
     }

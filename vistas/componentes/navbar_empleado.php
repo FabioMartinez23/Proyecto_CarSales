@@ -29,7 +29,7 @@
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="index.php?page=registrar_clientes">Registro de Clientes</a></li>
                 <li><a class="dropdown-item" href="index.php?page=listado_clientes">Listado de Clientes</a></li>
-                <li><a class="dropdown-item" href="index.php?page=form_financiamiento">Gestion de Financiamiento</a></li>
+                <!-- <li><a class="dropdown-item" href="index.php?page=form_financiamiento">Gestion de Financiamiento</a></li> -->
             </ul>
             </li>
             <li class="nav-item">

@@ -41,7 +41,42 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
 $tipo_sexo = new Tipo_Sexos();
 $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
+$tipo_puesto = new Tipo_De_Puestos();
+$tipos_puestos = $tipo_puesto->traer_tipo_puesto();
+
 ?>
+    <!-- MODAL DE TIPO DE PUESTO PARA LEGAJO -->
+    <div class="modal fade" id="modalGenerarLegajo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Asignar Legajo y Puesto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formGenerarLegajo" method="POST" action="controladores/empleados/generar_legajo.controlador.php">
+            <div class="modal-body">
+            <input type="hidden" name="idempleados" id="idusuarios">
+            
+            <div class="mb-3">
+                <label for="idtipo_puesto" class="form-label">Tipo de Puesto</label>
+                <select class="form-select" name="idtipo_puesto" id="idtipo_puesto" required>
+                <option value="">Seleccione...</option>
+                <?php foreach ($tipos_puestos as $puesto) { ?>
+                    <option value="<?= $puesto['idtipo_de_puestos']; ?>">
+                        <?= $puesto['descripcion']; ?>
+                    </option>
+                <?php } ?>
+                </select>
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Generar</button>
+            </div>
+        </form>
+        </div>
+    </div>
+    </div>
+
 
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
@@ -73,6 +108,8 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <th>Email</th>
                 <th>Nombre de Usuario</th>
                 <th>Fecha de Alta</th>
+                <th>Puesto</th>
+                <th>Legajo</th>
                 <th>Modificar</th>
                 <th>Resetear Contraseña</th>
                 <th>Eliminar</th>
@@ -89,6 +126,17 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <td><?= $usuario_['email']; ?></td>
                 <td><?= $usuario_['username']; ?></td>
                 <td><?= $usuario_['fecha_alta']; ?></td>
+                <td><?= $usuario_['tipo_puesto'] ?? 'No asignado'; ?></td>
+                <td>
+                    <?php if (empty($usuario_['legajo'])): ?>
+                        <button class="btn btn-sm btn-success generar-legajo-btn" 
+                                data-id="<?= $usuario_['idusuarios']; ?>">
+                            Generar Legajo
+                        </button>
+                    <?php else: ?>
+                        <?= $usuario_['legajo']; ?>
+                    <?php endif; ?>
+                </td>
                 <td>
                     <a href="index.php?page=registrar_empleados&idusuarios=<?=$usuario_['idusuarios']; ?>&nombre=<?=$usuario_['username'];?>" class="btn btn-success" type="button" title="Modificar Empleado">
                         <i class="fa-solid fa-pen-to-square"></i>
@@ -151,4 +199,17 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
         location.href='index.php?page=listado_empleados&buscador='+buscador;
     }
 
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".generar-legajo-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            let idempleados = btn.dataset.id;
+            document.getElementById("idusuarios").value = idempleados;
+            let modal = new bootstrap.Modal(document.getElementById("modalGenerarLegajo"));
+            modal.show();
+        });
+    });
+});
 </script>

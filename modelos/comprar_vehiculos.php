@@ -9,19 +9,21 @@ class ComprarVehiculo{
     private $tipo_pago_idtipo_pago;
     private $vehiculo_idvehiculo;
     private $titular_vehiculo_idtitular_vehiculo;
+    private $empleados_idempleados;
 
-    public function __construct($idcompras='', $descripcion='', $fecha_compra='', $tipo_pago_idtipo_pago='', $vehiculo_idvehiculo='', $titular_vehiculo_idtitular_vehiculo='') {
+    public function __construct($idcompras='', $descripcion='', $fecha_compra='', $tipo_pago_idtipo_pago='', $vehiculo_idvehiculo='', $titular_vehiculo_idtitular_vehiculo='', $empleados_idempleados='') {
         $this->idcompras = $idcompras;
         $this->descripcion = $descripcion;
         $this->fecha_compra = $fecha_compra;
         $this->tipo_pago_idtipo_pago = $tipo_pago_idtipo_pago;
         $this->vehiculo_idvehiculo = $vehiculo_idvehiculo;
         $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+        $this->empleados_idempleados = $empleados_idempleados;
     }
 
     public function agregar_compra(){
         $conexion = new Conexion();
-        $query = "INSERT INTO compras (descripcion, fecha_compra, tipo_pago_idtipo_pago, vehiculo_idvehiculo, titular_vehiculo_idtitular_vehiculo) VALUES ('$this->descripcion', CURDATE(), '$this->tipo_pago_idtipo_pago', '$this->vehiculo_idvehiculo', '$this->titular_vehiculo_idtitular_vehiculo')";
+        $query = "INSERT INTO compras (descripcion, fecha_compra, tipo_pago_idtipo_pago, vehiculo_idvehiculo, titular_vehiculo_idtitular_vehiculo, empleados_idempleados) VALUES ('$this->descripcion', CURDATE(), '$this->tipo_pago_idtipo_pago', '$this->vehiculo_idvehiculo', '$this->titular_vehiculo_idtitular_vehiculo', '$this->empleados_idempleados')";
         return $conexion->insertar($query);
     }
 
@@ -43,7 +45,7 @@ class ComprarVehiculo{
 
     public function buscar_compra($buscador){
         $conexion = new Conexion();
-        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM compras INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitulares INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas WHERE (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR año LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%') AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM compras INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas WHERE (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%') AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
         return $conexion->consultar($query);
     }
 
@@ -175,6 +177,26 @@ class ComprarVehiculo{
     public function setTitular_vehiculo_idtitular_vehiculo($titular_vehiculo_idtitular_vehiculo)
     {
         $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of empleados_idempleados
+     */ 
+    public function getEmpleados_idempleados()
+    {
+        return $this->empleados_idempleados;
+    }
+
+    /**
+     * Set the value of empleados_idempleados
+     *
+     * @return  self
+     */ 
+    public function setEmpleados_idempleados($empleados_idempleados)
+    {
+        $this->empleados_idempleados = $empleados_idempleados;
 
         return $this;
     }

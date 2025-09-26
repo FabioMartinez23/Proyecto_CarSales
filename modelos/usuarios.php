@@ -63,6 +63,12 @@ public function validar_usuario_por_id(){
         return null; 
 }
 
+public function verificar_perfil($idusuarios) {
+    $conexion = new Conexion();
+    $query = "UPDATE usuarios SET verificado_perfil = 1 WHERE idusuarios = $idusuarios";
+    return $conexion->consultar($query);
+}
+
 public function traer_usuario_por_id($idusuarios){
         $conexion = new Conexion();
         $query = "SELECT usuarios.*, personas.*,tipo_sexo.*, tipo_sexo.descripcion as nombre_tipo_sexo, documentos.*, documentos.valor as valor_documento, Tipo_documento.*, Tipo_documento.descripcion as nombre_tipo_documento, contactos.*, contactos.valor as valor_contacto, tipo_contacto.*, tipo_contacto.descripcion as nombre_tipo_contacto, tipo_domicilio.*, tipo_domicilio.descripcion as nombre_tipo_domicilio, domicilios.*, domicilios.descripcion as nombre_domicilio, barrios.*, barrios.descripcion as nombre_barrio, localidades.*, localidades.descripcion as nombre_localidad, provincias.*, provincias.descripcion as nombre_provincia, paises.*, paises.descripcion as nombre_pais FROM usuarios INNER JOIN personas on usuarios.personas_idpersonas = personas.idpersonas INNER JOIN tipo_sexo on personas.tipo_sexo_idtipo_sexo = tipo_sexo.idtipo_sexo INNER JOIN documentos on documentos.Personas_idPersonas = personas.idpersonas INNER JOIN Tipo_documento on documentos.Tipo_documento_idTipo_documento = Tipo_documento.idTipo_documento INNER JOIN contactos on contactos.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_contacto on contactos.tipo_contactos_idtipo_contactos = tipo_contacto.idtipo_contacto INNER JOIN domicilios on domicilios.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_domicilio on domicilios.tipo_domicilio_idtipo_domicilio = tipo_domicilio.idtipo_domicilio INNER JOIN barrios on domicilios.barrios_idbarrios = barrios.idbarrios INNER JOIN localidades on barrios.localidades_idlocalidades = localidades.idlocalidades INNER JOIN provincias on localidades.provincias_idprovincias = provincias.idprovincias INNER JOIN paises on provincias.paises_idpaises = paises.idpaises WHERE idusuarios = $idusuarios";
@@ -134,7 +140,7 @@ public function traer_clientes($inicio,$cantidad){
 
 public function traer_empleados($inicio,$cantidad){
         $conexion = new Conexion();
-        $query = "SELECT * FROM usuarios INNER JOIN personas on usuarios.Personas_idPersonas = personas.idPersonas INNER JOIN perfiles on usuarios.perfiles_idperfiles = perfiles.idperfiles WHERE perfiles.descripcion = 'Empleado' AND activo_usuario = 1 limit $inicio,$cantidad";
+        $query = "SELECT *, tipo_de_puestos.descripcion as tipo_puesto FROM usuarios INNER JOIN personas on usuarios.Personas_idPersonas = personas.idPersonas INNER JOIN perfiles on usuarios.perfiles_idperfiles = perfiles.idperfiles LEFT JOIN empleados ON usuarios.idusuarios = empleados.Usuarios_idusuarios LEFT JOIN tipo_de_puestos ON empleados.tipo_de_puestos_idtipo_de_puestos = tipo_de_puestos.idtipo_de_puestos WHERE usuarios.perfiles_idperfiles = 2 AND activo_usuario = 1 limit $inicio,$cantidad";
         return $conexion->consultar($query);
 }
 

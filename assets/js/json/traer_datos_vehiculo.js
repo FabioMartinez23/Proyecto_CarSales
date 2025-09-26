@@ -3,7 +3,7 @@ let vehiculoData = null;
 let fichaTecnicaData = null;
 
 // Evento para buscar el vehículo al hacer clic en el botón "Buscar Auto"
-document.getElementById("buscar_auto_btn").addEventListener("click", function() {
+document.getElementById("buscar_auto_btn").addEventListener("click", function () {
     let patente = document.getElementById("patente").value;
     console.log("Patente enviada:", patente);
 
@@ -12,57 +12,77 @@ document.getElementById("buscar_auto_btn").addEventListener("click", function() 
     formData.append("patente", patente);
 
     // Primera solicitud fetch para obtener datos del vehículo
-    fetch('controladores/ventas/ventas.controlador.php', {
-        method: 'POST',
-        body: formData
+    fetch("controladores/ventas/ventas.controlador.php", {
+        method: "POST",
+        body: formData,
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Respuesta completa del servidor:", data);
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Respuesta completa del servidor:", data);
 
-        if (data.error) {
-            alert(data.error);
-        } else {
-            // Almacenar datos del vehículo
-            vehiculoData = data.vehiculo || null;
-            console.log("Rellenando datos del vehículo");
+            if (data.error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.error,
+                    confirmButtonText: "Aceptar",
+                });
+            } else {
+                // Almacenar datos del vehículo
+                vehiculoData = data.vehiculo || null;
+                console.log("Rellenando datos del vehículo");
 
-            if (vehiculoData) {
-                document.getElementById("id_patente").value = vehiculoData.patente || '';
-                document.getElementById("id_chasis").value = vehiculoData.chasis || '';
-                document.getElementById("id_motor").value = vehiculoData.motor || '';
-                document.getElementById("id_anio").value = vehiculoData.anio || '';
-                document.getElementById("id_kilometraje").value = vehiculoData.kilometraje || '';
-                document.getElementById("id_precio").value = data.precio?.precio || '';
-                document.getElementById("idvehiculos_1").value = data.vehiculo.idvehiculos || '';
+                if (vehiculoData) {
+                    document.getElementById("id_patente").value = vehiculoData.patente || "";
+                    document.getElementById("id_chasis").value = vehiculoData.chasis || "";
+                    document.getElementById("id_motor").value = vehiculoData.motor || "";
+                    document.getElementById("id_anio").value = vehiculoData.anio || "";
+                    document.getElementById("id_kilometraje").value = vehiculoData.kilometraje || "";
+                    document.getElementById("id_precio").value = data.precio?.precio || "";
+                    document.getElementById("idvehiculos_1").value = data.vehiculo.idvehiculos || "";
 
-                // Actualizar selects
-                document.getElementById("id_colores").value = vehiculoData.idcolores || '';
-                document.getElementById("id_marcas").value = vehiculoData.idmarcas || '';
-                document.getElementById("idmodelos").value = vehiculoData.idmodelos || '';
-                document.getElementById("id_tipo_vehiculos").value = vehiculoData.idtipo_vehiculos || '';
+                    // Actualizar selects
+                    document.getElementById("id_colores").value = vehiculoData.idcolores || "";
+                    document.getElementById("id_marcas").value = vehiculoData.idmarcas || "";
+                    document.getElementById("idmodelos").value = vehiculoData.idmodelos || "";
+                    document.getElementById("id_tipo_vehiculos").value = vehiculoData.idtipo_vehiculos || "";
+                }
+
+                let modalElement = document.getElementById("buscarAutoModal");
+                let modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+
+                modal.hide();
+
+                modalElement.addEventListener("hidden.bs.modal", () => {
+                    // Devuelve foco
+                    document.getElementById("buscar_auto_btn").focus();
+
+                    // Limpia scroll y backdrop
+                    document.body.classList.remove("modal-open");
+                    document.body.style.overflow = "";
+                    document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+                });
+
+                // Mensaje de éxito
+                Swal.fire({
+                    icon: "success",
+                    title: "Vehículo encontrado",
+                    text: `Se cargaron los datos de la patente: ${vehiculoData.patente}`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
             }
-
-            let modalElement = document.getElementById("buscarAutoModal");
-            let modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-
-            modal.hide();
-
-            modalElement.addEventListener('hidden.bs.modal', () => {
-                // Devuelve foco
-                document.getElementById('buscar_auto_btn').focus();
-                
-                // Limpia scroll y backdrop
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        })
+        .catch((error) => {
+            console.error("Error en la primera solicitud:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error inesperado",
+                text: "Hubo un problema al buscar el vehículo.",
             });
-        }
-    })
-    .catch(error => {
-        console.error("Error en la primera solicitud:", error);
-    });
+        });
 });
+
 
 // Evento para el botón "Ver Ficha Técnica"
 document.getElementById("verFichaTecnicaBtn").addEventListener("click", function() {

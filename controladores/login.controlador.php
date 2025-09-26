@@ -51,7 +51,12 @@ class LoginControlador {
                         // es un usuario nuevo
                         return header('location: ../index.php?page=cambiar_password&mensaje=Usuario Nuevo - Cambiar la constraseña, Porfavor.&status=warning');
                     }
-                    
+                    // ✅ Nueva validación: verificar perfil completo
+                    if ($row['verificado_perfil'] == 0) {
+                        return header('location: ../index.php?page=form_mis_datos&mensaje=Debe completar sus datos antes de continuar.&status=warning');
+                    }
+
+                    // Si todo OK → bienvenida
                     header('location: ../index.php?page=bienvenida');
                     exit();
                 }else{
