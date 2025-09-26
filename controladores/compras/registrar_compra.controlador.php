@@ -159,6 +159,7 @@ if (isset($_POST['action'])) {
             $registrar_compra->setTipo_pago_idtipo_pago($_POST['tipo_pago']);
             $registrar_compra->setVehiculo_idvehiculo($vehiculos_idvehiculos);
             $registrar_compra->setTitular_vehiculo_idtitular_vehiculo($titular_vehiculo);
+            $registrar_compra->setEmpleados_idempleados($_POST['idempleado']);
         
             if (!$registrar_compra->agregar_compra()) {
                 header('location: ../../index.php?page=registrar_compras&mensaje=Error al registrar la compra.&status=error');

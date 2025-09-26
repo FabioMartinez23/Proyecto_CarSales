@@ -129,9 +129,14 @@ class LoginControlador {
         );
 
         $data = [
-            'tipo' => 'alta_cliente',
-            'mensaje' => 'Nuevo usuario: ' . $_POST['username'],
-            'idusuario' => $id_usuario,
+            'tipo' => 'cliente', // Más genérico y consistente
+            'mensaje' => 'Se registró un nuevo cliente: ' . $_POST['username'],
+            'detalle' => [
+                'idusuario' => $id_usuario,
+                'nombre'    => $_POST['nombre'],
+                'apellido'  => $_POST['apellido'],
+                'perfil'    => $_POST['perfiles_idperfiles']
+            ],
             'fecha' => date('Y-m-d H:i:s')
         ];
 

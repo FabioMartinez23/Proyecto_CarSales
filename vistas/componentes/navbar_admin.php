@@ -1,5 +1,3 @@
-
-
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -109,7 +107,9 @@
                     <ul class="dropdown-menu" aria-labelledby="notificationDropdown" style="width: 300px;">
                         <li class="dropdown-item text-center">Notificaciones</li>
                         <li><hr class="dropdown-divider"></li>
-                        <div id="lista-notificaciones">
+
+                        <!-- Contenedor de notificaciones dinámicas -->
+                        <ul id="lista-notificaciones" class="list-unstyled mb-0">
                             <?php if ($total > 0): ?>
                                 <?php while ($usuario = $resultado->fetch_assoc()): ?>
                                     <li class="dropdown-item">
@@ -121,7 +121,8 @@
                             <?php else: ?>
                                 <li class="dropdown-item">No hay notificaciones</li>
                             <?php endif; ?>
-                        </div>
+                        </ul>
+
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-center" href="#">Ver todas</a></li>
                     </ul>
@@ -182,10 +183,30 @@ channel.bind('nuevo-evento', function(data) {
     // Crear elemento para el dropdown
     let li = document.createElement('li');
     li.classList.add('dropdown-item');
-    li.innerHTML = `<a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=${data.idusuario}">[${data.tipo}] ${data.mensaje}<small>${data.fecha}</small></a>`;
-    lista.prepend(li);
-});
 
+    let detalle = data.detalle || {};
+    let link = '#';
+
+    switch (data.tipo) {
+        case 'cliente':
+            if (detalle.idusuario) link = `index.php?page=ver_usuario&accion=ver_cliente&usuario=${detalle.idusuario}`;
+            break;
+        case 'venta':
+            if (detalle.idVenta) link = `index.php?page=listado_ventas&id=${detalle.idVenta}`;
+            break;
+        default:
+            link = '#';
+    }
+
+    li.innerHTML = `
+        <a href="${link}">
+            [${data.tipo.toUpperCase()}] ${data.mensaje} 
+            <br><small>${data.fecha}</small>
+        </a>
+    `;
+
+    if (lista) lista.prepend(li);
+});
 // Resetear contador al abrir el dropdown
 document.getElementById('notificationDropdown').addEventListener('click', function() {
     contador = 0;

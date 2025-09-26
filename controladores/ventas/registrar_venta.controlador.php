@@ -68,6 +68,29 @@ if (isset($_POST['action'])) {
         }
 
         if ($idventa) {
+            // ✅ Enviar notificación Pusher aquí
+            require_once __DIR__ . '/../notificacion_trigger.php';
+
+            $tipo = "venta";
+            $mensaje = "Nueva venta realizada (ID: $idventa) al cliente #" . $cliente_id;
+
+            // Podés enviar más detalles
+            $data = [
+                'tipo'    => $tipo,
+                'mensaje' => $mensaje,
+                'fecha'   => date('Y-m-d H:i:s'),
+                'detalles'=> [
+                    'idVenta'  => $idventa,
+                    'cliente'  => $cliente_id,
+                    'vehiculo' => $_POST['vehiculos_idvehiculos'],
+                    'empleado' => $_POST['idempleado']
+                ]
+            ];
+
+            // Disparo directo (usando la instancia Pusher del trigger)
+            $pusher->trigger('notificaciones', 'nuevo-evento', $data);
+
+            // --- Ahora tu lógica de eliminar vehículo ---
             $eliminar_vehiculo = new Vehiculos();
             $eliminar_vehiculo->setIdvehiculos($_POST['vehiculos_idvehiculos']);
             $result_eliminado = $eliminar_vehiculo->eliminar_vehiculo();
@@ -77,9 +100,6 @@ if (isset($_POST['action'])) {
             } else {
                 header('Location: ../../index.php?page=listado_ventas&id=' . $idventa . '&mensaje=La venta se registró, pero no se pudo eliminar el vehículo.&status=warning');
             }
-            exit();
-        } else {
-            echo "Error: No se pudo obtener el ID de la venta";
             exit();
         }
     }
