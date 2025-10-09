@@ -494,6 +494,11 @@ div.contenido-tarjeta p{
     box-shadow: 0.5px -2px 5px black; /* Sombra solo en la parte superior y los costados */
 }
 
+.icono {
+    font-size: 2.5rem;
+    color: #333A56;
+}
+
 
 /* GRAFICOS */
 .gf-sexo{

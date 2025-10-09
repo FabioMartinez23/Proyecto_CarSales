@@ -41,9 +41,9 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
 </nav>
 
     <div class="mt-5 hacer_padding">
-        <h1 class="text-center">Compras Realizadas</h1>
+        <h1 class="text-center">Nuevos Ingresos</h1>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a type="button" href="index.php?page=registrar_compras" class="btn mt-2 mb-2 btn-action">Registrar Nueva Compra</a>
+            <a type="button" href="index.php?page=registrar_compras" class="btn mt-2 mb-2 btn-action">Registrar Nuevo Ingreso</a>
 
             <!-- Buscador -->
             <div class="d-flex">
@@ -55,9 +55,9 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
             <table id="ventasTable" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Nro de Compra</th>
+                        <th>Nro de Ingreso</th>
                         <th>Precio</th>
-                        <th>Titular Anterior</th>
+                        <th>Titular del Vehiculo</th>
                         <th>Vehículo</th>
                         <th>Patente</th>
                         <th>Tipo de Pago</th>

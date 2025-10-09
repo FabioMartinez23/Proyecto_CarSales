@@ -1,104 +1,169 @@
 <?php
-
 ini_set('display_errors', 1);
 require_once('../../modelos/documentaciones.php');
 
 if (isset($_POST['action'])) {
-    if ($_POST['action'] == 'guardar') {
-        $documentos_controlador = new DocumentosControlador();
-        $documentos_controlador->guardar();
+    $documentos_controlador = new DocumentosControlador();
+
+    switch ($_POST['action']) {
+        case 'guardar':
+            $documentos_controlador->guardar(); // guarda imágenes y documentos
+            break;
+
+        case 'guardar_imagenes':
+            $documentos_controlador->guardarImagenes(); // solo imágenes
+            break;
+
+        case 'guardar_documentos':
+            $documentos_controlador->guardarDocumentos(); // solo documentos
+            break;
     }
 }
 
 class DocumentosControlador {
 
+    /* -------------------------------------------------------------------------- */
+    /*                               Acción principal                              */
+    /* -------------------------------------------------------------------------- */
     public function guardar() {
         $idvehiculos = $_POST['vehiculos_idvehiculos'];
         $mensajes = [];
         $status = 'success';
 
-        // Guardar todas las imágenes del vehículo, si se subieron
-        if (isset($_FILES['imagen_vehiculo']['error'])) {
-            foreach ($_FILES['imagen_vehiculo']['name'] as $index => $name) {
-                if ($_FILES['imagen_vehiculo']['error'][$index] == 0) {
-                    $archivoImagen = [
-                        'name' => $name,
-                        'tmp_name' => $_FILES['imagen_vehiculo']['tmp_name'][$index],
-                        'error' => $_FILES['imagen_vehiculo']['error'][$index]
+        $mensajes = array_merge(
+            $this->procesarArchivos($_FILES['imagen_vehiculo'] ?? null, $idvehiculos, 'img', 10), // ID fijo para "Imágenes del Vehículo"   
+            $this->procesarArchivos($_FILES['documentos_vehiculo'] ?? null, $idvehiculos, 'doc')
+        );
+
+        if ($this->contieneErrores($mensajes)) $status = 'error';
+
+        $this->redireccionar($mensajes, $status);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                            Solo guardar imágenes                            */
+    /* -------------------------------------------------------------------------- */
+    public function guardarImagenes() {
+        $idvehiculos = $_POST['vehiculos_idvehiculos'];
+        $idtipo_documentacion = 10; // ID fijo para "Imágenes del Vehículo"
+        $mensajes = $this->procesarArchivos($_FILES['imagen_vehiculo'] ?? null, $idvehiculos, 'img', $idtipo_documentacion);
+        $status = $this->contieneErrores($mensajes) ? 'error' : 'success';
+        $this->redireccionar($mensajes, $status);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                           Solo guardar documentos                           */
+    /* -------------------------------------------------------------------------- */
+    public function guardarDocumentos() {
+        $idvehiculos = $_POST['vehiculos_idvehiculos'];
+        $idtipo_documentacion = $_POST['tipo_documentacion_idtipo_documentacion'] ?? null;
+
+        $mensajes = $this->procesarArchivos($_FILES['documentos_vehiculo'] ?? null, $idvehiculos, 'doc', $idtipo_documentacion);
+        $status = $this->contieneErrores($mensajes) ? 'error' : 'success';
+        $this->redireccionar($mensajes, $status);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                            Métodos reutilizables                            */
+    /* -------------------------------------------------------------------------- */
+
+    /** Procesa múltiples archivos de un tipo (img o doc) */
+    private function procesarArchivos($archivos, $idvehiculos, $tipo, $idtipo_documentacion = null) {
+        $mensajes = [];
+
+        if ($archivos && isset($archivos['error'])) {
+            foreach ($archivos['name'] as $i => $nombre) {
+                if ($archivos['error'][$i] === 0) {
+                    $archivo = [
+                        'name' => $nombre,
+                        'tmp_name' => $archivos['tmp_name'][$i],
+                        'error' => $archivos['error'][$i]
                     ];
-                    $resultadoImagen = $this->guardarImagen($archivoImagen, $idvehiculos);
-                    $mensajes[] = $resultadoImagen;
-                    if (strpos($resultadoImagen, 'Error') !== false) {
-                        $status = 'error';
-                    }
+                    $mensajes[] = $this->guardarArchivo($archivo, $idvehiculos, $tipo, $idtipo_documentacion);
                 }
             }
         }
 
-        // Guardar todos los documentos del vehículo, si se subieron
-        if (isset($_FILES['documentos_vehiculo']['error'])) {
-            foreach ($_FILES['documentos_vehiculo']['name'] as $index => $name) {
-                if ($_FILES['documentos_vehiculo']['error'][$index] == 0) {
-                    $archivoDocumento = [
-                        'name' => $name,
-                        'tmp_name' => $_FILES['documentos_vehiculo']['tmp_name'][$index],
-                        'error' => $_FILES['documentos_vehiculo']['error'][$index]
-                    ];
-                    $resultadoDocumento = $this->guardarDocumento($archivoDocumento, $idvehiculos);
-                    $mensajes[] = $resultadoDocumento;
-                    if (strpos($resultadoDocumento, 'Error') !== false) {
-                        $status = 'error';
-                    }
-                }
-            }
-        }
-
-        // Mensaje final unificado
-        $mensaje = implode(" | ", $mensajes);
-        header("Location: ../../index.php?page=listado_vehiculos&mensaje=" . urlencode($mensaje) . "&status=" . $status);
-        exit();
+        return $mensajes;
     }
 
-    private function guardarImagen($archivo, $idvehiculos) {
-        return $this->guardarArchivo($archivo, $idvehiculos, 'img');
-    }
-
-    private function guardarDocumento($archivo, $idvehiculos) {
-        return $this->guardarArchivo($archivo, $idvehiculos, 'doc');
-    }
-
-    private function guardarArchivo($archivo, $idvehiculos, $tipo) {
+    /** Guarda un archivo individual */
+    private function guardarArchivo($archivo, $idvehiculos, $tipo, $idtipo_documentacion) {
         $documentacion = new Documentacion();
+        $uploadDir = ($tipo === 'img') ? '../../uploads/img/' : '../../uploads/doc/';
 
-        $uploadDir = ($tipo == 'img') ? '../../uploads/img/' : '../../uploads/doc/';
-        
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
 
         $fileName = uniqid() . "_" . basename($archivo['name']);
         $targetFilePath = $uploadDir . $fileName;
+        $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
+        $allowedTypes = ['jpg', 'jpeg', 'png', 'pdf'];
 
-        $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
-        $allowedTypes = array('jpg', 'jpeg', 'png', 'pdf');
+        if (!in_array($fileType, $allowedTypes)) {
+            return "Error: Formato de archivo no permitido ($fileType).";
+        }
 
-        if (in_array($fileType, $allowedTypes)) {
-            if (move_uploaded_file($archivo['tmp_name'], $targetFilePath)) {
-                $documentacion->setURL_descripcion($targetFilePath);
-                $documentacion->setVehiculos_idvehiculos($idvehiculos);
+        if (!move_uploaded_file($archivo['tmp_name'], $targetFilePath)) {
+            return "Error: No se pudo mover el archivo al servidor.";
+        }
 
-                return $documentacion->agregar_img_doc() ? 
-                    (($tipo == 'img') ? "Imagen guardada correctamente." : "Documento guardado correctamente.") :
-                    (($tipo == 'img') ? "Error al guardar la imagen en la base de datos." : "Error al guardar el documento en la base de datos.");
-            } else {
-                return "Error al mover el archivo al servidor.";
-            }
+        // Guardar en la base de datos
+        $documentacion->setURL_descripcion($targetFilePath);
+        $documentacion->setVehiculos_idvehiculos($idvehiculos);
+
+        if ($idtipo_documentacion) {
+            $documentacion->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
+        }
+
+        if ($documentacion->agregar_img_doc()) {
+            return ($tipo === 'img')
+                ? "Imagen guardada correctamente."
+                : "Documento guardado correctamente.";
         } else {
-            return "Formato de archivo no permitido. Solo JPG, JPEG, PNG o PDF.";
+            return ($tipo === 'img')
+                ? "Error al guardar la imagen en la base de datos."
+                : "Error al guardar el documento en la base de datos.";
         }
     }
+
+    /** Verifica si hay algún mensaje de error */
+    private function contieneErrores($mensajes) {
+        foreach ($mensajes as $msg) {
+            if (stripos($msg, 'error') !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Redirecciona con los mensajes concatenados */
+    private function redireccionar($mensajes, $status) {
+        // Obtener la acción actual desde el formulario
+        $accion = $_POST['action'] ?? '';
+
+        // Determinar la página de destino según la acción
+        switch ($accion) {
+            case 'guardar':
+                $page = 'listado_vehiculos';
+                break;
+            case 'guardar_imagenes':
+            case 'guardar_documentos':
+                $page = 'listado_falta_documentacion';
+                break;
+            default:
+                // Si llega algo inesperado, volvemos al listado general por seguridad
+                $page = 'listado_vehiculos';
+                break;
+        }
+
+        // Armar el mensaje
+        $mensaje = implode(" | ", $mensajes);
+
+        // Redirigir
+        header("Location: ../../index.php?page={$page}&mensaje=" . urlencode($mensaje) . "&status={$status}");
+        exit();
+    }
 }
-
-
-
 ?>

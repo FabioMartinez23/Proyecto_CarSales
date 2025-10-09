@@ -240,7 +240,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 <div class="hacer_padding">
     <!-- Contenedor principal -->
     <div class="text-center mb-4">
-        <h1>Registrar Compra</h1>
+        <h1>Registrar Ingreso Nuevo</h1>
     </div>
     <form id="CompraForm" action="controladores/compras/registrar_compra.controlador.php" method="POST">
         <input type="hidden" id="compra" name="action" value="registrar_compra">

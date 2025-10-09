@@ -1,5 +1,5 @@
 <?php
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 
 $ventas = new VenderVehiculo();
 $filas_por_pagina = 5;  // Número de filas que se muestran por página

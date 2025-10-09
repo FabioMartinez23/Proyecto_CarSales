@@ -60,9 +60,6 @@ $result_modelo = $modelo->traer_modelos();
 $tipo_vehiculo = new Tipo_Vehiculos();
 $result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
 
-$precio_vehiculo = new PrecioVehiculo();
-$result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
-
 $carroceria = new Carrocerias();
 $result_carroceria =  $carroceria->traer_carroceria();
 
@@ -74,42 +71,6 @@ $result_neumatico = $neumatico->traer_neumatico();
 
 
 ?>
-
-    <!-- Modal de Agregar/Actualizar Precio -->
-    <div class="modal fade" id="ActualizarPrecioModal" tabindex="-1" aria-labelledby="ActualizarPrecioModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="ActualizarPrecioModalLabel">Actualizar Precio</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h3 id="marcaModeloVehiculo"></h3> <!-- Elemento que estás intentando actualizar -->
-                    <!-- Formulario para agregar o actualizar precio -->
-                    <form id="vehiculo-form" method="POST" action="controladores/vehiculos/precio_vehiculo.controlador.php">
-                        <input type="hidden" name="action" id="action" value="agregar">
-                        <input type="hidden" name="idvehiculos" id="idvehiculos">
-                        
-                        <div class="row mb-3" id="precioActualContainer" style="display: none;">
-                            <div class="col-md-6">
-                                <label for="precio_actual" class="form-label">Precio Actual:</label>
-                                <input oninput="formatearNumero(this)" type="text" id="precio_actual" name="precio_actual" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="precio_nuevo" class="form-label">Nuevo Precio:</label>
-                                <input oninput="formatearNumero(this)" type="text" id="precio_nuevo_agregar" name="precio_nuevo" class="form-control" placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Guardar Precio</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Modal de Ficha Técnica -->
     <div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
@@ -244,69 +205,101 @@ $result_neumatico = $neumatico->traer_neumatico();
         </div>
     </div>
 
-    <!-- Modal de Imágenes y Documentos del Vehículo -->
-    <div class="modal fade" id="DocumentosModal" tabindex="-1" aria-labelledby="DocumentosModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="DocumentosModalLabel">Documentación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h3 id="marcaModeloVehiculoDoc"></h3> <!-- Aquí se mostrará la marca y modelo -->
+<!-- =============================== -->
+<!-- Modal de Imágenes del Vehículo -->
+<!-- =============================== -->
+<div class="modal fade" id="ImagenesModal" tabindex="-1" aria-labelledby="ImagenesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ImagenesModalLabel">Imágenes del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <h3 id="marcaModeloVehiculoImg"></h3>
+                <form id="imagenes-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
+                    <input type="hidden" name="vehiculos_idvehiculos" id="img_idvehiculos">
+                    <input type="hidden" name="action" value="guardar_imagenes">
+                    <div class="mb-3">
+                        <label class="form-label">Subir Imágenes (JPG, PNG)</label>
+                        <input type="file" class="form-control" name="imagen_vehiculo[]" accept=".jpg,.jpeg,.png" multiple>
+                    </div>
+                    <div id="imagenesSubidas" class="mb-4">
+                        <!-- Aquí se mostrarán las imágenes subidas -->
+                    </div>
 
-                    <form id="documentos-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="guardar">
-                        <input type="hidden" name="vehiculos_idvehiculos" id="doc_idvehiculos"> <!-- Campo oculto para el id del vehículo -->
-
-                        <!-- Sección de Imágenes del Vehículo -->
-                        <div class="mb-4">
-                            <h5>Imágenes del Vehículo</h5>
-                            <input type="file" class="form-control" name="imagen_vehiculo[]" accept=".jpg, .jpeg, .png" multiple>
-                            <small class="form-text text-muted">Subir imágenes en formato JPG o PNG.</small>
-                        </div>
-                        <div id="imagenesSubidas" class="mb-4">
-                            <!-- Aquí se mostrarán las imágenes subidas -->
-                        </div>
-
-                        <!-- Sección de Documentación -->
-                        <div class="mb-4">
-                            <h5>Documentación</h5>
-                            <input type="file" class="form-control" name="documentos_vehiculo[]" accept=".pdf" multiple>
-                            <small class="form-text text-muted">Subir documentos en formato PDF.</small>
-                        </div>
-                        <div id="documentosSubidos" class="mb-4">
-                            <!-- Aquí se mostrarán los documentos subidos -->
-                        </div>
-
-                        <!-- Botón de Enviar -->
-                        <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="submit" class="btn btn-primary">Guardar</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Imágenes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    
-    <!-- Breadcrumb -->
+</div>
+
+<!-- =============================== -->
+<!-- Modal de Documentos del Vehículo -->
+<!-- =============================== -->
+<div class="modal fade" id="DocumentosModal" tabindex="-1" aria-labelledby="DocumentosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="DocumentosModalLabel">Documentación del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <h3 id="marcaModeloVehiculoDoc"></h3>
+
+                <form id="documentos-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
+                    <input type="hidden" name="vehiculos_idvehiculos" id="doc_idvehiculos">
+                    <input type="hidden" name="action" value="guardar_documentos">
+
+                    <!-- Select para Tipo de Documento -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Documento</label>
+                        <select class="form-select" name="tipo_documentacion_idtipo_documentacion" id="tipo_documentacion_idtipo_documentacion" required>
+                            <option value="">Cargando tipos...</option>
+                            <!-- Se rellena dinámicamente por AJAX -->
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Subir Documentos (PDF)</label>
+                        <input type="file" class="form-control" name="documentos_vehiculo[]" accept=".pdf" multiple required>
+                    </div>
+
+                    <div id="documentosSubidos" class="mb-4">
+                        <!-- Aquí se mostrarán los documentos subidos -->
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Documentos</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
         <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Vehículos Disponibles</li>
+        <li class="breadcrumb-item"><a href="index.php?page=gestion_stock">Gestión de Stock</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Vehículos Faltantes de Documentación</li>
     </ol>
 </nav>
 
 
     <div class="col hacer_padding">
-        <h1 class="text-center mb-4">Vehículos Disponibles</h1>
+        <h1 class="text-center mb-4">Vehículos Faltantes de Documentación</h1>
 
         <!-- Contenedor para centrar el botón y el buscador -->
         <div class="d-flex justify-content-center align-items-center mb-4">
             <!-- Botón de Registrar Nuevo Vehículo -->
-            <a type="button" class="btn me-3  btn-action" href="index.php?page=registrar_vehiculos&accion=registrar">Registrar Nuevo Vehículo</a>
+            <a type="button" class="btn me-3  btn-action" href="index.php?page=listado_vehiculos">Vehiculos Disponibles</a>
 
             <!-- Buscador -->
             <div class="d-flex">
@@ -332,12 +325,9 @@ $result_neumatico = $neumatico->traer_neumatico();
                         <th>Marca</th>
                         <th>Modelo</th>
                         <th>Tipo</th>
-                        <th>Precios</th>
-                        <th>Actualizar Precio</th>
                         <th>Ficha Técnica</th>
-                        <th>Modificar</th>
-                        <th>Agregar</th>
-                        <th>Eliminar</th>
+                        <th>Imágenes</th>
+                        <th>Documentos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -349,55 +339,35 @@ $result_neumatico = $neumatico->traer_neumatico();
                             <td><?= $vehiculo_['nombre_modelo']; ?></td>
                             <td><?= $vehiculo_['nombre_tipo']; ?></td>
                             <td>
-                                <?php if(isset($vehiculo_['precio'])): ?>
-                                    <?= $vehiculo_['precio']; ?>
-                                <?php else: ?>
-                                    <a title="Agregar Precio" href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
-                                    data-marca="<?= $vehiculo_['nombre_marca']; ?>" 
-                                    data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" 
-                                    data-año="<?= $vehiculo_['anio']; ?>"
-                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
-                                    <i class="fa-solid fa-sack-dollar"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </td>
-
-                            <td>
-                            <?php if (isset($vehiculo_['precio'])): ?>
-                                <a title="Actualizar Precio" href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
-                                    data-marca="<?= $vehiculo_['nombre_marca']; ?>" 
-                                    data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" 
-                                    data-año="<?= $vehiculo_['anio']; ?>"
-                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>" 
-                                    data-precio="<?= $vehiculo_['precio']; ?>">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
-                                    </a>
-                            <?php endif; ?>
-                            </td>
-                            <td>
                                 <!-- Botón para abrir el modal, con los datos de marca y modelo -->
                                 <a title="Agregar Ficha" href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fichaTecnicaModal" data-marca="<?= $vehiculo_['nombre_marca']; ?>" data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
                                     <i class="fa-solid fa-gears"></i>
                                 </a>
                             </td>
+                            <!-- Botón para agregar imágenes -->
                             <td>
-                                <a href="index.php?page=registrar_vehiculos&idvehiculos=<?= $vehiculo_['idvehiculos']; ?>" class="btn btn-success" title="Modificar Auto">
-                                    <i class="fa-solid fa-pen-to-square"></i>
+                                <a title="Agregar Imágenes" href="#" 
+                                   class="btn btn-info"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#ImagenesModal"
+                                   data-marca="<?= $vehiculo_['nombre_marca']; ?>"
+                                   data-modelo="<?= $vehiculo_['nombre_modelo']; ?>"
+                                   data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                                   <i class="fa-solid fa-image"></i>
                                 </a>
                             </td>
+
+                            <!-- Botón para agregar documentos -->
                             <td>
-                                <a title="Agregar img/doc" href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#DocumentosModal" data-marca="<?= $vehiculo_['nombre_marca']; ?>" data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
-                                    <i class="fa-solid fa-file-circle-plus"></i>
-                            </a>
-                            </td>
-                            <td>
-                                <form id="formulario-eliminar-<?= $vehiculo_['idvehiculos']; ?>" method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
-                                    <input type="hidden" name="action" value="eliminar">
-                                    <input type="hidden" name="idvehiculos" value="<?= $vehiculo_['idvehiculos'] ?>">
-                                    <button onclick="confirmarAccion(event, 'eliminar', 'formulario-eliminar-<?= $vehiculo_['idvehiculos']; ?>')" class="btn btn-danger" type="submit" title="Eliminar">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
+                                <a title="Agregar Documentos" href="#" 
+                                   class="btn btn-secondary"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#DocumentosModal"
+                                   data-marca="<?= $vehiculo_['nombre_marca']; ?>"
+                                   data-modelo="<?= $vehiculo_['nombre_modelo']; ?>"
+                                   data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                                   <i class="fa-solid fa-file-pdf"></i>
+                                </a>
                             </td>
                         </tr>
                     <?php } ?>
@@ -512,144 +482,118 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var documentosModal = document.getElementById('DocumentosModal');
+    // =======================
+    // MODAL DE IMÁGENES
+    // =======================
+    var imagenesModal = document.getElementById('ImagenesModal');
+    imagenesModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var marca = button.getAttribute('data-marca');
+        var modelo = button.getAttribute('data-modelo');
+        var idvehiculo = button.getAttribute('data-idvehiculo');
 
+        document.getElementById('marcaModeloVehiculoImg').textContent = marca + ' - ' + modelo;
+        document.getElementById('img_idvehiculos').value = idvehiculo;
+
+        // ✅ Cargar imágenes existentes por AJAX
+        $.ajax({
+            url: 'controladores/documentos/obtener_documentos.php',
+            method: 'POST',
+            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'imagenes' },
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
+                $('#imagenesSubidas').html(response.imagenes);
+            },
+            error: function() {
+                $('#imagenesSubidas').html("<p>Error al cargar imágenes.</p>");
+            }
+        });
+    });
+
+    // =======================
+    // MODAL DE DOCUMENTOS
+    // =======================
+    var documentosModal = document.getElementById('DocumentosModal');
     documentosModal.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget;
         var marca = button.getAttribute('data-marca');
         var modelo = button.getAttribute('data-modelo');
         var idvehiculo = button.getAttribute('data-idvehiculo');
-        var marcaModeloText = marca + ' - ' + modelo;
+        console.log(idvehiculo);
 
-        document.getElementById('marcaModeloVehiculo').textContent = marcaModeloText;
+        document.getElementById('marcaModeloVehiculoDoc').textContent = marca + ' - ' + modelo;
         document.getElementById('doc_idvehiculos').value = idvehiculo;
 
+        // ✅ Llamada AJAX unificada (documentos + tipos faltantes)
         $.ajax({
             url: 'controladores/documentos/obtener_documentos.php',
             method: 'POST',
-            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'todos' },
+            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'documentos' },
             dataType: 'json',
             success: function(response) {
-                $('#imagenesSubidas').html(response.imagenes);
+                console.log(response);
+                // Mostrar documentos existentes
                 $('#documentosSubidos').html(response.documentos);
 
-                // Añadir eventos para ampliar imagen al hacer clic
-                $('#imagenesSubidas img').on('click', function() {
-                    var src = $(this).attr('src');
-                    showImageModal(src);
-                });
-
-                // Añadir eventos para eliminar imagen
-                $('.delete-image').on('click', function() {
-                    var imageId = $(this).data('image-id');
-                    deleteFile(imageId, 'image');
-                });
-
-                // Añadir eventos para eliminar documento
-                $('.delete-document').on('click', function() {
-                    var docId = $(this).data('doc-id');
-                    deleteFile(docId, 'document');
-                });
+                // Mostrar opciones del select con los tipos faltantes
+                $('#tipo_documentacion_idtipo_documentacion').html(response.tipos);
             },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Error en la petición AJAX: " + textStatus, errorThrown);
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+                console.log(status, error);
+                $('#documentosSubidos').html("<p>Error al cargar documentos.</p>");
+                $('#tipo_documentacion_idtipo_documentacion').html("<option value=''>Error al cargar tipos</option>");
             }
         });
     });
-
-    // Función para mostrar la imagen en un modal de vista ampliada
-    function showImageModal(src) {
-        var modalHtml = `
-            <div class="modal fade" id="imageViewModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="${src}" class="img-fluid" alt="Imagen del Vehículo">
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        $('body').append(modalHtml);
-        $('#imageViewModal').modal('show');
-
-        // Eliminar el modal del DOM al cerrarlo
-        $('#imageViewModal').on('hidden.bs.modal', function () {
-            $(this).remove();
-        });
-    }
 });
 </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var fichaTecnicaModal = document.getElementById('ActualizarPrecioModal');
-
-    fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
-        // Botón que disparó el modal
-        var button = event.relatedTarget;
-
-        // Extraer la información de los atributos data-*
-        var marca = button.getAttribute('data-marca');
-        var modelo = button.getAttribute('data-modelo');
-        var año = button.getAttribute('data-año');
-        var idvehiculo = button.getAttribute('data-idvehiculo');
-        var precio = button.getAttribute('data-precio');
-
-        // Actualizar el título con la marca y el modelo
-        var marcaModeloText = marca + ' - ' + modelo + ' - Año: ' + año;
-        var marcaModeloVehiculo = document.getElementById('marcaModeloVehiculo');
-        marcaModeloVehiculo.textContent = marcaModeloText;
-
-        // Actualizar el campo hidden con el id del vehículo
-        var inputIdVehiculo = document.getElementById('idvehiculos');
-        inputIdVehiculo.value = idvehiculo;
-
-        // Obtener elementos del formulario
-        var precioActualContainer = document.getElementById('precioActualContainer');
-        var precioActualInput = document.getElementById('precio_actual');
-        var precioNuevoInput = document.getElementById('precio_nuevo_agregar');
-        var actionInput = document.getElementById('action');
-
-        if (precio && precio !== '') {
-            // Caso de actualización de precio
-            actionInput.value = 'actualizar';
-            precioActualContainer.style.display = 'block'; // Mostrar el precio actual
-            precioActualInput.value = precio; // Mostrar el precio actual en el campo de solo lectura
-            precioNuevoInput.value = ''; // Limpiar el campo de nuevo precio
-        } else {
-            // Caso de agregar precio
-            actionInput.value = 'agregar';
-            precioActualContainer.style.display = 'none'; // Ocultar el campo de precio actual
-            precioActualInput.value = ''; // Limpiar el campo de precio actual
-            precioNuevoInput.value = ''; // Limpiar el campo de nuevo precio
-        }
-    });
-});
-
-
-</script>
 
 <script>
     function eliminarDocumento(id) {
-        if (confirm("¿Está seguro de que desea eliminar este documento?")) {
-            $.ajax({
-                url: 'controladores/documentos/eliminar_documentos.php',
-                type: 'POST',
-                data: { idDocumentacion: id },
-                success: function(response) {
-                    alert('Documento eliminado');
-                    location.reload();
-                },
-                error: function() {
-                    alert('Error al eliminar el documento.');
-                }
-            });
-        }
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: 'Esta acción eliminará el documento permanentemente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'controladores/documentos/eliminar_documentos.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { idDocumentacion: id },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Eliminado',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // 🔄 Recargar página después de eliminar
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'No se pudo eliminar el documento.', 'error');
+                    }
+                });
+            }
+        });
     }
 </script>
+
 
 
 <script>
@@ -658,33 +602,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(buscador);
         location.href='index.php?page=listado_vehiculos&buscador='+buscador;
     }
-
-</script>
-
-<script>
-    const switchCheckbox = document.getElementById("switch08");
-    const imageInputContainer = document.getElementById("imageInputContainer");
-
-    switchCheckbox.addEventListener("change", function() {
-        if (switchCheckbox.checked) {
-            imageInputContainer.classList.remove("hidden");
-        } else {
-            imageInputContainer.classList.add("hidden");
-        }
-    });
-</script>
-
-<script>
-        function formatearNumero(input) {
-            // Remueve cualquier carácter que no sea número
-            let valor = input.value.replace(/\D/g, '');
-            
-            // Formatea el número con separadores de miles
-            valor = new Intl.NumberFormat('es-ES').format(valor);
-            
-            // Actualiza el valor del input
-            input.value = valor;
-        }
 </script>
 
 

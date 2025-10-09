@@ -35,17 +35,17 @@ $result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
 
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
-        <li class="breadcrumb-item"><a href="#">Usuarios</a></li>
-        <li class="breadcrumb-item"><a href="#">Gestion de Vehículos</a></li>
+        <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
+        <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
         <?php 
         if(isset($_GET['accion']) && $_GET['accion'] === 'registrar'){
         ?>
-        <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Vehiculos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Registrar Cliente</li>
+        <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Vehículos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Registrar Vehículo</li>
         <?php
         }else{
         ?>
-        <li class="breadcrumb-item active" aria-current="page">Registrar Cliente</li>
+        <li class="breadcrumb-item active" aria-current="page">Registrar Vehículo</li>
         <?php
         }
         ?>

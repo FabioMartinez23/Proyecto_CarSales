@@ -289,24 +289,161 @@ $result_neumatico = $neumatico->traer_neumatico();
             </div>
         </div>
     </div>
-    
-    <!-- Breadcrumb -->
+
+
+
+    <!-- Modal de Ficha Técnica - Ver Mas -->
+    <div class="modal fade" id="modalVerMas<?=$vehiculo_['idvehiculos']; ?>" tabindex="-1" aria-labelledby="fichaVerMasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fichaVerMasLabel">Ficha Técnica del Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h3 id="marcaModeloVehiculoDoc"></h3> <!-- Aquí se mostrará la marca y modelo -->
+
+                    <form id="nuevo-vehiculo-form" method="POST" action="controladores/ficha_tecnica/ficha_tecnica.controlador.php">
+                        <input type="hidden" name="action" value="guardar">
+                        <input type="hidden" name="vehiculos_idvehiculos" id="vehiculos_idvehiculos"> <!-- Campo oculto para el id del vehículo -->
+
+                        <!-- Revisión Técnica -->
+                        <h2 class="mb-3">Revisión Técnica</h2>
+
+                        <!-- Agrupamos fechas en dos columnas -->
+                        <h6>Vencimientos</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="vencimientoBateria" class="form-label">Batería</label>
+                                <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="vencimientoRTO" class="form-label">RTO - Revisión Técnica</label>
+                                <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="vencimientoService" class="form-label">Service Automotor</label>
+                                <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
+                            </div>
+                        </div>
+
+                        <!-- Agrupamos los checkboxes en dos columnas -->
+                        <h6>Estado de Documentación</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switch08" name="switch_08">
+                                    <label class="form-check-label" for="switch08">Formulario 08</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switch12" name="switch_12">
+                                    <label class="form-check-label" for="switch12">Formulario 12</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchTitulo" name="switch_titulo">
+                                    <label class="form-check-label" for="switchTitulo">Título Automotor</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchCedula" name="switch_cedula">
+                                    <label class="form-check-label" for="switchCedula">Cédula del Vehículo</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchSeguro" name="switch_seguro">
+                                    <label class="form-check-label" for="switchSeguro">Seguro Automotor</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchMunicipalidad" name="switch_municipalidad">
+                                    <label class="form-check-label" for="switchMunicipalidad">Municipalidad - Deudas</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchDominio" name="switch_dominio">
+                                    <label class="form-check-label" for="switchDominio">Informe de Dominio</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchMultas" name="switch_multas">
+                                    <label class="form-check-label" for="switchMultas">Formulario 13i - Infracciones/Multas</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchPrenda" name="switch_prenda">
+                                    <label class="form-check-label" for="switchPrenda">Prenda</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Agrupamos los select en dos columnas -->
+                        <h6>Estado Carrocería</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="descripcionCarroceria" class="form-label">Descripción de la Carrocería:</label>
+                                <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
+                                    <option value="Excelente">Excelente</option>
+                                    <option value="Buena">Buena</option>
+                                    <option value="Regular">Regular</option>
+                                    <option value="Mala">Mala</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="descripcionNeumaticos" class="form-label">Descripción de los Neumáticos:</label>
+                                <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
+                                    <option value="Nuevos">Nuevos</option>
+                                    <option value="Buen Estado">Buen Estado</option>
+                                    <option value="Desgaste Medio">Desgaste Medio</option>
+                                    <option value="Desgastados">Desgastados</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="descripcionCristales" class="form-label">Descripción de Cristales:</label>
+                                <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
+                                    <option value="Sin Rayas">Sin Rayas</option>
+                                    <option value="Con Rayas">Con Rayas</option>
+                                    <option value="Rotura">Rotura</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Enviar -->
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Guardar Datos</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
         <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Vehículos Disponibles</li>
+        <li class="breadcrumb-item"><a href="index.php?page=gestion_stock">Gestión de Stock</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Vehículos en Taller</li>
     </ol>
 </nav>
 
 
     <div class="col hacer_padding">
-        <h1 class="text-center mb-4">Vehículos Disponibles</h1>
+        <h1 class="text-center mb-4">Vehículos en Taller</h1>
 
         <!-- Contenedor para centrar el botón y el buscador -->
         <div class="d-flex justify-content-center align-items-center mb-4">
             <!-- Botón de Registrar Nuevo Vehículo -->
-            <a type="button" class="btn me-3  btn-action" href="index.php?page=registrar_vehiculos&accion=registrar">Registrar Nuevo Vehículo</a>
+            <a type="button" class="btn me-3  btn-action" href="index.php?page=listado_vehiculos">Vehiculos Disponibles</a>
 
             <!-- Buscador -->
             <div class="d-flex">
@@ -338,6 +475,7 @@ $result_neumatico = $neumatico->traer_neumatico();
                         <th>Modificar</th>
                         <th>Agregar</th>
                         <th>Eliminar</th>
+                        <th>Ver</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -398,6 +536,11 @@ $result_neumatico = $neumatico->traer_neumatico();
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-warning" title="Ver Más" data-bs-toggle="modal" data-bs-target="#modalVerMas<?= $vehiculo_['idvehiculos']; ?>">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
                             </td>
                         </tr>
                     <?php } ?>
@@ -527,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $.ajax({
             url: 'controladores/documentos/obtener_documentos.php',
             method: 'POST',
-            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'todos' },
+            data: { vehiculos_idvehiculos: idvehiculo },
             dataType: 'json',
             success: function(response) {
                 $('#imagenesSubidas').html(response.imagenes);

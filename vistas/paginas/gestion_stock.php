@@ -4,37 +4,81 @@ session_start();
 
 ?>
 
+<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-glass">
+        <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
+        <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
+        <?php 
+        if(isset($_GET['accion']) && $_GET['accion'] === 'registrar'){
+        ?>
+        <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Vehículos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Gestión de Stock</li>
+        <?php
+        }else{
+        ?>
+        <li class="breadcrumb-item active" aria-current="page">Gestión de Stock</li>
+        <?php
+        }
+        ?>
+    </ol>
+</nav>
+
 <div class="hacer_padding">
     <main class="main">
-        <section class="dashboard-tarjetas">
-            <div class="tarjeta">
+        <section class="stats d-flex justify-content-between">
+            
+            <!-- Vehículos Disponibles -->
+            <div class="card text-center p-3" onclick="window.location.href='index.php?page=listado_vehiculos'">
                 <div class="contenido-tarjeta">
-                    <h3>2050</h3>
-                    <p>Vehiculos Disponibles</p>
+                    <div class="icono">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <div>
+                        <h3>2050</h3>
+                        <p>Vehículos Disponibles</p>
+                    </div>
                 </div>
-                <!-- <i class="fa-solid fa-cart-shopping"></i> -->
             </div>
-            <div class="tarjeta">
+
+            <!-- Vehículos con Documentación Faltante -->
+            <div class="card text-center p-3" onclick="window.location.href='index.php?page=listado_falta_documentacion'">
                 <div class="contenido-tarjeta">
-                    <h3>3250</h3>
-                    <p>Vehículos Documentación Faltante</p>
+                    <div class="icono">
+                        <i class="fa-solid fa-file-circle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3>3250</h3>
+                        <p>Documentación Faltante</p>
+                    </div>
                 </div>
-                <!-- <i class="fa-solid fa-wallet"></i> -->
             </div>
-            <div class="tarjeta">
+
+            <!-- Vehículos en Reparación -->
+            <div class="card text-center p-3" onclick="window.location.href='index.php?page=listado_taller'">
                 <div class="contenido-tarjeta">
-                    <h3>87.5%</h3>
-                    <p>Vehículos En Reparacion</p>
+                    <div class="icono">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div>
+                        <h3>87.5%</h3>
+                        <p>Vehículos en Reparación</p>
+                    </div>
                 </div>
-                <!-- <i class="fa-solid fa-chart-pie"></i> -->
             </div>
-            <div class="tarjeta">
+
+            <!-- Vehículos Vendidos -->
+            <div class="card text-center p-3" onclick="window.location.href='index.php?page=listado_ventas'">
                 <div class="contenido-tarjeta">
-                    <h3>2550</h3>
-                    <p>Vehículos Vendidos</p>                    
+                    <div class="icono">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <div>
+                        <h3>2550</h3>
+                        <p>Vehículos Vendidos</p>
+                    </div>
                 </div>
-                <!-- <i class="fa-regular fa-user"></i> -->
             </div>
+
         </section>
     </main>
 </div>

@@ -6,22 +6,24 @@ class Documentacion{
     private $idDocumentaciones;
     private $URL_descripcion;
     private $vehiculos_idvehiculos;
+    private $tipo_documentacion_idtipo_documentacion;
 
-    public function __construct($idDocumentaciones='', $URL_descripcion='', $vehiculos_idvehiculos='') {
+    public function __construct($idDocumentaciones='', $URL_descripcion='', $vehiculos_idvehiculos='', $tipo_documentacion_idtipo_documentacion='') {
         $this->idDocumentaciones = $idDocumentaciones;
         $this->URL_descripcion = $URL_descripcion;
         $this->vehiculos_idvehiculos = $vehiculos_idvehiculos;
+        $this->tipo_documentacion_idtipo_documentacion = $tipo_documentacion_idtipo_documentacion;
     }
 
     public function agregar_img_doc(){
         $conexion = new Conexion();
-        $query = "INSERT INTO Documentaciones (URL_descripcion, vehiculos_idvehiculos) VALUES ('$this->URL_descripcion', '$this->vehiculos_idvehiculos')";
+        $query = "INSERT INTO Documentaciones (URL_descripcion, vehiculos_idvehiculos, tipo_documentacion_idtipo_documentacion) VALUES ('$this->URL_descripcion', '$this->vehiculos_idvehiculos', '$this->tipo_documentacion_idtipo_documentacion')";
         return $conexion->insertar($query);
     }
 
     public function mostrar_img_doc_vehiculos($vehiculos_idvehiculos){
         $conexion = new Conexion();
-        $query = "SELECT * FROM Documentaciones  WHERE vehiculos_idvehiculos = $vehiculos_idvehiculos";
+        $query = "SELECT * FROM Documentaciones INNER JOIN tipo_documentacion ON Documentaciones.tipo_documentacion_idtipo_documentacion = tipo_documentacion.idtipo_documentacion WHERE vehiculos_idvehiculos = $vehiculos_idvehiculos";
         return $conexion->consultar($query);
     }
 
@@ -46,8 +48,16 @@ class Documentacion{
         
     }
 
-    public function eliminar_img($vehiculos_idvehiculos){
+    public function traer_doc_vehiculos($vehiculos_idvehiculos){
+        $conexion = new Conexion();
+        $query = "SELECT * FROM Documentaciones INNER JOIN tipo_documentacion ON Documentaciones.tipo_documentacion_idtipo_documentacion = tipo_documentacion.idtipo_documentacion WHERE vehiculos_idvehiculos = $vehiculos_idvehiculos";
+        return $conexion->consultar($query);
+    }
 
+    public function eliminar_img_doc(){
+        $conexion = new Conexion();
+        $query = "DELETE FROM Documentaciones WHERE idDocumentaciones = '$this->idDocumentaciones'";
+        return $conexion->insertar($query);
     }
 
     /**
@@ -106,6 +116,26 @@ class Documentacion{
     public function setVehiculos_idvehiculos($vehiculos_idvehiculos)
     {
         $this->vehiculos_idvehiculos = $vehiculos_idvehiculos;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of tipo_documentacion_idtipo_documentacion
+     */ 
+    public function getTipo_documentacion_idtipo_documentacion()
+    {
+        return $this->tipo_documentacion_idtipo_documentacion;
+    }
+
+    /**
+     * Set the value of tipo_documentacion_idtipo_documentacion
+     *
+     * @return  self
+     */ 
+    public function setTipo_documentacion_idtipo_documentacion($tipo_documentacion_idtipo_documentacion)
+    {
+        $this->tipo_documentacion_idtipo_documentacion = $tipo_documentacion_idtipo_documentacion;
 
         return $this;
     }

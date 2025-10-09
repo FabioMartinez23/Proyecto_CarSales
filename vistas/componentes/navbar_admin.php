@@ -37,9 +37,9 @@
                             </ul>
                         </li>
                         <li class="dropdown-submenu">
-                            <a class="dropdown-item dropdown-toggle" href="#">Gestión de Compras</a>
+                            <a class="dropdown-item dropdown-toggle" href="#">Gestión de Ingresos</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="index.php?page=listado_compras">Registrar Compras</a></li>
+                                <li><a class="dropdown-item" href="index.php?page=listado_compras">Registrar Ingreso Nuevo</a></li>
                             </ul>
                         </li>
                         <li class="dropdown-submenu">

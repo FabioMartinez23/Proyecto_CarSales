@@ -1,10 +1,14 @@
-<?php
+<?php    
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-// obtener_documentos.php
 require_once('../../modelos/documentaciones.php');
+require_once('../../modelos/tablas_maestras/tipo_documentacion.php');
 
 if (isset($_POST['vehiculos_idvehiculos'])) {
     $vehiculos_idvehiculos = $_POST['vehiculos_idvehiculos'];
+    $tipo = $_POST['tipo'] ?? 'todos';
+
     $documentacion = new Documentacion();
     $result = $documentacion->mostrar_img_doc_vehiculos($vehiculos_idvehiculos);
 
@@ -14,30 +18,30 @@ if (isset($_POST['vehiculos_idvehiculos'])) {
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $url = $row['URL_descripcion'];
-            $fileType = pathinfo($url, PATHINFO_EXTENSION);
+            $fileType = strtolower(pathinfo($url, PATHINFO_EXTENSION));
             $urlRelative = str_replace('../../', '', $url);
             $idDocumentacion = $row['idDocumentaciones'];
 
-            // Generar HTML para imágenes con enlace de eliminación
-            if (in_array(strtolower($fileType), ['jpg', 'jpeg', 'png'])) {
+            // 🖼️ Si es imagen
+           if (in_array($fileType, ['jpg','jpeg','png']) && ($tipo==='imagenes'||$tipo==='todos')) {
                 $imagenesHTML .= "
-                    <div class='image-item'>
+                    <div class='image-item' data-id='$idDocumentacion'>
                         <a href='#' onclick='ampliarImagen(\"$urlRelative\")'>
                             <img src='$urlRelative' class='img-thumbnail' alt='Imagen subida'>
                         </a>
                         <div>
-                            <a href='#' onclick='eliminarDocumento($idDocumentacion)' class='btn-delete'>Eliminar</a>
+                            <button type='button' class='btn btn-danger btn-sm' onclick='eliminarDocumento($idDocumentacion, this)'>Eliminar</button>
                         </div>
                     </div>
                 ";
-            } elseif (strtolower($fileType) === 'pdf') {
+            } elseif ($fileType==='pdf' && ($tipo==='documentos'||$tipo==='todos')) {
                 $documentosHTML .= "
-                    <div class='document-item'>
+                    <div class='document-item' data-id='$idDocumentacion'>
                         <div>
-                            <a href='$urlRelative' target='_blank'>Ver archivo PDF $idDocumentacion</a>
+                            <a href='$urlRelative' target='_blank'>{$row['descripcion']}</a>
                         </div>
                         <div>
-                            <a href='#' onclick='eliminarDocumento($idDocumentacion)' class='btn-delete'>Eliminar</a>
+                            <button type='button' class='btn btn-danger btn-sm' onclick='eliminarDocumento($idDocumentacion, this)'>Eliminar</button>
                         </div>
                     </div>
                 ";
@@ -45,11 +49,22 @@ if (isset($_POST['vehiculos_idvehiculos'])) {
         }
     }
 
-    echo json_encode(['imagenes' => $imagenesHTML, 'documentos' => $documentosHTML]);
+    // 🔽 Tipos faltantes
+    $tipo_documentacion = new Tipo_Documentacion();
+    $result_tipos_faltantes = $tipo_documentacion->mostrar_tipos_faltantes($vehiculos_idvehiculos); 
+    $tiposHTML = '<option value="">Seleccione un tipo...</option>';
+
+    if ($result_tipos_faltantes->num_rows > 0) {
+        while ($row = $result_tipos_faltantes->fetch_assoc()) {
+            $tiposHTML .= "<option value='{$row['idtipo_documentacion']}'>{$row['descripcion']}</option>";
+        }
+    } else {
+        $tiposHTML .= "<option value=''>No hay tipos disponibles</option>";
+    }
+
+    echo json_encode([
+        'imagenes' => $imagenesHTML,
+        'documentos' => $documentosHTML,
+        'tipos' => $tiposHTML
+    ]);
 }
-
-
-
-
-?>
-

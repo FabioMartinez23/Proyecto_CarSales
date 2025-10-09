@@ -29,6 +29,7 @@ require_once('modelos/tablas_maestras/tipo_documento.php');
 require_once('modelos/tablas_maestras/tipo_pago.php');
 require_once('modelos/tablas_maestras/tipo_anulacion.php');
 require_once('modelos/tablas_maestras/tipo_de_puesto.php');
+require_once('modelos/tablas_maestras/tipo_documentacion.php');
 require_once('modelos/documentos.php');
 require_once('modelos/tablas_maestras/pais.php');
 require_once('modelos/tablas_maestras/provincia.php');
