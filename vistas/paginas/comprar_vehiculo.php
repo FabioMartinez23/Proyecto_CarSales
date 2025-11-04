@@ -205,7 +205,9 @@ $result_años = $años->traer_año_vehiculo();
             $("#miModal").modal('show');
             $("#nombre_marca").text(auto.nombre_marca);
             $("#nombre_modelo").text(auto.nombre_modelo);
-            $("#precio_actual").text(auto.precio);
+            $("#precio_actual").text(
+            new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0 }).format(auto.precio_publico)
+            );
             $("#anios").text(auto.anio);
             $("#tipo_vehiculo").text(auto.nombre_tipo);
             $("#kilometrajes").text(auto.kilometraje);

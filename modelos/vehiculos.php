@@ -12,8 +12,9 @@ class Vehiculos extends Paginacion{
     private $modelos_idmodelos;
     private $colores_idcolores;
     private $tipo_vehiculos_idtipo_vehiculos;
+    private $estado_vehiculo_idestado_vehiculo;
 
-    public function __construct($idvehiculos='',$patente='',$chasis='',$motor='',$año='', $kilometraje = '', $modelos_idmodelos='',$colores_idcolores='', $tipo_vehiculos_idtipo_vehiculos='') {
+    public function __construct($idvehiculos='',$patente='',$chasis='',$motor='',$año='', $kilometraje = '', $modelos_idmodelos='',$colores_idcolores='', $tipo_vehiculos_idtipo_vehiculos='', $estado_vehiculo_idestado_vehiculo='') {
         $this->idvehiculos = $idvehiculos;
         $this->patente = $patente;
         $this->chasis = $chasis;
@@ -23,6 +24,7 @@ class Vehiculos extends Paginacion{
         $this->modelos_idmodelos = $modelos_idmodelos;
         $this->colores_idcolores = $colores_idcolores;
         $this->tipo_vehiculos_idtipo_vehiculos = $tipo_vehiculos_idtipo_vehiculos;
+        $this->estado_vehiculo_idestado_vehiculo = $estado_vehiculo_idestado_vehiculo;
     }
 
     public function agregar_vehiculo(){
@@ -75,16 +77,97 @@ class Vehiculos extends Paginacion{
     }
     
 
-    public function buscar_vehiculo($buscador){
+    public function buscar_vehiculo($buscador, $estado = null){
         $conexion = new Conexion();
-        $query = "SELECT vehiculos.*, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, tipo_vehiculos.nombre as nombre_tipo, precios_vehiculos.precio, colores.descripcion as nombre_color FROM vehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos INNER JOIN colores on vehiculos.colores_idcolores = colores.idcolores LEFT JOIN precios_vehiculos ON vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos AND precios_vehiculos.fecha_precio = (
-            SELECT MAX(fecha_precio)
-            FROM precios_vehiculos AS p
-            WHERE p.vehiculos_idvehiculos = vehiculos.idvehiculos
-            AND p.fecha_precio <= NOW()) WHERE 
-        (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%') AND activo_vehiculo = 1 ORDER BY vehiculos.idvehiculos";
+        
+        $query = "
+        SELECT 
+            vehiculos.*, 
+            marcas.nombre AS nombre_marca, 
+            modelos.nombre AS nombre_modelo,
+            tipo_vehiculos.nombre AS nombre_tipo, 
+            colores.descripcion AS nombre_color,
+
+            -- Precio tomado (última fecha)
+            precios_tomado.precio AS precio_tomado,
+            precios_tomado.fecha_precio AS fecha_tomado,
+
+            -- Precio público (última fecha)
+            precios_publico.precio AS precio_publico,
+            precios_publico.fecha_precio AS fecha_publico,
+
+            -- Interés aplicado al precio público
+            intereses_publico.descripcion AS descripcion_interes_publico,
+            intereses_publico.porcentaje AS porcentaje_interes_publico
+
+        FROM vehiculos
+        INNER JOIN modelos 
+            ON vehiculos.modelos_idmodelos = modelos.idmodelos
+        INNER JOIN marcas 
+            ON modelos.marcas_idmarcas = marcas.idmarcas
+        INNER JOIN tipo_vehiculos 
+            ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
+        INNER JOIN colores 
+            ON vehiculos.colores_idcolores = colores.idcolores
+
+        -- JOIN para precio TOMADO (último)
+        LEFT JOIN precios_vehiculos AS precios_tomado 
+            ON precios_tomado.vehiculos_idvehiculos = vehiculos.idvehiculos
+            AND precios_tomado.tipo_precios_idtipo_precios = (
+                SELECT idtipo_precios 
+                FROM tipo_precios 
+                WHERE descripcion = 'tomado' 
+                LIMIT 1
+            )
+            AND precios_tomado.fecha_precio = (
+                SELECT MAX(p1.fecha_precio)
+                FROM precios_vehiculos p1
+                INNER JOIN tipo_precios tp1 
+                    ON p1.tipo_precios_idtipo_precios = tp1.idtipo_precios
+                WHERE p1.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND tp1.descripcion = 'tomado'
+            )
+
+        -- JOIN para precio PÚBLICO (último)
+        LEFT JOIN precios_vehiculos AS precios_publico 
+            ON precios_publico.vehiculos_idvehiculos = vehiculos.idvehiculos
+            AND precios_publico.tipo_precios_idtipo_precios = (
+                SELECT idtipo_precios 
+                FROM tipo_precios 
+                WHERE descripcion = 'publico' 
+                LIMIT 1
+            )
+            AND precios_publico.fecha_precio = (
+                SELECT MAX(p2.fecha_precio)
+                FROM precios_vehiculos p2
+                INNER JOIN tipo_precios tp2 
+                    ON p2.tipo_precios_idtipo_precios = tp2.idtipo_precios
+                WHERE p2.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND tp2.descripcion = 'publico'
+            )
+
+        -- Relación con tabla de intereses (solo para el precio público)
+        LEFT JOIN intereses AS intereses_publico 
+            ON precios_publico.intereses_idintereses = intereses_publico.idintereses
+
+        WHERE 
+            (vehiculos.patente LIKE '%$buscador%' 
+            OR marcas.nombre LIKE '%$buscador%' 
+            OR modelos.nombre LIKE '%$buscador%' 
+            OR vehiculos.anio LIKE '%$buscador%')
+            AND vehiculos.activo_vehiculo = 1
+    ";
+
+        
+        if ($estado) {
+            $query .= " AND estado_vehiculo_idestado_vehiculo = $estado";
+        }
+        
+        $query .= " ORDER BY vehiculos.idvehiculos";
+        
         return $conexion->consultar($query);
     }
+
 
     public function traer_vehiculos_por_patente_json($patente){
         $conexion = new Conexion();
@@ -142,6 +225,88 @@ class Vehiculos extends Paginacion{
         return $conexion->consultar($query);
     }
     
+    public function traer_vehiculos_por_estado($idestado = null, $inicio = 0, $cantidad = 50) {
+        $conexion = new Conexion();
+        $query = "SELECT vehiculos.*, 
+                        colores.descripcion AS nombre_color, 
+                        marcas.nombre AS nombre_marca, 
+                        modelos.nombre AS nombre_modelo, 
+                        tipo_vehiculos.nombre AS nombre_tipo,
+                        estado_vehiculo.descripcion_estado AS nombre_estado
+                FROM vehiculos
+                INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos
+                INNER JOIN colores ON vehiculos.colores_idcolores = colores.idcolores
+                INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas
+                INNER JOIN tipo_vehiculos ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
+                INNER JOIN estado_vehiculo ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
+                WHERE vehiculos.activo_vehiculo = 1";
+
+        if (!empty($idestado)) {
+            $query .= " AND vehiculos.estado_vehiculo_idestado_vehiculo = '$idestado'";
+        }
+
+        $query .= " ORDER BY vehiculos.idvehiculos DESC LIMIT $inicio, $cantidad";
+
+        return $conexion->consultar($query);
+    }
+
+    public function contarVehiculosConFaltante() {
+        $conexion = new Conexion();
+        $query = "SELECT COUNT(DISTINCT v.idvehiculos) AS faltantes
+                FROM vehiculos v
+                LEFT JOIN estado_vehiculo e ON v.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+                WHERE e.estado_vehiculo = 'falta_documento' 
+                    OR e.estado_vehiculo IS NULL";
+        
+        $resultado = $conexion->consultar($query);
+        $fila = $resultado->fetch_assoc();
+        return $fila['faltantes'];
+    }
+
+    public function contarVehiculosDisponibles() {
+        $conexion = new Conexion();
+        $query = "SELECT COUNT(*) AS disponibles
+                FROM vehiculos LEFT JOIN estado_vehiculo e ON vehiculos.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+                WHERE e.estado_vehiculo = 'disponible' AND vehiculos.activo_vehiculo = 1";
+        $resultado = $conexion->consultar($query);
+        $fila = $resultado->fetch_assoc();
+        return $fila['disponibles'];
+    }
+
+    public function contarVehiculosSinDigitar() {
+        $conexion = new Conexion();
+        $query = "SELECT COUNT(*) AS sin_digitar
+                FROM vehiculos LEFT JOIN estado_vehiculo e ON vehiculos.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+                WHERE e.estado_vehiculo = 'falta_digitalizacion' AND vehiculos.activo_vehiculo = 1";
+        $resultado = $conexion->consultar($query);
+        $fila = $resultado->fetch_assoc();
+        return $fila['sin_digitar'];
+    }
+
+    public function actualizar_estado($vehiculos_idvehiculos, $estado_vehiculo_idestado_vehiculo){
+        $conexion = new Conexion();
+        $query = "UPDATE vehiculos SET estado_vehiculo_idestado_vehiculo = '$estado_vehiculo_idestado_vehiculo' WHERE idvehiculos = '$vehiculos_idvehiculos'";
+        return $conexion->actualizar($query);
+    }
+
+    public function actualizar_disponible($idvehiculos, $estado_nombre) {
+        $conexion = new Conexion();
+
+        // Buscar ID del estado correspondiente
+        $query = "SELECT idestado_vehiculo FROM estado_vehiculo WHERE estado_vehiculo = '$estado_nombre' LIMIT 1";
+        $result = $conexion->consultar($query);
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $idEstado = $row['idestado_vehiculo'];
+
+            // Actualizar el estado del vehículo
+            $update = "UPDATE vehiculos 
+                    SET estado_vehiculo_idestado_vehiculo = '$idEstado'
+                    WHERE idvehiculos = '$idvehiculos'";
+            return $conexion->insertar($update);
+        }
+        return false;
+    }
 
     /**
      * Get the value of idvehiculos
@@ -319,6 +484,26 @@ class Vehiculos extends Paginacion{
     public function setTipo_vehiculos_idtipo_vehiculos($tipo_vehiculos_idtipo_vehiculos)
     {
         $this->tipo_vehiculos_idtipo_vehiculos = $tipo_vehiculos_idtipo_vehiculos;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of estado_vehiculo_idestado_vehiculo
+     */ 
+    public function getEstado_vehiculo_idestado_vehiculo()
+    {
+        return $this->estado_vehiculo_idestado_vehiculo;
+    }
+
+    /**
+     * Set the value of estado_vehiculo_idestado_vehiculo
+     *
+     * @return  self
+     */ 
+    public function setEstado_vehiculo_idestado_vehiculo($estado_vehiculo_idestado_vehiculo)
+    {
+        $this->estado_vehiculo_idestado_vehiculo = $estado_vehiculo_idestado_vehiculo;
 
         return $this;
     }

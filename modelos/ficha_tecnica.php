@@ -7,34 +7,16 @@ class Fichas_Tenicas{
     private $vencimiento_bateria;
     private $vencimiento_service;
     private $vencimiento_RTO;
-    private $form_08;
-    private $form_12;
-    private $titulo_vehiculo;
-    private $seguro;
-    private $municipalidad;
-    private $cedula_vehiculo;
-    private $form_13i;
-    private $informe_dominio;
-    private $prenda;
     private $vehiculos_idvehiculos;
     private $carroceria_idcarroceria;
     private $cristales_idcristales;
     private $neumaticos_idneumaticos;
 
-    public function __construct($idficha_tecnica='', $vencimiento_bateria='', $vencimiento_service='', $vencimiento_RTO='', $form_08='', $form_12='', $titulo_vehiculo='', $seguro='', $municipalidad='', $cedula_vehiculo='', $form_13i='', $informe_dominio='', $prenda='', $vehiculos_idvehiculos='', $carroceria_idcarroceria='', $cristales_idcristales='', $neumaticos_idneumaticos='') {
+    public function __construct($idficha_tecnica='', $vencimiento_bateria='', $vencimiento_service='', $vencimiento_RTO='', $vehiculos_idvehiculos='', $carroceria_idcarroceria='', $cristales_idcristales='', $neumaticos_idneumaticos='') {
         $this->idficha_tecnica = $idficha_tecnica;
         $this->vencimiento_bateria =$vencimiento_bateria;
         $this->vencimiento_service = $vencimiento_service;
         $this->vencimiento_RTO = $vencimiento_RTO;
-        $this->form_08 = $form_08;
-        $this->form_12 = $form_12;
-        $this->titulo_vehiculo = $titulo_vehiculo;
-        $this->seguro = $seguro;
-        $this->municipalidad = $municipalidad;
-        $this->cedula_vehiculo = $cedula_vehiculo;
-        $this->form_13i = $form_13i;
-        $this->informe_dominio = $informe_dominio;
-        $this->prenda = $prenda;
         $this->vehiculos_idvehiculos = $vehiculos_idvehiculos;
         $this->carroceria_idcarroceria = $carroceria_idcarroceria;
         $this->cristales_idcristales = $cristales_idcristales;
@@ -45,7 +27,7 @@ class Fichas_Tenicas{
 
     public function agregar_ficha_tecnica(){
         $conexion = new Conexion();
-        $query = "INSERT INTO ficha_tecnica (vencimiento_bateria, vencimiento_service, vencimiento_RTO, form_08, form_12, titulo_vehiculo, seguro, municipalidad, cedula_vehiculo, form_13i, informe_dominio, prenda, vehiculos_idvehiculos, carroceria_idcarroceria, cristales_idcristales, neumaticos_idneumaticos) VALUES ('$this->vencimiento_bateria', '$this->vencimiento_service', '$this->vencimiento_RTO', '$this->form_08', '$this->form_12', '$this->titulo_vehiculo', '$this->seguro', '$this->municipalidad', '$this->cedula_vehiculo', '$this->form_13i', '$this->informe_dominio', '$this->prenda', '$this->vehiculos_idvehiculos', '$this->carroceria_idcarroceria', '$this->cristales_idcristales', '$this->neumaticos_idneumaticos')";
+        $query = "INSERT INTO ficha_tecnica (vencimiento_bateria, vencimiento_service, vencimiento_RTO, vehiculos_idvehiculos, carroceria_idcarroceria, cristales_idcristales, neumaticos_idneumaticos) VALUES ('$this->vencimiento_bateria', '$this->vencimiento_service', '$this->vencimiento_RTO', '$this->vehiculos_idvehiculos', '$this->carroceria_idcarroceria', '$this->cristales_idcristales', '$this->neumaticos_idneumaticos')";
         return $conexion->insertar($query);
     }
     
@@ -58,15 +40,6 @@ class Fichas_Tenicas{
                     vencimiento_rto = '$this->vencimiento_RTO',
                     vencimiento_bateria = '$this->vencimiento_bateria',
                     vencimiento_service = '$this->vencimiento_service',
-                    form_08 = '$this->form_08',
-                    form_12 = '$this->form_12',
-                    titulo_vehiculo = '$this->titulo_vehiculo',
-                    cedula_vehiculo = '$this->cedula_vehiculo',
-                    seguro = '$this->seguro',
-                    municipalidad = '$this->municipalidad',
-                    informe_dominio = '$this->informe_dominio',
-                    form_13i = '$this->form_13i',
-                    prenda = '$this->prenda'
                 WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'";
         
         $conexion = new Conexion();
@@ -176,186 +149,6 @@ class Fichas_Tenicas{
     public function setVencimiento_RTO($vencimiento_RTO)
     {
         $this->vencimiento_RTO = $vencimiento_RTO;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of form_08
-     */ 
-    public function getForm_08()
-    {
-        return $this->form_08;
-    }
-
-    /**
-     * Set the value of form_08
-     *
-     * @return  self
-     */ 
-    public function setForm_08($form_08)
-    {
-        $this->form_08 = $form_08;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of form_12
-     */ 
-    public function getForm_12()
-    {
-        return $this->form_12;
-    }
-
-    /**
-     * Set the value of form_12
-     *
-     * @return  self
-     */ 
-    public function setForm_12($form_12)
-    {
-        $this->form_12 = $form_12;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of titulo_vehiculo
-     */ 
-    public function getTitulo_vehiculo()
-    {
-        return $this->titulo_vehiculo;
-    }
-
-    /**
-     * Set the value of titulo_vehiculo
-     *
-     * @return  self
-     */ 
-    public function setTitulo_vehiculo($titulo_vehiculo)
-    {
-        $this->titulo_vehiculo = $titulo_vehiculo;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of seguro
-     */ 
-    public function getSeguro()
-    {
-        return $this->seguro;
-    }
-
-    /**
-     * Set the value of seguro
-     *
-     * @return  self
-     */ 
-    public function setSeguro($seguro)
-    {
-        $this->seguro = $seguro;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of municipalidad
-     */ 
-    public function getMunicipalidad()
-    {
-        return $this->municipalidad;
-    }
-
-    /**
-     * Set the value of municipalidad
-     *
-     * @return  self
-     */ 
-    public function setMunicipalidad($municipalidad)
-    {
-        $this->municipalidad = $municipalidad;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of cedula_vehiculo
-     */ 
-    public function getCedula_vehiculo()
-    {
-        return $this->cedula_vehiculo;
-    }
-
-    /**
-     * Set the value of cedula_vehiculo
-     *
-     * @return  self
-     */ 
-    public function setCedula_vehiculo($cedula_vehiculo)
-    {
-        $this->cedula_vehiculo = $cedula_vehiculo;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of form_13i
-     */ 
-    public function getForm_13i()
-    {
-        return $this->form_13i;
-    }
-
-    /**
-     * Set the value of form_13i
-     *
-     * @return  self
-     */ 
-    public function setForm_13i($form_13i)
-    {
-        $this->form_13i = $form_13i;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of informe_dominio
-     */ 
-    public function getInforme_dominio()
-    {
-        return $this->informe_dominio;
-    }
-
-    /**
-     * Set the value of informe_dominio
-     *
-     * @return  self
-     */ 
-    public function setInforme_dominio($informe_dominio)
-    {
-        $this->informe_dominio = $informe_dominio;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of prenda
-     */ 
-    public function getPrenda()
-    {
-        return $this->prenda;
-    }
-
-    /**
-     * Set the value of prenda
-     *
-     * @return  self
-     */ 
-    public function setPrenda($prenda)
-    {
-        $this->prenda = $prenda;
 
         return $this;
     }

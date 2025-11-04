@@ -33,7 +33,6 @@
                                 <li><a class="dropdown-item" href="index.php?page=registrar_vehiculos">Registrar Vehículos</a></li>
                                 <li><a class="dropdown-item" href="index.php?page=listado_vehiculos">Vehículos Disponibles</a></li>
                                 <li><a class="dropdown-item" href="index.php?page=gestion_stock">Gestión de Stock</a></li>
-                                <!-- <li><a class="dropdown-item" href="index.php?page=listado_precios">Actualización de Precios</a></li> -->
                             </ul>
                         </li>
                         <li class="dropdown-submenu">
@@ -48,7 +47,6 @@
                                 <li><a class="dropdown-item" href="index.php?page=listado_ventas">Registrar Ventas</a></li>
                             </ul>
                         </li>
-                        <!-- <li><a class="dropdown-item" href="index.php?page=form_financiamiento">Gestión de Financiamiento</a></li> -->
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
@@ -79,18 +77,14 @@
                 <li class="nav-item">
                     <a class="nav-link" href="index.php?page=form_mis_datos">Mis Datos</a>
                 </li>
-                <?php
-                // Convertir la fecha actual al formato Y-m-d
-                $fecha_actual = date('Y-m-d');
 
-                // Instancia de Usuario y obtener las nuevas notificaciones del día
+                <?php
+                // 🔹 Notificaciones existentes (usuarios nuevos)
+                $fecha_actual = date('Y-m-d');
                 $registros = new Usuario();
                 $resultado = $registros->nuevos_usuarios_registrados($fecha_actual);
-
-                // Contar las notificaciones nuevas
                 $total = $resultado->num_rows;
 
-                // Verificar si ya se han marcado como vistas las notificaciones de hoy
                 if (isset($_SESSION['viewed_notifications_date']) && $_SESSION['viewed_notifications_date'] === $fecha_actual) {
                     $new_notifications = 0;
                 } else {
@@ -98,7 +92,7 @@
                 }
                 ?>
 
-                <!-- Notificación con ícono de campana -->
+                <!-- 🔔 Notificación con ícono de campana (Pusher) -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
                         <i class="fa-regular fa-bell"></i>
@@ -128,8 +122,13 @@
                     </ul>
                 </li>
 
-
-
+                <!-- 🔹 NUEVO: Notificación de documentación faltante -->
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="index.php?page=listado_falta_documentacion" id="docNotificationLink" title="Verificar documentación">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span class="badge bg-warning text-dark position-absolute top-0 start-100 translate-middle" id="doc-count" style="display:none;"></span>
+                    </a>
+                </li>
 
                 <li class="nav-item">
                     <a class="nav-link" href="vistas/paginas/salida.php">Cerrar Sesión</a>
@@ -139,26 +138,26 @@
     </div>
 </nav>
 
-
+<!-- 🔹 Script para dropdowns -->
 <script>
-    // Habilitar el comportamiento de submenú desplegable
-    document.addEventListener('DOMContentLoaded', function() {
-        var dropdownSubmenus = document.querySelectorAll('.dropdown-submenu');
+document.addEventListener('DOMContentLoaded', function() {
+    var dropdownSubmenus = document.querySelectorAll('.dropdown-submenu');
 
-        dropdownSubmenus.forEach(function(submenu) {
-            submenu.addEventListener('mouseenter', function() {
-                var dropdownMenu = submenu.querySelector('.dropdown-menu');
-                dropdownMenu.classList.add('show');
-            });
+    dropdownSubmenus.forEach(function(submenu) {
+        submenu.addEventListener('mouseenter', function() {
+            var dropdownMenu = submenu.querySelector('.dropdown-menu');
+            dropdownMenu.classList.add('show');
+        });
 
-            submenu.addEventListener('mouseleave', function() {
-                var dropdownMenu = submenu.querySelector('.dropdown-menu');
-                dropdownMenu.classList.remove('show');
-            });
+        submenu.addEventListener('mouseleave', function() {
+            var dropdownMenu = submenu.querySelector('.dropdown-menu');
+            dropdownMenu.classList.remove('show');
         });
     });
+});
 </script>
 
+<!-- 🔔 Script Pusher (notificaciones existentes) -->
 <script src="assets/js/pusher.min.js"></script>
 <script>
 Pusher.logToConsole = true;
@@ -176,11 +175,9 @@ let contador = parseInt(badge.textContent) || 0;
 channel.bind('nuevo-evento', function(data) {
     console.log("Notificación recibida:", data);
 
-    // Actualizar badge
     contador++;
     badge.textContent = contador;
 
-    // Crear elemento para el dropdown
     let li = document.createElement('li');
     li.classList.add('dropdown-item');
 
@@ -207,10 +204,39 @@ channel.bind('nuevo-evento', function(data) {
 
     if (lista) lista.prepend(li);
 });
-// Resetear contador al abrir el dropdown
+
 document.getElementById('notificationDropdown').addEventListener('click', function() {
     contador = 0;
     badge.textContent = '0';
+});
+</script>
+
+<!-- 🔹 Script para verificar documentación faltante -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const docCount = document.getElementById('doc-count');
+    const docLink = document.getElementById('docNotificationLink');
+
+    function verificarDocumentacion() {
+        fetch('controladores/notificaciones/verificar_documentacion.php')
+            .then(res => res.json())
+            .then(data => {
+                const faltantes = parseInt(data.faltantes) || 0;
+
+                if (faltantes > 0) {
+                    docCount.textContent = faltantes;
+                    docCount.style.display = 'inline-block';
+                    docLink.title = `Hay ${faltantes} vehículo(s) con documentación incompleta`;
+                } else {
+                    docCount.style.display = 'none';
+                    docLink.title = 'Toda la documentación está completa';
+                }
+            })
+            .catch(err => console.error('Error verificando documentación:', err));
+    }
+
+    verificarDocumentacion();
+    setInterval(verificarDocumentacion, 300000); // cada 5 minutos
 });
 </script>
 

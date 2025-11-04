@@ -6,6 +6,7 @@ require_once('../modelos/conexion.php');
 require_once('../modelos/usuarios.php');
 require_once('../modelos/perfiles.php');
 require_once('../modelos/personas.php');
+require_once('../modelos/vehiculos.php');
 
 session_start();
 
@@ -43,7 +44,8 @@ class LoginControlador {
                     while($row_perfiles = $resultado_perfiles->fetch_assoc()){
                         $_SESSION['idperfiles'] = $row['perfiles_idperfiles'];
                         $_SESSION['descripcion'] = $row_perfiles['descripcion'];
-
+                        $vehiculo = new Vehiculos();
+                        $_SESSION['vehiculos_faltantes'] = $vehiculo->contarVehiculosConFaltante();
                     }
                     // obtiene el perfil fin
 

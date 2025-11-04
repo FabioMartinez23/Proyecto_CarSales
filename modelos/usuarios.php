@@ -108,6 +108,12 @@ public function traer_usuarios(){
         return $conexion->consultar($query);
 }
 
+public function traer_usuarios_por_perfil($perfiles_idperfiles){
+        $conexion = new Conexion();
+        $query = "SELECT * FROM usuarios INNER JOIN perfiles on perfiles.idperfiles = usuarios.perfiles_idperfiles WHERE activo_usuario = 1 AND perfiles_idperfiles = '$perfiles_idperfiles' limit $this->pagina_actual,$this->paginacion";
+        return $conexion->consultar($query);
+}
+
 public function cambiar_password(){
         $conexion = new Conexion();
         $password = password_hash($this->password, PASSWORD_DEFAULT);

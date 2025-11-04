@@ -626,48 +626,54 @@ div.contenido-tarjeta p{
     background-color: #DBD7D2;
 }
 
+/* Listado de Vehiculos falta de Documentación */
 
-/*.no-editable{
-    background-color: rgba(0, 0, 0, 0); /* Negro con 50% de opacidad 
-}*/
-
-
-/* Estilo general para las imágenes subidas 
-#imagenesSubidas {
-    display: flex; /* Utiliza flexbox para alinear las imágenes
-    flex-wrap: wrap; /* Permite que las imágenes se ajusten a múltiples líneas si es necesario
-    gap: 5px; /* Espacio de 5px entre las imágenes 
+/* ---- PESTAÑAS DE ESTADO ---- */
+.custom-nav-tabs {
+    border-bottom: none;
+    background: transparent; /* Sin fondo general */
+    display: flex;
+    justify-content: start;
+    gap: 4px;
+    margin-bottom: 0;
 }
 
-/* Estilo para cada imagen 
-#imagenesSubidas img {
-    width: 100px; /* Establece un ancho fijo para las imágenes
-    height: auto; /* Mantiene la relación de aspecto
-    object-fit: cover; /* Recorta la imagen si es necesario para llenar el contenedor
+.custom-nav-tabs .nav-link {
+    background-color: #50597a; /* tono más claro (inactivo) */
+    color: #f8f9fa;
+    border: 1px solid #333A56;
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    padding: 0.6rem 1rem;
 }
 
-/* Estilo general para los documentos subidos
-#documentosSubidos {
-    display: flex; /* Utiliza flexbox para alinear los documentos
-    flex-wrap: wrap; /* Permite que los documentos se ajusten a múltiples líneas si es necesario
-    gap: 5px; /* Espacio de 5px entre los documentos 
+.custom-nav-tabs .nav-link:hover {
+    background-color: #333A56; /* tono principal al pasar el cursor */
+    color: #fff;
 }
 
-/* Estilo para cada enlace de documento
-#documentosSubidos p {
-    margin: 0; /* Elimina el margen predeterminado del párrafo
-    padding: 5px; /* Espaciado interno para mejorar la apariencia
-    border: 1px solid #ccc; /* Añade un borde ligero alrededor de cada documento
-    border-radius: 4px; /* Bordes redondeados
-    background-color: #f9f9f9; /* Color de fondo para los documentos
-    cursor: pointer; /* Cambia el cursor al pasar sobre el documento
-    transition: background-color 0.3s; /* Transición suave para el cambio de fondo
+.custom-nav-tabs .nav-link.active {
+    background-color: #333A56; /* color activo */
+    color: #fff;
+    font-weight: 600;
+    border-color: #333A56;
+    box-shadow: inset 0 -3px 0 #212534; /* leve profundidad */
 }
 
-/* Efecto al pasar el mouse sobre los documentos
-#documentosSubidos p:hover {
-    background-color: #e2e2e2; /* Cambia el color de fondo al pasar el mouse
-}*/
+/* Modal precios */
+
+#precio_actual_texto {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333A56;
+}
+
+.bg-modal {
+    background-color: #333A56;
+    font-weight: 700;
+}
 
 /* RESPONSIVE */
 

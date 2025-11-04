@@ -5,10 +5,16 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 $cantidad_vehiculos = new Vehiculos();
-$result_cant_vehiculos = $cantidad_vehiculos->traer_cantidad_vehiculo();
-foreach($result_cant_vehiculos as $total_vehiculos){
-    $total_vehiculos_count = $total_vehiculos['total'];
-}
+$result_vehiculos_disponibles = $cantidad_vehiculos->contarVehiculosDisponibles();
+$total_vehiculos_count = $result_vehiculos_disponibles;
+
+$cantidad_vehiculos_sin_digitar = new Vehiculos();
+$result_vehiculos_sin_digitar = $cantidad_vehiculos_sin_digitar->contarVehiculosSinDigitar();
+$total_vehiculos_sin_digitar_count = $result_vehiculos_sin_digitar;
+
+$cantidad_vehiculos_sin_documentacion = new Vehiculos();
+$result_vehiculos_sin_documentacion = $cantidad_vehiculos_sin_documentacion->contarVehiculosConFaltante();
+$total_vehiculos_sin_documentacion_count = $result_vehiculos_sin_documentacion;
 
 $cantidad_usuarios = new Usuario();
 $result_cant_usuarios = $cantidad_usuarios->traer_cantidad_usuario();
@@ -73,6 +79,21 @@ if($_SESSION['descripcion'] == 'Administrador' || $_SESSION['descripcion'] == 'E
                 <h2>'.$total_vehiculos_count.'</h2>
                 <p>Vehículos Disponibles</p>
             </div>
+            <div class="card text-center p-3" onclick="window.location.href=\'index.php?page=listado_falta_documentacion&estado=2\'">
+                <h2>'.$total_vehiculos_sin_documentacion_count.'</h2>
+                <p>Vehículos Sin Documentación</p>
+            </div>
+            <div class="card text-center p-3" onclick="window.location.href=\'index.php?page=listado_falta_documentacion&estado=3\'">
+                <h2>'.$total_vehiculos_sin_digitar_count.'</h2>
+                <p>Vehículos Que Faltan Digitalizar</p>
+            </div>
+            <div class="card text-center p-3">
+                <h2>42</h2>
+                <p>Nuevos Clientes del Mes</p>
+            </div>
+        </section>
+
+        <section class="stats d-flex justify-content-between">
             <div class="card text-center p-3">
                 <h2>'.$total_ventas_count.'</h2>
                 <p>Ventas Concretadas</p>
@@ -84,21 +105,6 @@ if($_SESSION['descripcion'] == 'Administrador' || $_SESSION['descripcion'] == 'E
             <div class="card text-center p-3">
                 <h2>'.$total_usuarios_count.'</h2>
                 <p>Total Usuarios Registrados</p>
-            </div>
-        </section>
-
-        <section class="stats d-flex justify-content-between">
-            <div class="card text-center p-3">
-                <h2>150</h2>
-                <p>Vehículos en Reparación</p>
-            </div>
-            <div class="card text-center p-3">
-                <h2>$5.000.000</h2>
-                <p>Ingresos del Mes</p>
-            </div>
-            <div class="card text-center p-3">
-                <h2>42</h2>
-                <p>Nuevos Clientes del Mes</p>
             </div>
             <div class="card text-center p-3">
                 <h2>Ford Focus</h2>

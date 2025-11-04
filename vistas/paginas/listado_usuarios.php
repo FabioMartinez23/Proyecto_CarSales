@@ -22,17 +22,27 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
     $busqueda = $_GET['buscador'];  // Recoge la búsqueda del input
     $result_usuarios = $usuario->consultar_usuario($busqueda); // Ejecuta la búsqueda
 } else {
-    // Si no hay búsqueda, carga todos los usuarios de forma predeterminada
-    $result_usuarios_ = $usuario->traer_cantidad_usuario();
-    foreach ($result_usuarios_ as $usuario_1) {
-        $total_registros = $usuario_1['total'];
-    }
-    if (isset($_GET['pagina_actual'])) {
-        $usuario->pagina_actual = $_GET['pagina_actual'];
-    }
-    $result_usuarios = $usuario->traer_usuarios();
-}
+    // Manejo de filtro por perfil
+    $filtro_perfil = $_GET['filtro_perfil'] ?? '';
 
+    if (!empty($filtro_perfil)) {
+        $result_usuarios = $usuario->traer_usuarios_por_perfil($filtro_perfil);
+    } else {
+        // Paginación
+        $filas_por_pagina = 10;
+        $usuario->pagina_actual = isset($_GET['pagina_actual']) ? intval($_GET['pagina_actual']) : 0;
+        $inicio = $usuario->pagina_actual * $filas_por_pagina;
+
+        // Obtener el total de registros
+        $result_usuarios_total = $usuario->traer_cantidad_usuario();
+        if ($usuario_ = $result_usuarios_total->fetch_assoc()) {
+            $total_registros = $usuario_['total'];
+        }
+
+        // Traer usuarios con paginación
+        $result_usuarios = $usuario->traer_usuarios($inicio, $filas_por_pagina);
+    }
+}
 $tipo_sexo = new Tipo_Sexos();
 $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
@@ -48,7 +58,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 
 <div class="row hacer_padding">
     <h1 class="text-center mb-4">Creación de Usuarios</h1>
-    <div class="col">
+    <div class="col-md-3 mb-4">
         <h2 class="text-center">Registrar Usuario</h2>
 
         <form method="POST" action="controladores/usuarios/usuarios.controlador.php">
@@ -121,11 +131,20 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
         <h2 class="text-center mb-4">Usuarios</h2>
         
         <div class="d-flex justify-content-end mb-4">
-            <input name="buscador" id="idbuscador" class="form-control form-control-sm me-2" type="search" placeholder="Buscar por Nombre - Apellido" aria-label="Buscar" style="width: 250px;">
+            <input name="buscador" id="idbuscador" class="form-control form-control-sm me-2" type="search" placeholder="Buscar por Nombre - Apellido" aria-label="Buscar" style="width: 250px;" onkeydown="if(event.key === 'Enter'){ buscador(); }">
             <button class="btn btn-success btn-sm" type="submit" onclick="buscador()">Buscar</button>
         </div>
+        <div id="filtro" class="d-flex justify-content-end mb-4">
+            <select name="filtro_perfil" id="id_filtro_perfil" class="form-select form-select-sm me-2" style="width: 200px;">
+                <option value="">Filtrar por Perfil</option>
+                <?php foreach ($perfiles as $p): ?>
+                    <option value="<?= $p['idperfiles'] ?>"><?= $p['descripcion'] ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button class="btn btn-primary btn-sm" type="button" onclick="filtrarUsuarios()">Filtrar</button>
+        </div>
 
-        <table class="table table-hover">
+        <table class="table table-hover text-center align-middle">
             <thead>
                 <tr>
                 <th>Nombre de Usuario</th>
@@ -192,10 +211,18 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 <script src="assets/js/validaciones/email.js"></script>
 
 <script>
-    function buscador(){
+    function buscador() {
         let buscador = document.getElementById('idbuscador').value;
-        console.log(buscador);
-        location.href='index.php?page=listado_usuarios&buscador='+buscador;
+        location.href = 'index.php?page=listado_usuarios&buscador=' + encodeURIComponent(buscador);
     }
 
+    function filtrarUsuarios() {
+        const filtroPerfil = document.getElementById('id_filtro_perfil').value;
+        let url = 'index.php?page=listado_usuarios';
+
+        if (filtroPerfil) {
+            url += `&filtro_perfil=${filtroPerfil}`;
+        }
+        window.location.href = url;
+    }
 </script>

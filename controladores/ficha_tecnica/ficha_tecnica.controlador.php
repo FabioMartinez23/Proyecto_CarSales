@@ -50,9 +50,13 @@ class Ficha_TecnicaControlador {
             $ficha_tecnica->agregar_ficha_tecnica();
             $mensaje = "Ficha Técnica registrada correctamente.";
         }
-
-        header("location: ../../index.php?page=listado_vehiculos&mensaje=$mensaje&status=success");
-        exit();
+        if($_POST['listado'] == 'falta_documentacion'){
+            header("location: ../../index.php?page=listado_falta_documentacion&mensaje=$mensaje&status=success");
+            exit();
+        } else {
+            header("location: ../../index.php?page=listado_vehiculos&mensaje=$mensaje&status=success");
+            exit();
+        }
     }
 
 }

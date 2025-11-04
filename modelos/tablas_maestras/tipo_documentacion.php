@@ -34,17 +34,43 @@ class Tipo_Documentacion {
         $query = "SELECT * FROM tipo_documentacion WHERE activo_tipo_doc = 1";
         return $conexion->consultar($query);
     }
+
+    public function mostrar_tipo_doc(){
+        $conexion = new Conexion();
+        $query = "SELECT * FROM tipo_documentacion WHERE descripcion != 'imagen'";
+        return $conexion->consultar($query);
+    }
+
+    public function traer_todos_los_tipos() {
+        $conexion = new Conexion();
+        $query = "SELECT idtipo_documentacion, descripcion 
+                FROM tipo_documentacion 
+                WHERE activo_tipo_doc = 1 
+                AND descripcion != 'imagen'";
+        $resultado = $conexion->consultar($query);
+
+        $tipos = [];
+        if ($resultado && $resultado->num_rows > 0) {
+            while ($fila = $resultado->fetch_assoc()) {
+                $tipos[] = $fila;
+            }
+        }
+
+        return $tipos;
+    }
     
     public function mostrar_tipos_faltantes($vehiculos_idvehiculos) {
         $conexion = new Conexion();
         $query = "
             SELECT td.idtipo_documentacion, td.descripcion
             FROM tipo_documentacion td
-            WHERE td.activo_tipo_doc = 1
+            WHERE td.activo_tipo_doc = 1 
+            AND td.descripcion <> 'imagen'
             AND td.idtipo_documentacion NOT IN (
                 SELECT d.tipo_documentacion_idtipo_documentacion
                 FROM Documentaciones d
                 WHERE d.vehiculos_idvehiculos = $vehiculos_idvehiculos
+                AND d.digitalizado = 1
             )
             ORDER BY td.descripcion ASC
         ";

@@ -63,44 +63,78 @@ $result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
 $precio_vehiculo = new PrecioVehiculo();
 $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
 
+$intereses = new Intereses();
+$result_intereses = $intereses->traer_interes();
+
 
 ?>
 
     <!-- Modal de Agregar/Actualizar Precio -->
     <div class="modal fade" id="ActualizarPrecioModal" tabindex="-1" aria-labelledby="ActualizarPrecioModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+            <div class="modal-content">            
                 <div class="modal-header">
                     <h5 class="modal-title" id="ActualizarPrecioModalLabel">Actualizar Precio</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+
                 <div class="modal-body">
-                    <h3 id="marcaModeloVehiculo"></h3> <!-- Elemento que estás intentando actualizar -->
-                    <!-- Formulario para agregar o actualizar precio -->
+                    <h3 id="marcaModeloVehiculo" class="mb-3"></h3>
+
+                    <!-- Formulario -->
                     <form id="vehiculo-form" method="POST" action="controladores/vehiculos/precio_vehiculo.controlador.php">
-                        <input type="hidden" name="action" id="action" value="agregar">
-                        <input type="hidden" name="idvehiculos" id="idvehiculos">
-                        
-                        <div class="row mb-3" id="precioActualContainer" style="display: none;">
-                            <div class="col-md-6">
-                                <label for="precio_actual" class="form-label">Precio Actual:</label>
-                                <input oninput="formatearNumero(this)" type="text" id="precio_actual" name="precio_actual" class="form-control" readonly>
-                            </div>
+                    <input type="hidden" name="action" id="action" value="agregar">
+                    <input type="hidden" name="idvehiculos" id="idvehiculos">
+
+                    <!-- ✅ Precio actual (solo visible al actualizar) -->
+                    <div class="row mb-3" id="precioActualContainer" style="display: none;">
+                        <div class="col-md-6">
+                        <label class="form-label">Precio Actual:</label>
+                        <!-- Texto sin borde -->
+                        <p id="precio_actual_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
+                        <!-- Input oculto (por si querés enviar el valor) -->
+                        <input type="hidden" id="precio_actual" name="precio_actual">
                         </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="precio_nuevo" class="form-label">Nuevo Precio:</label>
-                                <input oninput="formatearNumero(this)" type="text" id="precio_nuevo_agregar" name="precio_nuevo" class="form-control" placeholder="0.00">
-                            </div>
+                    </div>
+
+                    <!-- Nuevo precio tomado -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                        <label for="precio_nuevo_agregar" class="form-label">Nuevo Precio Tomado:</label>
+                        <input oninput="formatearNumero(this)" type="text" id="precio_nuevo_agregar" name="precio_nuevo" class="form-control" placeholder="0.00">
                         </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Guardar Precio</button>
+                    </div>
+
+                    <!-- Interés y precio público calculado -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                        <label for="interes" class="form-label">Interés (%):</label>
+                        <select id="interes" name="interes_id" class="form-select">
+                            <option value="">Seleccionar interés</option>
+                            <?php while ($row = $result_intereses->fetch_assoc()): ?>
+                            <option value="<?= $row['idintereses']; ?>" data-porcentaje="<?= $row['porcentaje']; ?>">
+                                <?= $row['descripcion']; ?> (<?= $row['porcentaje']; ?>%)
+                            </option>
+                            <?php endwhile; ?>
+                        </select>
                         </div>
+
+                        <div class="col-md-6">
+                        <label for="precio_calculado" class="form-label">Precio al Público:</label>
+                        <input type="text" id="precio_calculado" name="precio_calculado" class="form-control" readonly placeholder="Calculado automáticamente">
+                        </div>
+                    </div>
+
+                    <!-- Botón Guardar -->
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Guardar Precio</button>
+                    </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
 
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -151,7 +185,7 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
                 <td><?= $vehiculo_['kilometraje']; ?></td>
                 <td>
                     <?php if(isset($vehiculo_['precio'])): ?>
-                        <?= $vehiculo_['precio']; ?>
+                        <?= number_format($vehiculo_['precio'], 0, ',', '.'); ?>
                     <?php else: ?>
                         <a title="Agregar Precio" href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
                         data-marca="<?= $vehiculo_['nombre_marca']; ?>" 
@@ -171,7 +205,7 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
                         data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" 
                         data-año="<?= $vehiculo_['anio']; ?>"
                         data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>" 
-                        data-precio="<?= $vehiculo_['precio']; ?>">
+                        data-precio="<?= floatval($vehiculo_['precio']); ?>">
                         <i class="fa-solid fa-arrow-rotate-right"></i>
                         </a>
                 <?php endif; ?>
@@ -211,54 +245,90 @@ $result_precio_vehiculo = $precio_vehiculo->traer_los_precios();
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var fichaTecnicaModal = document.getElementById('ActualizarPrecioModal');
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Modal dinámico ---
+        var modal = document.getElementById('ActualizarPrecioModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
 
-    fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
-        // Botón que disparó el modal
-        var button = event.relatedTarget;
+            // Datos del vehículo desde el botón
+            var marca = button.getAttribute('data-marca');
+            var modelo = button.getAttribute('data-modelo');
+            var anio = button.getAttribute('data-año');
+            var idvehiculo = button.getAttribute('data-idvehiculo');
+            var precio = button.getAttribute('data-precio');
 
-        // Extraer la información de los atributos data-*
-        var marca = button.getAttribute('data-marca');
-        var modelo = button.getAttribute('data-modelo');
-        var año = button.getAttribute('data-año');
-        var idvehiculo = button.getAttribute('data-idvehiculo');
-        var precio = button.getAttribute('data-precio');
+            // Actualizar título y campos
+            document.getElementById('marcaModeloVehiculo').textContent = marca + ' - ' + modelo + ' - Año: ' + anio;
+            document.getElementById('idvehiculos').value = idvehiculo;
 
-        // Actualizar el título con la marca y el modelo
-        var marcaModeloText = marca + ' - ' + modelo + ' - Año: ' + año;
-        var marcaModeloVehiculo = document.getElementById('marcaModeloVehiculo');
-        marcaModeloVehiculo.textContent = marcaModeloText;
+            var precioActualContainer = document.getElementById('precioActualContainer');
+            var precioActualTexto = document.getElementById('precio_actual_texto');
+            var precioActualInput = document.getElementById('precio_actual'); // oculto
+            var precioNuevoInput = document.getElementById('precio_nuevo_agregar');
+            var actionInput = document.getElementById('action');
 
-        // Actualizar el campo hidden con el id del vehículo
-        var inputIdVehiculo = document.getElementById('idvehiculos');
-        inputIdVehiculo.value = idvehiculo;
+            if (precio && precio !== '') {
+                actionInput.value = 'actualizar';
+                precioActualContainer.style.display = 'block';
 
-        // Obtener elementos del formulario
-        var precioActualContainer = document.getElementById('precioActualContainer');
-        var precioActualInput = document.getElementById('precio_actual');
-        var precioNuevoInput = document.getElementById('precio_nuevo_agregar');
-        var actionInput = document.getElementById('action');
+                // ✅ Formatear precio actual correctamente, sin duplicar los miles
+                const precioLimpio = precio.toString().replace(/[.,]/g, ''); // elimina todos los puntos y comas
+                const precioNumerico = parseFloat(precioLimpio) || 0;
 
-        if (precio && precio !== '') {
-            // Caso de actualización de precio
-            actionInput.value = 'actualizar';
-            precioActualContainer.style.display = 'block'; // Mostrar el precio actual
-            precioActualInput.value = precio; // Mostrar el precio actual en el campo de solo lectura
-            precioNuevoInput.value = ''; // Limpiar el campo de nuevo precio
-        } else {
-            // Caso de agregar precio
-            actionInput.value = 'agregar';
-            precioActualContainer.style.display = 'none'; // Ocultar el campo de precio actual
-            precioActualInput.value = ''; // Limpiar el campo de precio actual
-            precioNuevoInput.value = ''; // Limpiar el campo de nuevo precio
+                const precioFormateado = new Intl.NumberFormat('es-AR', {
+                    minimumFractionDigits: 0
+                }).format(precioNumerico);
+
+                precioActualTexto.textContent = '$ ' + precioFormateado;
+                precioActualInput.value = precioNumerico; // valor limpio oculto
+                precioNuevoInput.value = '';
+            } else {
+                actionInput.value = 'agregar';
+                precioActualContainer.style.display = 'none';
+                precioActualTexto.textContent = '';
+                precioActualInput.value = '';
+                precioNuevoInput.value = '';
+            }
+        });
+
+        // --- Cálculo del precio al público ---
+        const interesSelect = document.getElementById('interes');
+        const precioNuevoInput = document.getElementById('precio_nuevo_agregar');
+        const precioCalculadoInput = document.getElementById('precio_calculado');
+
+        interesSelect.addEventListener('change', calcularPrecioPublico);
+        precioNuevoInput.addEventListener('input', calcularPrecioPublico);
+
+        function calcularPrecioPublico() {
+            const interes = parseFloat(interesSelect.options[interesSelect.selectedIndex]?.dataset.porcentaje || 0);
+            const precioBase = parseFloat(precioNuevoInput.value.replace(/\./g, '').replace(',', '.') || 0);
+
+            if (interes > 0 && precioBase > 0) {
+                const nuevoPrecio = precioBase * (1 + interes / 100);
+                precioCalculadoInput.value = new Intl.NumberFormat('es-AR', {
+                    minimumFractionDigits: 2
+                }).format(nuevoPrecio);
+            } else {
+                precioCalculadoInput.value = '';
+            }
         }
     });
-});
-
-
 </script>
 
+<!-- 🔹 Script auxiliar para formatear número en inputs -->
+<script>
+    function formatearNumero(input) {
+        // Remueve cualquier carácter que no sea número
+        let valor = input.value.replace(/\D/g, '');
+        
+        // Formatea el número con separadores de miles
+        valor = new Intl.NumberFormat('es-ES').format(valor);
+        
+        // Actualiza el valor del input
+        input.value = valor;
+    }
+</script>
 
 <script>
     function buscador(){
@@ -268,17 +338,3 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 </script>
-
-<script>
-        function formatearNumero(input) {
-            // Remueve cualquier carácter que no sea número
-            let valor = input.value.replace(/\D/g, '');
-            
-            // Formatea el número con separadores de miles
-            valor = new Intl.NumberFormat('es-ES').format(valor);
-            
-            // Actualiza el valor del input
-            input.value = valor;
-        }
-</script>
-

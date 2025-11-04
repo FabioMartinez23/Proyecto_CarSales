@@ -18,10 +18,12 @@ if ($pagina_actual < 1) {
 // Calcular el OFFSET
 $inicio = ($pagina_actual - 1) * $filas_por_pagina;
 
+$estado_actual = isset($_GET['estado']) ? (int)$_GET['estado'] : 2; // 2 por defecto
+
 // Si hay una búsqueda activa
 if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
     $busqueda = $_GET['buscador'];
-    $result_vehiculos = $cantidad_vehiculo->buscar_vehiculo($busqueda);
+    $result_vehiculos = $cantidad_vehiculo->buscar_vehiculo($busqueda, $estado_actual);
 } else {
     // Si no hay búsqueda, manejar los filtros o traer todos los vehículos
     $filtros = [
@@ -34,7 +36,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
 
     if (array_filter($filtros)) {
         // Si hay filtros aplicados
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($filtros, $inicio, $filas_por_pagina);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_filtrado($filtros, $inicio, $filas_por_pagina, $estado_actual);
     } else {
         // Si no hay filtros, obtener el total de vehículos
         $result_vehiculos_total = $vehiculos->traer_cantidad_vehiculo();
@@ -42,7 +44,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
             $total_registros = $vehiculo_1['total'];
         }
         // Traer vehículos con paginación
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($inicio, $filas_por_pagina);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($inicio, $filas_por_pagina, $estado_actual);
     }
 }
 
@@ -50,15 +52,20 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
 $total_paginas = ceil($total_registros / $filas_por_pagina);
 
 
-
 $color = new Colores();
 $result_color = $color->traer_color();
 
+$marca = new Marcas();
+$result_marca = $marca->traer_marca();
+
 $modelo = new Modelos_Vehiculos();
-$result_modelo = $modelo->traer_modelos();
+$result_modelo = $modelo->traer_modelos_filtro();
 
 $tipo_vehiculo = new Tipo_Vehiculos();
 $result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
+
+$años = new Vehiculos();
+$result_años = $años->traer_año_vehiculo();
 
 $carroceria = new Carrocerias();
 $result_carroceria =  $carroceria->traer_carroceria();
@@ -72,138 +79,98 @@ $result_neumatico = $neumatico->traer_neumatico();
 
 ?>
 
-    <!-- Modal de Ficha Técnica -->
-    <div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fichaTecnicaModalLabel">Ficha Técnica del Vehículo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h3 id="marcaModeloVehiculo"></h3> <!-- Aquí se mostrará la marca y modelo -->
+<!-- Modal Ficha Técnica -->
+<div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ficha Técnica del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h3 id="marcaModeloVehiculo"></h3>
 
-                    <form id="nuevo-vehiculo-form" method="POST" action="controladores/ficha_tecnica/ficha_tecnica.controlador.php">
-                        <input type="hidden" name="action" value="guardar">
-                        <input type="hidden" name="vehiculos_idvehiculos" id="vehiculos_idvehiculos"> <!-- Campo oculto para el id del vehículo -->
+                <form id="ficha-tecnica-form" method="POST" action="controladores/ficha_tecnica/ficha_tecnica.controlador.php">
+                    <input type="hidden" name="action" value="guardar">
+                    <input type="hidden" name="listado" value="falta_documentacion">
+                    <input type="hidden" name="vehiculos_idvehiculos" id="vehiculos_idvehiculos">
 
-                        <!-- Revisión Técnica -->
-                        <h2 class="mb-3">Revisión Técnica</h2>
-
-                        <!-- Agrupamos fechas en dos columnas -->
-                        <h6>Vencimientos</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoBateria" class="form-label">Batería</label>
-                                <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoRTO" class="form-label">RTO - Revisión Técnica</label>
-                                <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoService" class="form-label">Service Automotor</label>
-                                <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
-                            </div>
+                    <!-- Revisión Técnica -->
+                    <h2>Revisión Técnica</h2>
+                    <h6>Vencimientos</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="vencimientoBateria">Batería</label>
+                            <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
                         </div>
-
-                        <!-- Agrupamos los checkboxes en dos columnas -->
-                        <h6>Estado de Documentación</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch08" name="switch_08">
-                                    <label class="form-check-label" for="switch08">Formulario 08</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch12" name="switch_12">
-                                    <label class="form-check-label" for="switch12">Formulario 12</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchTitulo" name="switch_titulo">
-                                    <label class="form-check-label" for="switchTitulo">Título Automotor</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchCedula" name="switch_cedula">
-                                    <label class="form-check-label" for="switchCedula">Cédula del Vehículo</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchSeguro" name="switch_seguro">
-                                    <label class="form-check-label" for="switchSeguro">Seguro Automotor</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchMunicipalidad" name="switch_municipalidad">
-                                    <label class="form-check-label" for="switchMunicipalidad">Municipalidad - Deudas</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchDominio" name="switch_dominio">
-                                    <label class="form-check-label" for="switchDominio">Informe de Dominio</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchMultas" name="switch_multas">
-                                    <label class="form-check-label" for="switchMultas">Formulario 13i - Infracciones/Multas</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchPrenda" name="switch_prenda">
-                                    <label class="form-check-label" for="switchPrenda">Prenda</label>
-                                </div>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="vencimientoRTO">RTO - Revisión Técnica</label>
+                            <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="vencimientoService">Service Automotor</label>
+                            <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
+                        </div>
+                    </div>
 
-                        <!-- Agrupamos los select en dos columnas -->
-                        <h6>Estado Carrocería</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionCarroceria" class="form-label">Descripción de la Carrocería:</label>
-                                <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
+                    <!-- Estado Carrocería -->
+                    <h6>Estado Carrocería</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="descripcionCarroceria">Descripción de la Carrocería</label>
+                            <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
                                 <?php foreach($result_carroceria as $carroceria): ?>
                                     <option value="<?php echo $carroceria['idcarroceria']; ?>"><?php echo $carroceria['descripcion_carroceria']; ?></option>
-                                <?php endforeach;?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionNeumaticos" class="form-label">Descripción de los Neumáticos:</label>
-                                <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="descripcionNeumaticos">Descripción de Neumáticos</label>
+                            <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
                                 <?php foreach($result_neumatico as $neumatico): ?>
                                     <option value="<?php echo $neumatico['idneumaticos']; ?>"><?php echo $neumatico['descripcion_neumaticos']; ?></option>
                                 <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionCristales" class="form-label">Descripción de Cristales:</label>
-                                <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="descripcionCristales">Descripción de Cristales</label>
+                            <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
                                 <?php foreach($result_cristal as $cristal): ?>
                                     <option value="<?php echo $cristal['idcristales']; ?>"><?php echo $cristal['descripcion_cristales']; ?></option>
                                 <?php endforeach; ?>
-                                </select>
-                            </div>
+                            </select>
                         </div>
+                    </div>
 
-                        <!-- Botón de Enviar -->
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Guardar Datos</button>
-                        </div>
-                    </form>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">Guardar Ficha Técnica</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Documentación -->
+<div class="modal fade" id="documentacionModal" tabindex="-1" aria-labelledby="documentacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Documentación Física Entregada del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h3 id="marcaModeloDocVehiculo"></h3>
+                <input type="hidden" id="vehiculo_id_doc">
+
+                <div id="contenedorDocumentacion">
+                    <p class="text-muted">Cargando documentación...</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
 
 <!-- =============================== -->
 <!-- Modal de Imágenes del Vehículo -->
@@ -303,7 +270,7 @@ $result_neumatico = $neumatico->traer_neumatico();
 
             <!-- Buscador -->
             <div class="d-flex">
-                <input name="buscador" id="idbuscador" class="form-control form-control-sm me-2" type="search" placeholder="Buscar por Patente - Marca - Modelo" aria-label="Buscar" style="width: 250px;">
+                <input name="buscador" id="idbuscador" class="form-control form-control-sm me-2" type="search" placeholder="Buscar por Patente - Marca - Modelo" aria-label="Buscar..." style="width: 250px;" onkeydown="if(event.key === 'Enter'){ buscador(); }">
                 <button class="btn btn-success btn-sm" type="submit" onclick="buscador()">Buscar</button>
             </div>
         </div>
@@ -314,9 +281,104 @@ $result_neumatico = $neumatico->traer_neumatico();
                     Exportar a Excel
                 </button>
             </form>
+            <section class="d-flex w-100">
+                <aside class="w-100">
+                    <!-- Botón para mostrar/ocultar filtros -->
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-info mb-3" type="button" id="toggleFiltros" onclick="toggleFiltros()">Mostrar Filtros&nbsp;&nbsp;<i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+
+                    <!-- Filtros ocultables -->
+                    <div id="filtros" style="display: none;" class="border p-3 mb-4 rounded-3 bg-light">
+                        <form method="GET" action="index.php" class="d-flex flex-wrap gap-3 align-items-end">
+                            <input type="hidden" name="page" value="listado_falta_documentacion">
+                            <div class="form-floating mb-3 mt-3">
+                                <select name="marca" class="form-select form-select-sm" id="marca">
+                                    <option value="">Seleccionar Marca</option>
+                                    <?php foreach ($result_marca as $marca) { ?>
+                                        <option value="<?= $marca['nombre'] ?>"><?= $marca['nombre'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <label for="marca" class="form-label">Marca</label>
+                            </div>
+
+                            <div class="form-floating mb-3 mt-3">
+                                <select name="modelo" class="form-select form-select-sm" id="modelos">
+                                    <option value="">Seleccionar Modelo</option>
+                                    <?php foreach ($result_modelo as $modelo) { ?>
+                                        <option value="<?= $modelo['nombre'] ?>"><?= $modelo['nombre'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <label for="modelo" class="form-label">Modelo</label>
+                            </div>
+
+                            <div class="form-floating mb-3 mt-3">
+                                <select name="color" class="form-select form-select-sm" id="color">
+                                    <option value="">Seleccionar Color</option>
+                                    <?php foreach ($result_color as $color) { ?>
+                                        <option value="<?= $color['descripcion'] ?>"><?= $color['descripcion'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <label for="color" class="form-label">Color</label>
+                            </div>
+
+                            <div class="form-floating mb-3 mt-3">
+                                <select name="anio" class="form-select form-select-sm" id="anio">
+                                    <option value="">Seleccionar Año</option>
+                                    <?php foreach ($result_años as $año) { ?>
+                                        <option value="<?= $año['anio'] ?>"><?= $año['anio'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <label for="anio" class="form-label">Año</label>
+                            </div>
+
+                            <div class="form-floating mb-3 mt-3">
+                                <select name="tipo" class="form-select form-select-sm" id="tipo">
+                                    <option value="">Seleccionar Tipo</option>
+                                    <?php foreach ($result_tipo_vehiculo as $tipo) { ?>
+                                        <option value="<?= $tipo['nombre'] ?>"><?= $tipo['nombre'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <label for="tipo" class="form-label">Tipo de Vehículo</label>
+                            </div>
+
+                            <button class="btn btn-primary btn-sm" type="submit">Aplicar Filtros</button>
+                        </form>
+                    </div>
+                    
+                </aside>
+            </section>
         </div>
         <!-- Tabla centrada -->
+        <?php
+        // Convertir el resultado a array contable
+        $result_vehiculos_array = [];
+        if ($result_vehiculos) {
+            while ($row = $result_vehiculos->fetch_assoc()) {
+                $result_vehiculos_array[] = $row;
+            }
+        }
+        ?>
+
+        <!-- Tabla centrada -->
         <div class="table-responsive">
+            
+            <!-- Pestañas de Estado -->
+            <ul class="nav nav-tabs custom-nav-tabs mb-0">
+                <li class="nav-item">
+                    <a class="nav-link <?= ($estado_actual == 2) ? 'active' : '' ?>"
+                    href="?page=listado_falta_documentacion&estado=2">
+                    Falta Documentación
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= ($estado_actual == 3) ? 'active' : '' ?>"
+                    href="?page=listado_falta_documentacion&estado=3">
+                    Falta Digitalización
+                    </a>
+                </li>
+            </ul>
+
             <table class="table table-hover text-center align-middle">
                 <thead>
                     <tr>
@@ -327,157 +389,194 @@ $result_neumatico = $neumatico->traer_neumatico();
                         <th>Tipo</th>
                         <th>Ficha Técnica</th>
                         <th>Imágenes</th>
-                        <th>Documentos</th>
+                        <th>Documentación (Digital)</th>
+                        <th>Entrega Física (Estado)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($result_vehiculos as $vehiculo_) { ?>
-                        <tr>
-                            <td><?= $vehiculo_['patente']; ?></td>
-                            <td><?= $vehiculo_['anio']; ?></td>
-                            <td><?= $vehiculo_['nombre_marca']; ?></td>
-                            <td><?= $vehiculo_['nombre_modelo']; ?></td>
-                            <td><?= $vehiculo_['nombre_tipo']; ?></td>
-                            <td>
-                                <!-- Botón para abrir el modal, con los datos de marca y modelo -->
-                                <a title="Agregar Ficha" href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fichaTecnicaModal" data-marca="<?= $vehiculo_['nombre_marca']; ?>" data-modelo="<?= $vehiculo_['nombre_modelo']; ?>" data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                    <?php if (!empty($result_vehiculos_array)): ?>
+                        <?php foreach ($result_vehiculos_array as $vehiculo_): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($vehiculo_['patente']); ?></td>
+                                <td><?= htmlspecialchars($vehiculo_['anio']); ?></td>
+                                <td><?= htmlspecialchars($vehiculo_['nombre_marca']); ?></td>
+                                <td><?= htmlspecialchars($vehiculo_['nombre_modelo']); ?></td>
+                                <td><?= htmlspecialchars($vehiculo_['nombre_tipo']); ?></td>
+                                
+                                <!-- Botón para abrir modal Ficha Técnica -->
+                                <td>
+                                    <a title="Agregar Ficha" href="#" class="btn btn-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#fichaTecnicaModal"
+                                    data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
+                                    data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
+                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
                                     <i class="fa-solid fa-gears"></i>
-                                </a>
-                            </td>
-                            <!-- Botón para agregar imágenes -->
-                            <td>
-                                <a title="Agregar Imágenes" href="#" 
-                                   class="btn btn-info"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#ImagenesModal"
-                                   data-marca="<?= $vehiculo_['nombre_marca']; ?>"
-                                   data-modelo="<?= $vehiculo_['nombre_modelo']; ?>"
-                                   data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
-                                   <i class="fa-solid fa-image"></i>
-                                </a>
-                            </td>
+                                    </a>
+                                </td>
 
-                            <!-- Botón para agregar documentos -->
-                            <td>
-                                <a title="Agregar Documentos" href="#" 
-                                   class="btn btn-secondary"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#DocumentosModal"
-                                   data-marca="<?= $vehiculo_['nombre_marca']; ?>"
-                                   data-modelo="<?= $vehiculo_['nombre_modelo']; ?>"
-                                   data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
-                                   <i class="fa-solid fa-file-pdf"></i>
-                                </a>
+                                <!-- Botón para agregar imágenes -->
+                                <td>
+                                    <a title="Agregar Imágenes" href="#" class="btn btn-info"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#ImagenesModal"
+                                    data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
+                                    data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
+                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                                    <i class="fa-solid fa-image"></i>
+                                    </a>
+                                </td>
+
+                                <!-- Botón para cargar documentación digital -->
+                                <td>
+                                    <a title="Cargar Documentos Digitales" href="#" class="btn btn-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#DocumentosModal"
+                                    data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
+                                    data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
+                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                                    <i class="fa-solid fa-upload"></i>
+                                    </a>
+                                </td>
+
+                                <!-- Botón para cambiar estado de entrega -->
+                                <td>
+                                    <a title="Registrar Entregas" href="#" class="btn btn-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#documentacionModal"
+                                    data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
+                                    data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
+                                    data-idvehiculo="<?= $vehiculo_['idvehiculos']; ?>">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                No se encontraron vehículos para los filtros aplicados.
                             </td>
                         </tr>
-                    <?php } ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
+
+
 
         <!-- Paginación centrada -->
         <nav aria-label="..." class="d-flex justify-content-center">
             <ul class="pagination">
                 <!-- Botón "Anterior" -->
                 <li class="page-item <?php if ($pagina_actual <= 1) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=listado_vehiculos&pagina_actual=<?= $pagina_actual - 1 ?>" aria-disabled="true">Previo</a>
+                    <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $pagina_actual - 1 ?>" aria-disabled="true">Previo</a>
                 </li>
 
                 <!-- Botones de número de página -->
                 <?php for ($i = 1; $i <= $total_paginas; $i++) { ?>
                     <li class="page-item <?php if ($pagina_actual == $i) { echo 'active'; } ?>">
-                        <a class="page-link" href="index.php?page=listado_vehiculos&pagina_actual=<?= $i ?>"><?= $i ?></a>
+                        <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $i ?>"><?= $i ?></a>
                     </li>
                 <?php } ?>
 
                 <!-- Botón "Siguiente" -->
                 <li class="page-item <?php if ($pagina_actual >= $total_paginas) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=listado_vehiculos&pagina_actual=<?= $pagina_actual + 1 ?>">Siguiente</a>
+                    <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $pagina_actual + 1 ?>">Siguiente</a>
                 </li>
             </ul>
         </nav>
     </div>
 
-
+<script>
+        // Mostrar y ocultar filtros
+        function toggleFiltros() {
+            const filtros = document.getElementById('filtros');
+            const toggleBtn = document.getElementById('toggleFiltros');
+            
+            if (filtros.style.display === 'none') {
+                filtros.style.display = 'block';
+                toggleBtn.textContent = 'Ocultar Filtros';
+            } else {
+                filtros.style.display = 'none';
+                toggleBtn.textContent = 'Mostrar Filtros';
+            }
+        }
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var fichaTecnicaModal = document.getElementById('fichaTecnicaModal');
 
-    fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
+    // ---------- Modal Ficha Técnica ----------
+    var fichaModal = document.getElementById('fichaTecnicaModal');
+    fichaModal.addEventListener('show.bs.modal', function(event) {
         var button = event.relatedTarget;
-
         var marca = button.getAttribute('data-marca');
         var modelo = button.getAttribute('data-modelo');
         var idvehiculo = button.getAttribute('data-idvehiculo');
 
-        var marcaModeloVehiculo = document.getElementById('marcaModeloVehiculo');
-        marcaModeloVehiculo.textContent = marca + ' - ' + modelo;
+        document.getElementById('marcaModeloVehiculo').textContent = marca + ' - ' + modelo;
+        document.getElementById('vehiculos_idvehiculos').value = idvehiculo;
 
-        // ⚠️ Reforzar SIEMPRE estos hidden
-        var inputIdVehiculo = document.getElementById('vehiculos_idvehiculos');
-        inputIdVehiculo.value = idvehiculo;
-
-        document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "guardar";
-
-        // 🔑 Traer ficha técnica por AJAX
+        // Traer ficha técnica por AJAX
         let formData = new FormData();
         formData.append("action", "consultar_ficha_tecnica");
         formData.append("id_vehiculo", idvehiculo);
 
-        fetch('controladores/ventas/ventas.controlador.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(text => {
-            try {
-                const data = JSON.parse(text);
-                if (!data.error && data.ficha_tecnica) {
+        fetch('controladores/ventas/ventas.controlador.php', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ficha_tecnica) {
                     let f = data.ficha_tecnica;
-
-                    // Si existe ficha, cambiamos el action a "actualizar"
-                    document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "actualizar";
-
                     document.getElementById("vencimientoBateria").value = f.vencimiento_bateria?.split(" ")[0] || '';
                     document.getElementById("vencimientoRTO").value = f.vencimiento_RTO?.split(" ")[0] || '';
                     document.getElementById("vencimientoService").value = f.vencimiento_service?.split(" ")[0] || '';
 
-                    document.getElementById("switch08").checked = f.form_08 === "1";
-                    document.getElementById("switch12").checked = f.form_12 === "1";
-                    document.getElementById("switchTitulo").checked = f.titulo_vehiculo === "1";
-                    document.getElementById("switchCedula").checked = f.cedula_vehiculo === "1";
-                    document.getElementById("switchSeguro").checked = f.seguro === "1";
-                    document.getElementById("switchMunicipalidad").checked = f.municipalidad === "1";
-                    document.getElementById("switchDominio").checked = f.informe_dominio === "1";
-                    document.getElementById("switchMultas").checked = f.form_13i === "1";
-                    document.getElementById("switchPrenda").checked = f.prenda === "1";
-
                     document.getElementById("descripcionCarroceria").value = f.carroceria_idcarroceria || '';
                     document.getElementById("descripcionNeumaticos").value = f.neumaticos_idneumaticos || '';
                     document.getElementById("descripcionCristales").value = f.cristales_idcristales || '';
-                } else {
-                    // Si no hay ficha → limpiar SOLO visibles
-                    document.querySelectorAll("#fichaTecnicaModal input, #fichaTecnicaModal select").forEach(el => {
-                        if (el.type === "checkbox") {
-                            el.checked = false;
-                        } else if (el.type === "date" || el.tagName === "SELECT" || el.type === "text") {
-                            el.value = "";
-                        }
-                    });
-
-                    // ⚠️ Reforzar hidden (no perderlos nunca)
-                    inputIdVehiculo.value = idvehiculo;
-                    document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "guardar";
                 }
-            } catch (e) {
-                console.error("Error parseando JSON:", e, text);
-            }
-        })
-        .catch(err => console.error("Error AJAX ficha técnica:", err));
+            });
+    });
+
+    // ---------- Modal Documentación ----------
+    var docModal = document.getElementById('documentacionModal');
+    docModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var marca = button.getAttribute('data-marca');
+        var modelo = button.getAttribute('data-modelo');
+        var idvehiculo = button.getAttribute('data-idvehiculo');
+
+        document.getElementById('marcaModeloDocVehiculo').textContent = marca + ' - ' + modelo;
+        document.getElementById('vehiculo_id_doc').value = idvehiculo;
+
+        fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('contenedorDocumentacion').innerHTML = html;
+
+                // Attach switch change listeners
+                document.querySelectorAll('#contenedorDocumentacion input[type="checkbox"]').forEach(switchEl => {
+                    switchEl.addEventListener('change', function() {
+                        let tipoDocId = this.dataset.tipo;
+                        let estado = this.checked ? 1 : 0;
+                        let formData = new FormData();
+                        formData.append('vehiculo_id', idvehiculo);
+                        formData.append('tipo_doc_id', tipoDocId);
+                        formData.append('estado_doc', estado);
+
+                        fetch('controladores/documentos/actualizar_estado_doc.php', {
+                            method: 'POST',
+                            body: formData
+                        }).then(r => r.json())
+                          .then(resp => {
+                              console.log('Actualizado doc:', resp);
+                          });
+                    });
+                });
+            });
     });
 });
-
 </script>
 
 <script>
@@ -599,9 +698,17 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
     function buscador(){
         let buscador = document.getElementById('idbuscador').value;
-        console.log(buscador);
-        location.href='index.php?page=listado_vehiculos&buscador='+buscador;
+        location.href='index.php?page=listado_falta_documentacion&buscador='+ encodeURIComponent(buscador);
     }
+</script>
+
+<script>
+function cambiarListado(estado) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('estado', estado);
+    params.set('pagina_actual', 1); // reinicia a la primera página
+    window.location.search = params.toString();
+}
 </script>
 
 

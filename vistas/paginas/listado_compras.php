@@ -35,8 +35,8 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
 
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
-        <li class="breadcrumb-item"><a href="#">Gestión de Compras</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Compras Realizadas</li>
+        <li class="breadcrumb-item"><a href="#">Gestión de Ingresos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Registrar Ingreso Nuevo</li>
     </ol>
 </nav>
 
@@ -56,12 +56,11 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                 <thead>
                     <tr>
                         <th>Nro de Ingreso</th>
-                        <th>Precio</th>
+                        <th>Precio de Ingreso</th>
                         <th>Titular del Vehiculo</th>
-                        <th>Vehículo</th>
+                        <th>Vehículo Ingresado</th>
                         <th>Patente</th>
-                        <th>Tipo de Pago</th>
-                        <th>Fecha de Compra</th>
+                        <th>Fecha de Ingreso</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -74,7 +73,6 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                         <td><?= $compra['nombre']." ".$compra['apellido'];?></td>
                         <td><?= $compra['nombre_marca']." ".$compra['nombre_modelo'];?></td>
                         <td><?= $compra['patente'];?></td>
-                        <td><?= $compra['nombre_pago'];?></td>
                         <td><?= date('d-m-Y', strtotime($compra['fecha_compra'])); ?></td>
                         <td>
                             <a href="index.php?page=detalle_compras&idcompra=<?= $compra['idcompras']; ?>" class="text-primary" title="Ver Más">

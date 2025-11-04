@@ -1,6 +1,9 @@
 <?php
 ini_set('display_errors', 1);
 require_once('../../modelos/documentaciones.php');
+require_once('../../modelos/conexion.php');
+require_once('../../modelos/tablas_maestras/tipo_documentacion.php');
+require_once('../../modelos/vehiculos.php');
 
 if (isset($_POST['action'])) {
     $documentos_controlador = new DocumentosControlador();
@@ -87,7 +90,6 @@ class DocumentosControlador {
         return $mensajes;
     }
 
-    /** Guarda un archivo individual */
     private function guardarArchivo($archivo, $idvehiculos, $tipo, $idtipo_documentacion) {
         $documentacion = new Documentacion();
         $uploadDir = ($tipo === 'img') ? '../../uploads/img/' : '../../uploads/doc/';
@@ -109,24 +111,66 @@ class DocumentosControlador {
             return "Error: No se pudo mover el archivo al servidor.";
         }
 
-        // Guardar en la base de datos
+        // Verificar si ya existe una documentación para este vehículo y tipo
+        $conexion = new Conexion();
+        $queryExiste = "
+            SELECT idDocumentaciones 
+            FROM Documentaciones 
+            WHERE vehiculos_idvehiculos = '$idvehiculos'
+            AND tipo_documentacion_idtipo_documentacion = '$idtipo_documentacion'
+            LIMIT 1
+        ";
+        $resultado = $conexion->consultar($queryExiste);
+
+        // Seteo de valores comunes
         $documentacion->setURL_descripcion($targetFilePath);
         $documentacion->setVehiculos_idvehiculos($idvehiculos);
-
+        $documentacion->setEstado_doc(1);
+        $documentacion->setDigitalizado(1);
         if ($idtipo_documentacion) {
             $documentacion->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
         }
 
-        if ($documentacion->agregar_img_doc()) {
-            return ($tipo === 'img')
-                ? "Imagen guardada correctamente."
-                : "Documento guardado correctamente.";
+        $mensaje = "";
+
+        // Si ya existe → actualizar, sino insertar
+        if ($resultado && $resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            $idDoc = $row['idDocumentaciones'];
+
+            $queryUpdate = "
+                UPDATE Documentaciones
+                SET URL_descripcion = '$targetFilePath',
+                    estado_doc = 1,
+                    digitalizado = 1
+                WHERE idDocumentaciones = '$idDoc'
+            ";
+
+            $ok = $conexion->insertar($queryUpdate);
+            if ($ok !== false) {
+                $mensaje = "Documento actualizado correctamente.";
+            } else {
+                $mensaje = "Error al actualizar el documento existente.";
+            }
         } else {
-            return ($tipo === 'img')
-                ? "Error al guardar la imagen en la base de datos."
-                : "Error al guardar el documento en la base de datos.";
+            // No existe → insertar nuevo
+            if ($documentacion->agregar_img_doc()) {
+                $mensaje = ($tipo === 'img')
+                    ? "Imagen guardada correctamente."
+                    : "Documento guardado correctamente.";
+            } else {
+                $mensaje = ($tipo === 'img')
+                    ? "Error al guardar la imagen en la base de datos."
+                    : "Error al guardar el documento en la base de datos.";
+            }
         }
+
+        // ✅ Verificar si ya tiene toda la documentación digitalizada
+        $this->verificarYActualizarEstadoVehiculo($idvehiculos);
+
+        return $mensaje;
     }
+
 
     /** Verifica si hay algún mensaje de error */
     private function contieneErrores($mensajes) {
@@ -165,5 +209,18 @@ class DocumentosControlador {
         header("Location: ../../index.php?page={$page}&mensaje=" . urlencode($mensaje) . "&status={$status}");
         exit();
     }
+
+    private function verificarYActualizarEstadoVehiculo($idvehiculos) {
+
+        $tipoDoc = new Tipo_Documentacion();
+        $faltantes = $tipoDoc->mostrar_tipos_faltantes($idvehiculos);
+
+        // ✅ Si no hay documentos faltantes → cambiar a "disponible"
+        if ($faltantes->num_rows === 0) {
+            $vehiculo = new Vehiculos();
+            $vehiculo->actualizar_disponible($idvehiculos, 'disponible');
+        }
+    }
+
 }
 ?>

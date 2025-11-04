@@ -38,7 +38,9 @@ document.getElementById("buscar_auto_btn").addEventListener("click", function ()
                     document.getElementById("id_motor").value = vehiculoData.motor || "";
                     document.getElementById("id_anio").value = vehiculoData.anio || "";
                     document.getElementById("id_kilometraje").value = vehiculoData.kilometraje || "";
-                    document.getElementById("id_precio").value = data.precio?.precio || "";
+                    const precio = parseFloat(data.precio?.precio_publico || 0);
+                    document.getElementById("id_precio").value =
+                    precio > 0 ? new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0 }).format(precio) : "";
                     document.getElementById("idvehiculos_1").value = data.vehiculo.idvehiculos || "";
 
                     // Actualizar selects

@@ -62,133 +62,111 @@ $result_neumatico = $neumatico->traer_neumatico();
 $tipo_pago = new Tipo_Pagos();
 $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
+// Parte DOCUMENTACIONES
+
+$tipo_doc = new Tipo_Documentacion();
+$result_tipo_doc = $tipo_doc->mostrar_tipo_doc();
+
 
 ?>
 
-            <!-- Modal de Ficha Técnica -->
-            <div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="fichaTecnicaModalLabel">Ficha del Vehículo a Comprar</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h3 id="marcaModeloVehiculo"></h3> <!-- Aquí se mostrará la marca y modelo -->
-
-                                <!-- Agrupamos fechas en dos columnas -->
-                                <h6>Fecha última Revisión</h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="vencimientoBateria" class="form-label">Batería</label>
-                                        <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="vencimientoRTO" class="form-label">RTO - Revisión Técnica</label>
-                                        <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="vencimientoService" class="form-label">Service Automotor</label>
-                                        <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
-                                    </div>
-                                </div>
-
-                                <!-- Agrupamos los checkboxes en dos columnas -->
-                                <h6>Documentación Fisica Entregada de la Compra</h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switch08" name="switch_08">
-                                            <label class="form-check-label" for="switch08">Formulario 08</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switch12" name="switch_12">
-                                            <label class="form-check-label" for="switch12">Formulario 12</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchTitulo" name="switch_titulo">
-                                            <label class="form-check-label" for="switchTitulo">Título Automotor</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchCedula" name="switch_cedula">
-                                            <label class="form-check-label" for="switchCedula">Cédula del Vehículo</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchSeguro" name="switch_seguro">
-                                            <label class="form-check-label" for="switchSeguro">Seguro Automotor</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchMunicipalidad" name="switch_municipalidad">
-                                            <label class="form-check-label" for="switchMunicipalidad">Municipalidad - Deudas</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchDominio" name="switch_dominio">
-                                            <label class="form-check-label" for="switchDominio">Informe de Dominio</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchMultas" name="switch_multas">
-                                            <label class="form-check-label" for="switchMultas">Formulario 13i - Infracciones/Multas</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="switchPrenda" name="switch_prenda">
-                                            <label class="form-check-label" for="switchPrenda">Prenda</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Agrupamos los select en dos columnas -->
-                                <h6>Estado Carrocería</h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="descripcionCarroceria" class="form-label">Descripción de la Carrocería:</label>
-                                        <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
-                                        <?php foreach($result_carroceria as $carroceria): ?>
-                                            <option value="<?php echo $carroceria['idcarroceria']; ?>"><?php echo $carroceria['descripcion_carroceria']; ?></option>
-                                        <?php endforeach;?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="descripcionNeumaticos" class="form-label">Descripción de los Neumáticos:</label>
-                                        <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
-                                        <?php foreach($result_neumatico as $neumatico): ?>
-                                            <option value="<?php echo $neumatico['idneumaticos']; ?>"><?php echo $neumatico['descripcion_neumaticos']; ?></option>
-                                        <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="descripcionCristales" class="form-label">Descripción de Cristales:</label>
-                                        <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
-                                        <?php foreach($result_cristal as $cristal): ?>
-                                            <option value="<?php echo $cristal['idcristales']; ?>"><?php echo $cristal['descripcion_cristales']; ?></option>
-                                        <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Botón de Enviar -->
-                                <div class="text-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="guardarFicha">Guardar Ficha</button>
-                                </div>
-                        </div>
+<!-- Modal Ficha Técnica -->
+<div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ficha Técnica del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h2>Revisión Técnica</h2>
+                <h6>Vencimientos</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="vencimientoBateria">Batería</label>
+                        <input type="date" class="form-control" id="vencimientoBateria">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="vencimientoRTO">RTO - Revisión Técnica</label>
+                        <input type="date" class="form-control" id="vencimientoRTO">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="vencimientoService">Service Automotor</label>
+                        <input type="date" class="form-control" id="vencimientoService">
                     </div>
                 </div>
+
+                <h6>Estado Carrocería</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="descripcionCarroceria">Descripción de la Carrocería</label>
+                        <select id="descripcionCarroceria" class="form-select">
+                            <?php foreach($result_carroceria as $carroceria): ?>
+                                <option value="<?php echo $carroceria['idcarroceria']; ?>"><?php echo $carroceria['descripcion_carroceria']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="descripcionNeumaticos">Descripción de Neumáticos</label>
+                        <select id="descripcionNeumaticos" class="form-select">
+                            <?php foreach($result_neumatico as $neumatico): ?>
+                                <option value="<?php echo $neumatico['idneumaticos']; ?>"><?php echo $neumatico['descripcion_neumaticos']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="descripcionCristales">Descripción de Cristales</label>
+                        <select id="descripcionCristales" class="form-select">
+                            <?php foreach($result_cristal as $cristal): ?>
+                                <option value="<?php echo $cristal['idcristales']; ?>"><?php echo $cristal['descripcion_cristales']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-action" id="guardarFicha">Guardar Ficha Técnica</button>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal Documentación -->
+<div class="modal fade" id="documentacionModal" tabindex="-1" aria-labelledby="documentacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Documentación del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <?php foreach($result_tipo_doc as $tipo_doc): ?>
+                    <div class="form-check form-switch mb-2">
+                        <input 
+                            class="form-check-input doc-switch" 
+                            type="checkbox" 
+                            value="<?php echo $tipo_doc['idtipo_documentacion']; ?>" 
+                            data-descripcion="<?php echo htmlspecialchars($tipo_doc['descripcion']); ?>"
+                            id="doc_<?php echo $tipo_doc['idtipo_documentacion']; ?>">
+                        <label class="form-check-label" for="doc_<?php echo $tipo_doc['idtipo_documentacion']; ?>">
+                            <?php echo $tipo_doc['descripcion']; ?>
+                        </label>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-action" id="guardarDocumentacion">Guardar Documentación</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
@@ -252,19 +230,17 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
         <input type="hidden" id="vencimiento_rto" name="vencimiento_rto">
         <input type="hidden" id="vencimiento_service" name="vencimiento_service">
 
-        <input type="hidden" id="switch_08" name="switch_08">
-        <input type="hidden" id="switch_12" name="switch_12">
-        <input type="hidden" id="switch_titulo" name="switch_titulo">
-        <input type="hidden" id="switch_cedula" name="switch_cedula">
-        <input type="hidden" id="switch_seguro" name="switch_seguro">
-        <input type="hidden" id="switch_municipalidad" name="switch_municipalidad">
-        <input type="hidden" id="switch_dominio" name="switch_dominio">
-        <input type="hidden" id="switch_multas" name="switch_multas">
-        <input type="hidden" id="switch_prenda" name="switch_prenda">
+        <!-- Inputs ocultos para la ficha técnica -->
 
         <input type="hidden" id="descripcion_carroceria" name="descripcion_carroceria">
         <input type="hidden" id="descripcion_neumatico" name="descripcion_neumatico">
         <input type="hidden" id="descripcion_cristales" name="descripcion_cristales">
+
+        <!-- Input oculto que va a contener los IDs de los tipos de documentación -->
+        <input type="hidden" id="documentacion_ids" name="documentacion_ids">
+
+        <!-- Input oculto solo para mostrar las descripciones (informativo) -->
+        <input type="hidden" id="documentacion_descripciones" name="documentacion_descripciones">
 
 
         <div class="accordion" id="accordionExample">
@@ -434,7 +410,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
                                 <div class="col-md-4">
                                     <label for="id_año" class="form-label">Año</label>
-                                    <input type="text" name="año" class="form-control" id="id_año" min="1960" max="2024">
+                                    <input type="number" name="año" class="form-control" id="id_año" min="1960" max="2024">
                                 </div>
 
                                 <div class="col-md-4">
@@ -481,9 +457,12 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                             </div>
                         </div>
 
-                        <div class="text-start mt-3">
+                        <div class="d-flex justify-content-between mt-4">
                             <button id="verFichaTecnicaBtn" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#fichaTecnicaModal">Ver Ficha Técnica</button>
+                            <button id="verDocumentacionBtn" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#documentacionModal">Ver Documentación del Vehículo</button>
                         </div>
+                        <!-- Aquí aparecerá el aviso si falta documentación -->
+                        <div id="avisoDocumentacion" class="mt-2" style="color: red; font-weight: bold;"></div>
                     </div>
                 </div>
             </div>
@@ -523,6 +502,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                     Registrar Compra
                 </button>
         </div>
+        <div id="avisoEnvioDocumentacion" class="mt-2" style="color: red; font-weight: bold;"></div>
     </form>
 </div>
 
@@ -530,38 +510,70 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
 <script>
 document.getElementById("guardarFicha").addEventListener("click", function() {
-    // Guardar datos de vencimientos
+    // Copiar valores de los inputs del modal al formulario principal
     document.getElementById("vencimiento_bateria").value = document.getElementById("vencimientoBateria").value;
     document.getElementById("vencimiento_rto").value = document.getElementById("vencimientoRTO").value;
     document.getElementById("vencimiento_service").value = document.getElementById("vencimientoService").value;
 
-    // Guardar estados de los switches
-    document.getElementById("switch_08").value = document.getElementById("switch08").checked ? 1 : 0;
-    document.getElementById("switch_12").value = document.getElementById("switch12").checked ? 1 : 0;
-    document.getElementById("switch_titulo").value = document.getElementById("switchTitulo").checked ? 1 : 0;
-    document.getElementById("switch_cedula").value = document.getElementById("switchCedula").checked ? 1 : 0;
-    document.getElementById("switch_seguro").value = document.getElementById("switchSeguro").checked ? 1 : 0;
-    document.getElementById("switch_municipalidad").value = document.getElementById("switchMunicipalidad").checked ? 1 : 0;
-    document.getElementById("switch_dominio").value = document.getElementById("switchDominio").checked ? 1 : 0;
-    document.getElementById("switch_multas").value = document.getElementById("switchMultas").checked ? 1 : 0;
-    document.getElementById("switch_prenda").value = document.getElementById("switchPrenda").checked ? 1 : 0;
-
-    // Guardar descripciones
     document.getElementById("descripcion_carroceria").value = document.getElementById("descripcionCarroceria").value;
     document.getElementById("descripcion_neumatico").value = document.getElementById("descripcionNeumaticos").value;
     document.getElementById("descripcion_cristales").value = document.getElementById("descripcionCristales").value;
+
+    // Cierra el modal automáticamente
+    const modal = bootstrap.Modal.getInstance(document.getElementById('fichaTecnicaModal'));
+    modal.hide();
 });
 </script>
 
 <script>
-//(document).ready(function() {
+document.getElementById("guardarDocumentacion").addEventListener("click", function() {
+    const switches = document.querySelectorAll('.doc-switch');
+    const seleccionadosId = [];
+    const seleccionadosDesc = [];
 
-        //$('#CompraForm').submit(function(e) {
-        // Aquí puedes añadir validaciones si lo deseas
-        // e.preventDefault(); // No uses esto aquí si deseas que el formulario se envíe
-    //});
-//});
+    switches.forEach(sw => {
+        if (sw.checked) {
+            seleccionadosId.push(sw.value);
+            seleccionadosDesc.push(sw.getAttribute('data-descripcion').toLowerCase());
+        }
+    });
 
+    document.getElementById("documentacion_ids").value = seleccionadosId.join(',');
+    document.getElementById("documentacion_descripciones").value = seleccionadosDesc.join(', ');
+
+    // Detectar si faltan los documentos críticos
+    const aviso = document.getElementById('avisoDocumentacion');
+    let faltan = [];
+
+    if (!seleccionadosDesc.includes('formulario 08')) faltan.push('Formulario 08');
+    if (!seleccionadosDesc.includes('cedula vehicular')) faltan.push('Cédula Vehicular');
+
+    if (faltan.length > 0) {
+        aviso.textContent = `⚠️ Documentación importante faltante: ${faltan.join(', ')}`;
+    } else {
+        aviso.textContent = ''; // limpiar el aviso si todo está ok
+    }
+
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('documentacionModal'));
+    modal.hide();
+});
+
+// 🔒 Validación antes de enviar el formulario
+document.getElementById("CompraForm").addEventListener("submit", function(event) {
+    const descs = document.getElementById("documentacion_descripciones").value.toLowerCase();
+    const aviso = document.getElementById('avisoEnvioDocumentacion');
+
+    let faltan = [];
+    if (!descs.includes('formulario 08')) faltan.push('Formulario 08');
+    if (!descs.includes('cedula vehicular')) faltan.push('Cédula Vehicular');
+
+    if (faltan.length > 0) {
+        event.preventDefault(); // 🚫 Evita el envío
+        aviso.textContent = `⚠️ No se puede guardar. Faltan: ${faltan.join(', ')}`;
+        aviso.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
 </script>
 
 <script>
