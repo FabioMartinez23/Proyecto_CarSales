@@ -77,6 +77,18 @@ class Tipo_Documentacion {
         return $conexion->consultar($query);
     }
 
+    public function obtenerIdPorDescripcion($descripcion) {
+        $conexion = new Conexion();
+        $query = "SELECT idtipo_documentacion FROM tipo_documentacion WHERE descripcion = '$descripcion' LIMIT 1";
+        $resultado = $conexion->consultar($query);
+
+        if ($resultado && $resultado->num_rows > 0) {
+            $fila = $resultado->fetch_assoc();
+            return $fila['idtipo_documentacion'];
+        }
+        return null;
+    }
+
     /**
      * Get the value of idtipo_documentacion
      */ 

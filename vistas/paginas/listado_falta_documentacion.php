@@ -143,7 +143,7 @@ $result_neumatico = $neumatico->traer_neumatico();
                     </div>
 
                     <div class="text-end mt-3">
-                        <button type="submit" class="btn btn-primary">Guardar Ficha Técnica</button>
+                        <button type="submit" class="btn btn-action">Guardar Ficha Técnica</button>
                     </div>
                 </form>
             </div>
@@ -151,21 +151,33 @@ $result_neumatico = $neumatico->traer_neumatico();
     </div>
 </div>
 
-<!-- Modal Documentación -->
+<!-- ============================================================= -->
+<!-- MODAL DOCUMENTACIÓN FÍSICA VEHÍCULO -->
+<!-- ============================================================= -->
 <div class="modal fade" id="documentacionModal" tabindex="-1" aria-labelledby="documentacionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Documentación Física Entregada del Vehículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-modal text-white">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-folder-open me-2"></i> Documentación Física Entregada
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
-                <h3 id="marcaModeloDocVehiculo"></h3>
+                <h4 id="marcaModeloDocVehiculo" class="text-center mb-4 fw-semibold text-dark"></h4>
                 <input type="hidden" id="vehiculo_id_doc">
 
+                <!-- Contenedor dinámico -->
                 <div id="contenedorDocumentacion">
-                    <p class="text-muted">Cargando documentación...</p>
+                    <p class="text-muted text-center mb-0">Cargando documentación...</p>
                 </div>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-1"></i> Cerrar
+                </button>
             </div>
         </div>
     </div>
@@ -197,7 +209,7 @@ $result_neumatico = $neumatico->traer_neumatico();
 
                     <div class="text-end">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Imágenes</button>
+                        <button type="submit" class="btn btn-action">Guardar Imágenes</button>
                     </div>
                 </form>
             </div>
@@ -242,7 +254,7 @@ $result_neumatico = $neumatico->traer_neumatico();
 
                     <div class="text-end">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Documentos</button>
+                        <button type="submit" class="btn btn-action">Guardar Documentos</button>
                     </div>
                 </form>
             </div>
@@ -470,22 +482,54 @@ $result_neumatico = $neumatico->traer_neumatico();
             <ul class="pagination">
                 <!-- Botón "Anterior" -->
                 <li class="page-item <?php if ($pagina_actual <= 1) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $pagina_actual - 1 ?>" aria-disabled="true">Previo</a>
+                    <a class="page-link" 
+                        <?php 
+                            if (isset($_GET['estado']) && $_GET['estado'] == 2) {
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=2&pagina_actual=' . ($pagina_actual - 1) . '"';
+                            } else if (isset($_GET['estado']) && $_GET['estado'] == 3) {
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=3&pagina_actual=' . ($pagina_actual - 1) . '"';
+                            } else {
+                                echo 'href="index.php?page=listado_falta_documentacion&pagina_actual=' . ($pagina_actual - 1) . '"';
+                            }
+                        ?> 
+                        aria-disabled="true">Previo
+                    </a>
                 </li>
 
                 <!-- Botones de número de página -->
                 <?php for ($i = 1; $i <= $total_paginas; $i++) { ?>
                     <li class="page-item <?php if ($pagina_actual == $i) { echo 'active'; } ?>">
-                        <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $i ?>"><?= $i ?></a>
+                        <a class="page-link" 
+                            <?php 
+                                if (isset($_GET['estado']) && $_GET['estado'] == 2) {
+                                    echo 'href="index.php?page=listado_falta_documentacion&estado=2&pagina_actual=' . $i . '"';
+                                } else if (isset($_GET['estado']) && $_GET['estado'] == 3) {
+                                    echo 'href="index.php?page=listado_falta_documentacion&estado=3&pagina_actual=' . $i . '"';
+                                } else {
+                                    echo 'href="index.php?page=listado_falta_documentacion&pagina_actual=' . $i . '"';
+                                }
+                            ?>
+                        ><?= $i ?></a>
                     </li>
                 <?php } ?>
 
                 <!-- Botón "Siguiente" -->
                 <li class="page-item <?php if ($pagina_actual >= $total_paginas) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=listado_falta_documentacion&pagina_actual=<?= $pagina_actual + 1 ?>">Siguiente</a>
+                    <a class="page-link"
+                        <?php 
+                            if (isset($_GET['estado']) && $_GET['estado'] == 2) { 
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=2&pagina_actual=' . ($pagina_actual + 1) . '"';
+                            } else if (isset($_GET['estado']) && $_GET['estado'] == 3) {
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=3&pagina_actual=' . ($pagina_actual + 1) . '"';
+                            } else {
+                                echo 'href="index.php?page=listado_falta_documentacion&pagina_actual=' . ($pagina_actual + 1) . '"';
+                            }
+                        ?>
+                    >Siguiente</a>
                 </li>
             </ul>
         </nav>
+
     </div>
 
 <script>
@@ -538,44 +582,129 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     });
+});
+</script>
 
-    // ---------- Modal Documentación ----------
-    var docModal = document.getElementById('documentacionModal');
-    docModal.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        var marca = button.getAttribute('data-marca');
-        var modelo = button.getAttribute('data-modelo');
-        var idvehiculo = button.getAttribute('data-idvehiculo');
+<!-- ============================================================= -->
+<!-- SCRIPT DEL MODAL DOCUMENTACIÓN FÍSICA -->
+<!-- ============================================================= -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const docModal = document.getElementById('documentacionModal');
 
-        document.getElementById('marcaModeloDocVehiculo').textContent = marca + ' - ' + modelo;
+    // -------------------------------------------------------------
+    // 📦 Al abrir el modal
+    // -------------------------------------------------------------
+    docModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const marca = button.getAttribute('data-marca');
+        const modelo = button.getAttribute('data-modelo');
+        const idvehiculo = button.getAttribute('data-idvehiculo');
+
+        document.getElementById('marcaModeloDocVehiculo').textContent = `${marca} - ${modelo}`;
         document.getElementById('vehiculo_id_doc').value = idvehiculo;
 
+        cargarDocumentacion(idvehiculo);
+    });
+
+    // -------------------------------------------------------------
+    // 🔄 Función para cargar documentación actual
+    // -------------------------------------------------------------
+    function cargarDocumentacion(idvehiculo) {
         fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
             .then(res => res.text())
             .then(html => {
                 document.getElementById('contenedorDocumentacion').innerHTML = html;
+                activarSwitches(idvehiculo);
+            })
+            .catch(() => {
+                document.getElementById('contenedorDocumentacion').innerHTML = 
+                    `<p class="text-danger text-center">Error al cargar documentación.</p>`;
+            });
+    }
 
-                // Attach switch change listeners
-                document.querySelectorAll('#contenedorDocumentacion input[type="checkbox"]').forEach(switchEl => {
-                    switchEl.addEventListener('change', function() {
-                        let tipoDocId = this.dataset.tipo;
-                        let estado = this.checked ? 1 : 0;
-                        let formData = new FormData();
-                        formData.append('vehiculo_id', idvehiculo);
-                        formData.append('tipo_doc_id', tipoDocId);
-                        formData.append('estado_doc', estado);
+    // -------------------------------------------------------------
+    // 🧩 Activar eventos de los switches
+    // -------------------------------------------------------------
+    function activarSwitches(idvehiculo) {
+        document.querySelectorAll('#contenedorDocumentacion input[type="checkbox"]').forEach(switchEl => {
+            switchEl.addEventListener('change', function() {
+                const tipoDocId = this.dataset.idtipo;
+                const estado = this.checked ? 1 : 0;
 
-                        fetch('controladores/documentos/actualizar_estado_doc.php', {
-                            method: 'POST',
-                            body: formData
-                        }).then(r => r.json())
-                          .then(resp => {
-                              console.log('Actualizado doc:', resp);
-                          });
+                const formData = new FormData();
+                formData.append('vehiculo_id', idvehiculo);
+                formData.append('tipo_doc_id', tipoDocId);
+                formData.append('estado_doc', estado);
+
+                fetch('controladores/documentos/agregar_doc_fisica.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(async (r) => {
+                    const text = await r.text();
+                    try {
+                        const resp = JSON.parse(text.trim());
+                        console.log("Respuesta del servidor:", resp);
+
+                        if (resp.status === 'success') {
+                            Swal.fire({
+                                toast: true,
+                                icon: 'success',
+                                title: (estado ? 'Documento marcado como entregado' : 'Documento marcado como faltante'),
+                                text: resp.accion === 'insertado' ? 'Registro creado correctamente.' : 'Estado actualizado.',
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                            // 🔹 Si completó todos los documentos físicos
+                            if (resp.estado_actualizado === true) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Vehículo completo',
+                                    text: 'El vehículo pasó al estado: Falta digitalización.',
+                                    timer: 1800,
+                                    showConfirmButton: false
+                                });
+
+                                const modal = bootstrap.Modal.getInstance(docModal);
+                                if (modal) {
+                                    // Cuando cierre el modal → recarga la página
+                                    docModal.addEventListener('hidden.bs.modal', function onClose() {
+                                        location.reload();
+                                        docModal.removeEventListener('hidden.bs.modal', onClose);
+                                    });
+                                }
+                            }
+
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: resp.mensaje || 'No se pudo guardar el cambio.'
+                            });
+                        }
+
+                    } catch (e) {
+                        console.error("Respuesta no válida:", text);
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Aviso',
+                            text: 'El cambio se guardó, pero la respuesta del servidor no fue reconocida correctamente.'
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error del servidor',
+                        text: 'No se pudo contactar con el servidor.'
                     });
                 });
             });
-    });
+        });
+    }
 });
 </script>
 

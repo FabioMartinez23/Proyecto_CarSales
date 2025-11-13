@@ -92,18 +92,16 @@ class OperacionesControlador {
     }
 
 
-    public function consultar_auto() {
-        $patente = $_POST['patente'] ?? ''; // Usar null coalescing para evitar notices
+        public function consultar_auto() {
+            $patente = $_POST['patente'] ?? ''; // Evita notices si no se envía la patente
 
-        // Validar entradas
-        if (empty($patente)) {
-            echo json_encode(['error' => 'Debe ingresar una Patente.']);
-            exit;
-        }
+            if (empty($patente)) {
+                echo json_encode(['error' => 'Debe ingresar una Patente.']);
+                exit;
+            }
 
-        $vehiculo = new Vehiculos();
-        $resultado_vehiculo = $vehiculo->traer_vehiculos_por_patente_json($patente);
-
+            $vehiculo = new Vehiculos();
+            $resultado_vehiculo = $vehiculo->traer_vehiculo_por_patente_ventas($patente);
 
             if ($resultado_vehiculo !== null) {
                 $idvehiculos = $resultado_vehiculo['idvehiculos'] ?? null;
@@ -114,20 +112,18 @@ class OperacionesControlador {
                 $ficha_tecnica = new Fichas_Tenicas();
                 $resultado_ficha = $ficha_tecnica->traer_fichas_tecnica_id($idvehiculos);
 
-                // Preparar la respuesta en JSON
                 $response = [
                     'vehiculo' => $resultado_vehiculo ?? null,
                     'precio' => $resultado_precio ?? null,
-                    'ficha_tenica' => $resultado_ficha ?? null  
+                    'ficha_tecnica' => $resultado_ficha ?? null  
                 ];
-                // Loguear el contenido del response
-                error_log("Respuesta JSON: " . json_encode($response));
 
                 echo json_encode($response);
             } else {
-                echo json_encode(['error' => 'Vehiculo vendido! o No encontrado']);
+                echo json_encode(['error' => 'El vehículo no está disponible o no tiene precio público.']);
             }
         }
+
 
         public function consultar_ficha_tecnica() {
             $id_vehiculo = $_POST['id_vehiculo'] ?? ''; // Asegúrate de que estás usando el nombre correcto

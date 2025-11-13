@@ -16,6 +16,7 @@ require_once('modelos/modulos.php');
     <link href="assets/css/select2.min.css" rel="stylesheet">
     <link href="assets/css/datatables.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/caja.css" rel="stylesheet">
     <link href="assets/css/sweetalert2.min.css" rel="stylesheet">
     <link href="assets/css/font-family-Sans-Montserrat-Roboto.css" rel="stylesheet">
     <!-- Agrega Font Awesome para los íconos de redes sociales -->
@@ -99,10 +100,15 @@ require_once('modelos/modulos.php');
     
             // Verificamos si la página solicitada está en el arreglo de páginas públicas
             if (in_array($pagina_solicitada, $paginas_publicas)) {
-                if (file_exists('vistas/paginas/' . $pagina_solicitada . '.php')) {
-                    include('vistas/paginas/' . $pagina_solicitada . '.php');
+                // Intentamos primero buscar directamente en vistas/paginas/
+                $ruta_base = 'vistas/paginas/' . $pagina_solicitada . '.php';
+                $ruta_subcarpeta = 'vistas/paginas/caja/' . $pagina_solicitada . '.php';
+
+                if (file_exists($ruta_base)) {
+                    include($ruta_base);
+                } elseif (file_exists($ruta_subcarpeta)) {
+                    include($ruta_subcarpeta);
                 } else {
-                    // Error 404 si la página no existe físicamente
                     include('vistas/paginas/errores/404.php');
                 }
             } else {
@@ -139,15 +145,17 @@ require_once('modelos/modulos.php');
             $modulo = new Modulo();
             $resultados = $modulo->traer_modulos_por_perfil($idperfiles);
             $permiso_ingreso = false;
-    
+
+            $paginaBase = basename($paginaSolicitada); // 🔹 Toma solo el nombre del archivo sin carpeta
+
             foreach ($resultados as $row) {
-                if ($row['descripcion'] == $paginaSolicitada) {
+                if ($row['descripcion'] == $paginaBase) {
                     $permiso_ingreso = true;
                     break;
                 }
             }
-    
-            return $permiso_ingreso; // Retornamos si tiene o no permiso
+
+            return $permiso_ingreso;
         }
     
         ?>

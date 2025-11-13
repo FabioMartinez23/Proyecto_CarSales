@@ -43,7 +43,7 @@
             <!-- Input oculto para almacenar el idvehiculo -->
             <input type="hidden" id="idvehiculo_<?php echo $auto['idvehiculos']; ?>" value="<?php echo $auto['idvehiculos']; ?>">
 
-            <a href="#" class="btn btn-primary" onclick='mostrarModal(<?php echo json_encode($auto, JSON_HEX_TAG); ?>)'>
+            <a href="#" class="btn btn-action" onclick='mostrarModal(<?php echo json_encode($auto, JSON_HEX_TAG); ?>)'>
                 Ver más
             </a>
         </div>

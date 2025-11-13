@@ -38,16 +38,32 @@ document.getElementById("buscar_auto_btn").addEventListener("click", function ()
                     document.getElementById("id_motor").value = vehiculoData.motor || "";
                     document.getElementById("id_anio").value = vehiculoData.anio || "";
                     document.getElementById("id_kilometraje").value = vehiculoData.kilometraje || "";
-                    const precio = parseFloat(data.precio?.precio_publico || 0);
-                    document.getElementById("id_precio").value =
-                    precio > 0 ? new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0 }).format(precio) : "";
+                    if (data.precio) {
+                    const precioData = data.precio || {};
+                    console.log("Precio recibido:", precioData); // 👈 debug momentáneo
+
+                    const precioTomado = parseFloat(precioData.precio_tomado) || 0;
+                    const precioPublico = parseFloat(precioData.precio_publico) || 0;
+
+                    // Mostrar formateado en el input visible
+                    document.getElementById("id_precio_publico").value =
+                        precioPublico > 0 ? new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0 }).format(precioPublico) : "";
+
+                    // Asignar valores crudos para POST
+                    document.getElementById("id_precio_tomado").value = precioTomado;
+                    document.getElementById("precio_publico_real").value = precioPublico;
+                    }
+
                     document.getElementById("idvehiculos_1").value = data.vehiculo.idvehiculos || "";
 
                     // Actualizar selects
-                    document.getElementById("id_colores").value = vehiculoData.idcolores || "";
+                    document.getElementById("id_colores").value = vehiculoData.colores_idcolores || "";
                     document.getElementById("id_marcas").value = vehiculoData.idmarcas || "";
                     document.getElementById("idmodelos").value = vehiculoData.idmodelos || "";
                     document.getElementById("id_tipo_vehiculos").value = vehiculoData.idtipo_vehiculos || "";
+                    
+                    // Guardar el ID del titular del vehículo
+                    document.getElementById("titular_vehiculo").value = vehiculoData.titular_vehiculo_idtitular_vehiculo || "";
                 }
 
                 let modalElement = document.getElementById("buscarAutoModal");

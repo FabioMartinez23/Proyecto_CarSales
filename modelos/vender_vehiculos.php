@@ -2,7 +2,10 @@
 
 require_once('conexion.php');
 
-class VenderVehiculo{
+class VenderVehiculo {
+    private $_con;
+    private $conexion_externa = false;
+
     private $idventas;
     private $descripcion;
     private $fecha_venta;
@@ -10,8 +13,18 @@ class VenderVehiculo{
     private $vehiculo_idvehiculo;
     private $registro_clientes_idregistro_clientes;
     private $empleados_idempleados;
+    private $titular_vehiculo_idtitular_vehiculo;
 
-    public function __construct($idventas='', $descripcion='', $fecha_venta='', $tipo_pago_idtipo_pago='', $vehiculo_idvehiculo='', $registro_clientes_idregistro_clientes='', $empleados_idempleados='') {
+    // ===========================================================
+    // 🔹 CONSTRUCTOR — recibe conexión externa si viene de transacción
+    // ===========================================================
+    public function __construct(
+        $idventas = '', $descripcion = '', $fecha_venta = '',
+        $tipo_pago_idtipo_pago = '', $vehiculo_idvehiculo = '',
+        $registro_clientes_idregistro_clientes = '',
+        $empleados_idempleados = '', $titular_vehiculo_idtitular_vehiculo = '',
+        $conn = null
+    ) {
         $this->idventas = $idventas;
         $this->descripcion = $descripcion;
         $this->fecha_venta = $fecha_venta;
@@ -19,64 +32,113 @@ class VenderVehiculo{
         $this->vehiculo_idvehiculo = $vehiculo_idvehiculo;
         $this->registro_clientes_idregistro_clientes = $registro_clientes_idregistro_clientes;
         $this->empleados_idempleados = $empleados_idempleados;
+        $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
+        }
     }
 
-    public function agregar_venta(){
-        $conexion = new Conexion();
-        $query = "INSERT INTO ventas (descripcion, fecha_venta, tipo_pago_idtipo_pago, vehiculo_idvehiculo, registro_clientes_idregistro_clientes, empleados_idempleados) VALUES ('$this->descripcion', CURDATE(), '$this->tipo_pago_idtipo_pago', '$this->vehiculo_idvehiculo' , '$this->registro_clientes_idregistro_clientes', '$this->empleados_idempleados')";
-        return $conexion->insertar($query);
+    // ===========================================================
+    // 🔹 Obtener conexión sin romper transacciones
+    // ===========================================================
+    private function getConexion() {
+        if ($this->conexion_externa && $this->_con instanceof mysqli) {
+            return $this->_con;
+        }
+        $c = new Conexion();
+        $c->conectar();
+        return $c->_con;
     }
 
-    public function traer_ventas(){
-        $conexion = new Conexion();
+    private function cerrarConexion($c) {
+        if (!$this->conexion_externa && $c instanceof mysqli) {
+            $c->close();
+        }
+    }
+
+    // ===========================================================
+    // MÉTODOS PRINCIPALES
+    // ===========================================================
+    public function agregar_venta() {
+        $con = $this->getConexion();
+
+        $query = "
+            INSERT INTO ventas 
+            (descripcion, fecha_venta, tipo_pago_idtipo_pago, vehiculo_idvehiculo, 
+             registro_clientes_idregistro_clientes, empleados_idempleados, titular_vehiculo_idtitular_vehiculo)
+            VALUES (
+                '$this->descripcion',
+                CURDATE(),
+                '$this->tipo_pago_idtipo_pago',
+                '$this->vehiculo_idvehiculo',
+                '$this->registro_clientes_idregistro_clientes',
+                '$this->empleados_idempleados',
+                '$this->titular_vehiculo_idtitular_vehiculo'
+            )
+        ";
+
+        $ok = $con->query($query);
+        return $ok ? $con->insert_id : null;
+    }
+
+
+    public function traer_ventas() {
+        $con = $this->getConexion();
         $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas";
-        return $conexion->consultar($query);
+        return $con->query($query);
     }
 
-    public function traer_venta_por_id($idventas){
-        $conexion = new Conexion();
+    public function traer_venta_por_id($idventas) {
+        $con = $this->getConexion();
         $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, tipo_vehiculos.nombre as nombre_tipo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago, contactos.valor as valor_contacto, documentos.valor as valor_documento, domicilios.descripcion as nombre_domicilio, barrios.descripcion as nombre_barrio, localidades.descripcion as nombre_localidad, provincias.descripcion as nombre_provincia, colores.descripcion as nombre_descripcion FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos ON tipo_vehiculos.idtipo_vehiculos = vehiculos.tipo_vehiculos_idtipo_vehiculos INNER JOIN colores ON vehiculos.colores_idcolores = colores.idcolores INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas INNER JOIN contactos ON contactos.Personas_idPersonas = personas.idpersonas INNER JOIN documentos ON documentos.Personas_idPersonas = personas.idpersonas INNER JOIN domicilios ON domicilios.Personas_idPersonas = personas.idpersonas INNER JOIN barrios ON domicilios.barrios_idbarrios = barrios.idbarrios INNER JOIN localidades ON barrios.localidades_idlocalidades = localidades.idlocalidades INNER JOIN provincias ON localidades.provincias_idprovincias = provincias.idprovincias WHERE idventas = $idventas AND activo_precio = 1";
-        $resultado = $conexion->consultar($query);
-        if ($resultado->num_rows > 0) {
-            return $resultado->fetch_assoc();
-        }
-        return null;
+
+        $res = $con->query($query);
+        return ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
     }
 
-    public function traer_venta_para_anular($idventas){
-        $conexion = new Conexion();
+    public function traer_venta_para_anular($idventas) {
+        $con = $this->getConexion();
         $query = "SELECT * FROM ventas WHERE idventas = $idventas";
-        $resultado = $conexion->consultar($query);
-        if ($resultado->num_rows > 0) {
-            return $resultado->fetch_assoc();
-        }
-        return null;
+        $res = $con->query($query);
+        $fila = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+        $this->cerrarConexion($con);
+        return $fila;
     }
 
 
-    public function buscar_ventas($buscador){
-        $conexion = new Conexion();
+public function buscar_ventas($buscador){
+        $con = $this->getConexion();
         $query = " SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas WHERE activo_precio = 1 AND estado_venta = 'Realizada' AND patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR año LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%'";
-        return $conexion->consultar($query);
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
 
     public function traer_ventas_paginacion($inicio, $cantidad){
-        $conexion = new Conexion();
+        $con = $this->getConexion();
         $query = "SELECT *,ventas.idventas, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago, MAX(pv.precio) as precio_actual, personas.nombre, personas.apellido FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos pv ON pv.vehiculos_idvehiculos = vehiculos.idvehiculos AND pv.activo_precio = 1 INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas WHERE estado_venta = 'Realizada' GROUP BY ventas.idventas LIMIT $inicio,$cantidad";
-        return $conexion->consultar($query);
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
     public function traer_cantidad_ventas(){
-        $conexion = new Conexion();
+        $con = $this->getConexion();
         $query = "SELECT count(*) as total FROM ventas WHERE estado_venta = 'Realizada'";
-        return $conexion->consultar($query);
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
     public function cantidad_ventas_anuladas(){
-        $conexion = new Conexion();
+        $con = $this->getConexion();
         $query = "SELECT count(*) as total FROM ventas WHERE estado_venta = 'Anulada'";
-        return $conexion->consultar($query);
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
     /**
@@ -220,8 +282,25 @@ class VenderVehiculo{
 
         return $this;
     }
+
+    /**
+     * Get the value of titular_vehiculo_idtitular_vehiculo
+     */ 
+    public function getTitular_vehiculo_idtitular_vehiculo()
+    {
+        return $this->titular_vehiculo_idtitular_vehiculo;
+    }
+
+    /**
+     * Set the value of titular_vehiculo_idtitular_vehiculo
+     *
+     * @return  self
+     */ 
+    public function setTitular_vehiculo_idtitular_vehiculo($titular_vehiculo_idtitular_vehiculo)
+    {
+        $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+
+        return $this;
+    }
 }
-
-
-
 ?>

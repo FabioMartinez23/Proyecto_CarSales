@@ -28,16 +28,6 @@ class Ficha_TecnicaControlador {
         $ficha_tecnica->setVencimiento_service($_POST['vencimiento_service']);
         $ficha_tecnica->setVehiculos_idvehiculos($_POST['vehiculos_idvehiculos']);
 
-        $ficha_tecnica->setForm_08(isset($_POST['switch_08']) ? 1 : 0);
-        $ficha_tecnica->setForm_12(isset($_POST['switch_12']) ? 1 : 0);
-        $ficha_tecnica->setTitulo_vehiculo(isset($_POST['switch_titulo']) ? 1 : 0);
-        $ficha_tecnica->setCedula_vehiculo(isset($_POST['switch_cedula']) ? 1 : 0);
-        $ficha_tecnica->setSeguro(isset($_POST['switch_seguro']) ? 1 : 0);
-        $ficha_tecnica->setMunicipalidad(isset($_POST['switch_municipalidad']) ? 1 : 0);
-        $ficha_tecnica->setInforme_dominio(isset($_POST['switch_dominio']) ? 1 : 0);
-        $ficha_tecnica->setForm_13i(isset($_POST['switch_multas']) ? 1 : 0);
-        $ficha_tecnica->setPrenda(isset($_POST['switch_prenda']) ? 1 : 0);
-
         // 🔹 Verificamos si ya existe ficha técnica para ese vehículo
         $existe = $ficha_tecnica->buscar_por_vehiculo($_POST['vehiculos_idvehiculos']);
 

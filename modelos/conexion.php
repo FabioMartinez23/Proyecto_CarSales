@@ -1,62 +1,139 @@
 <?php
+require_once(__DIR__ . '/../config/configuracion.php');
 
-class Conexion{
-    private $_con;
+class Conexion {
+    public $_con;
     private $servidor;
     private $usuario;
     private $password;
     private $base_datos;
+    private $conexion_externa = false; // 🔹 Detecta si la conexión fue inyectada
 
-    public function __construct() {
-        $this->servidor = 'localhost';
-        $this->usuario = 'root';
-        $this->password = '';
-        $this->base_datos = 'car_sales_11_2024';
-    }
+    public function __construct($conn = null) {
+        $this->servidor = DB_SERVIDOR;
+        $this->usuario = DB_USUARIO;
+        $this->password = DB_PASSWORD;
+        $this->base_datos = DB_NOMBRE;
 
-    public function conectar(){
-        $this->_con = new mysqli($this->servidor, $this->usuario, $this->password, $this->base_datos); 
-    }
-
-    public function desconectar(){
-        $this->_con->close();
-    }
-
-    public function consultar($query){
-        $this->conectar();
-        $resultado = $this->_con->query($query);
-        $this->desconectar();
-        return $resultado;
-    }
-
-    public function insertar($query) {
-        // Conectar a la base de datos
-        $this->conectar();
-    
-        // Ejecutar la consulta
-        if ($this->_con->query($query)) {
-            // Obtener el ID de la última inserción
-            $id = $this->_con->insert_id;
-        } else {
-            // Si ocurre un error en la consulta, lo mostramos
-            echo "Error al ejecutar la consulta: " . $this->_con->error;
-            $id = null; // No se pudo obtener un ID válido
+        // Si viene conexión externa → la utilizamos
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
         }
-    
-        // Desconectar de la base de datos
-        $this->desconectar();
-    
-        // Devolver el ID obtenido (o null si ocurrió un error)
+    }
+
+    /* ======================================================
+       CONECTAR
+    ====================================================== */
+    public function conectar() {
+
+        // Si estás usando conexión externa, NO ABRIR otra
+        if ($this->conexion_externa) {
+            return;
+        }
+
+        if ($this->_con instanceof mysqli) {
+            return; // ya conectada
+        }
+
+        $this->_con = new mysqli($this->servidor, $this->usuario, $this->password, $this->base_datos);
+        $this->_con->set_charset("utf8mb4");
+
+        if ($this->_con->connect_error) {
+            if (DB_THROW_EXCEPTIONS) {
+                throw new Exception("Error de conexión: " . $this->_con->connect_error);
+            } else {
+                die("Error de conexión: " . $this->_con->connect_error);
+            }
+        }
+    }
+
+    /* ======================================================
+       DESCONECTAR
+    ====================================================== */
+    public function desconectar() {
+
+        // ❗ No cerrar si la conexión viene desde una transacción externa
+        if ($this->conexion_externa) {
+            return;
+        }
+
+        if ($this->_con) {
+            $this->_con->close();
+            $this->_con = null;
+        }
+    }
+
+    /* ======================================================
+       CONSULTAR
+    ====================================================== */
+    public function consultar($query) {
+
+        $this->conectar();
+        $res = $this->_con->query($query);
+
+        if ($res === false && DB_THROW_EXCEPTIONS) {
+            throw new Exception("Error en CONSULTAR: " . $this->_con->error);
+        }
+
+        // ❗ SOLO si no es conexión externa, cerramos después
+        if (!$this->conexion_externa) {
+            // NO cerrar antes de usar el resultado — retornamos y luego se usará
+            // PERO los mysqli_result funcionan incluso después del close.
+            // Igual podemos dejarlo así.
+            $this->desconectar();
+        }
+
+        return $res;
+    }
+
+    /* ======================================================
+       INSERTAR
+    ====================================================== */
+    public function insertar($query) {
+
+        $this->conectar();
+        $res = $this->_con->query($query);
+
+        if ($res === false) {
+            if (DB_THROW_EXCEPTIONS) {
+                throw new Exception("Error en INSERTAR: " . $this->_con->error);
+            } else {
+                echo "Error al ejecutar la consulta: " . $this->_con->error;
+                if (!$this->conexion_externa) {
+                    $this->desconectar();
+                }
+                return null;
+            }
+        }
+
+        $id = $this->_con->insert_id;
+
+        if (!$this->conexion_externa) {
+            $this->desconectar();
+        }
+
         return $id;
     }
-    
 
-    public function actualizar($query){
+    /* ======================================================
+       ACTUALIZAR
+    ====================================================== */
+    public function actualizar($query) {
+
         $this->conectar();
-        $resultado = $this->_con->query($query);
-        $this->desconectar();
-        return $resultado;
+        $res = $this->_con->query($query);
+
+        if ($res === false && DB_THROW_EXCEPTIONS) {
+            throw new Exception("Error en ACTUALIZAR: " . $this->_con->error);
+        }
+
+        if (!$this->conexion_externa) {
+            $this->desconectar();
+        }
+
+        return $res;
     }
 }
-
 ?>
+

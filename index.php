@@ -33,11 +33,14 @@ require_once('modelos/tablas_maestras/tipo_documentacion.php');
 require_once('modelos/tablas_maestras/tipo_precio.php');
 require_once('modelos/tablas_maestras/estado_vehiculo.php');
 require_once('modelos/tablas_maestras/interes.php');
+require_once('modelos/tablas_maestras/tipo_comision.php');
+require_once('modelos/comision_venta.php');
 require_once('modelos/documentos.php');
 require_once('modelos/tablas_maestras/pais.php');
 require_once('modelos/tablas_maestras/provincia.php');
 require_once('modelos/tablas_maestras/localidad.php');
 require_once('modelos/tablas_maestras/barrio.php');
+require_once('modelos/caja.php');
 require_once('controladores/plantilla.controlador.php');
 # require_once('controladores/login.controlador.php');
 

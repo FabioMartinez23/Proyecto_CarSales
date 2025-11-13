@@ -2,8 +2,13 @@
 
 require_once('conexion.php');
 require_once('paginacion.php');
+require_once('tablas_maestras/tipo_precio.php');
 
-class PrecioVehiculo extends Paginacion{
+class PrecioVehiculo extends Paginacion {
+
+    private $_con = null; 
+    private $conexion_externa = false;
+
     private $idprecios_vehiculos;
     private $precio;
     private $fecha_precio;
@@ -11,48 +16,131 @@ class PrecioVehiculo extends Paginacion{
     private $tipo_precios_idtipo_precios;
     private $intereses_idintereses;
 
-
-    public function __construct($idprecios_vehiculos='', $precio='', $fecha_precio='', $vehiculos_idvehiculos='', $tipo_precios_idtipo_precios='', $intereses_idintereses='') {
+    // ===========================================================
+    // CONSTRUCTOR COMPATIBLE CON CONEXIÓN COMPARTIDA
+    // ===========================================================
+    public function __construct(
+        $idprecios_vehiculos = '', 
+        $precio = '', 
+        $fecha_precio = '', 
+        $vehiculos_idvehiculos = '', 
+        $tipo_precios_idtipo_precios = '', 
+        $intereses_idintereses = '',
+        $conn = null
+    ) {
         $this->idprecios_vehiculos = $idprecios_vehiculos;
         $this->precio = $precio;
         $this->fecha_precio = $fecha_precio;
         $this->vehiculos_idvehiculos = $vehiculos_idvehiculos;
         $this->tipo_precios_idtipo_precios = $tipo_precios_idtipo_precios;
         $this->intereses_idintereses = $intereses_idintereses;
+
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
+        }
     }
 
-    public function actualizar_precio() {
-        $conexion = new Conexion;
-
-        // 1️⃣ Desactivar el precio anterior
-        $query1 = "UPDATE precios_vehiculos 
-                SET activo_precio = 0 
-                WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos' 
-                AND activo_precio = 1";
-        $conexion->insertar($query1);
-
-        // 2️⃣ Preparar el valor del interés (puede ser NULL)
-        $interesValue = !empty($this->intereses_idintereses) ? "'$this->intereses_idintereses'" : "NULL";
-
-        // 3️⃣ Insertar el nuevo precio
-        $query2 = "INSERT INTO precios_vehiculos 
-                (precio, fecha_precio, vehiculos_idvehiculos, activo_precio, tipo_precios_idtipo_precios, intereses_idintereses)
-                VALUES ('$this->precio', NOW(), '$this->vehiculos_idvehiculos', 1, '$this->tipo_precios_idtipo_precios', $interesValue)";
-        
-        return $conexion->insertar($query2);
-    }
-
-
-    public function modificar_precio(){
+    // ===========================================================
+    // MÉTODOS AUXILIARES DE CONEXIÓN
+    // ===========================================================
+    private function getConexion() {
+        if ($this->conexion_externa && $this->_con instanceof mysqli) {
+            return $this->_con;
+        }
         $conexion = new Conexion();
-        $query = "UPDATE precios_vehiculos SET precio = '$this->precio', tipo_precios_idtipo_precios = '$this->tipo_precios_idtipo_precios', intereses_idintereses = '$this->intereses_idintereses' WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'";
-        return $conexion->actualizar($query);
+        $conexion->conectar();
+        return $conexion->_con;
     }
 
-    public function eliminar_precio(){
-        $conexion = new Conexion();
+    private function cerrarConexion($con) {
+        if (!$this->conexion_externa && $con instanceof mysqli) {
+            $con->close();
+        }
+    }
+
+     public function actualizar_precio() {
+        $con = $this->getConexion();
+
+        // Desactivar precio activo del mismo tipo
+        $query1 = "
+            UPDATE precios_vehiculos 
+            SET activo_precio = 0 
+            WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'
+            AND tipo_precios_idtipo_precios = '$this->tipo_precios_idtipo_precios'
+            AND activo_precio = 1
+        ";
+        $con->query($query1);
+
+        // Interés null o valor
+        $interesValue = !empty($this->intereses_idintereses)
+                      ? "'$this->intereses_idintereses'"
+                      : "NULL";
+
+        // Insertar nuevo precio
+        $query2 = "
+            INSERT INTO precios_vehiculos 
+            (precio, fecha_precio, vehiculos_idvehiculos, activo_precio, 
+             tipo_precios_idtipo_precios, intereses_idintereses)
+            VALUES 
+            ('$this->precio', NOW(), '$this->vehiculos_idvehiculos', 1,
+             '$this->tipo_precios_idtipo_precios', $interesValue)
+        ";
+
+        $con->query($query2);
+        $id = $con->insert_id;
+
+        $this->cerrarConexion($con);
+        return $id;
+    }
+
+    public function guardarPrecioTomado($vehiculo_id, $precio) {
+        $tipoPrecio = new Tipo_Precios();
+        $idTipoTomado = $tipoPrecio->obtenerIdPorDescripcion('tomado');
+
+        $this->precio = $precio;
+        $this->vehiculos_idvehiculos = $vehiculo_id;
+        $this->tipo_precios_idtipo_precios = $idTipoTomado;
+        $this->intereses_idintereses = 1;
+
+        return $this->actualizar_precio();
+    }
+
+    public function guardarPrecioPublico($vehiculo_id, $precio, $idInteres) {
+        $tipoPrecio = new Tipo_Precios();
+        $idTipoPublico = $tipoPrecio->obtenerIdPorDescripcion('publico');
+
+        $this->precio = $precio;
+        $this->vehiculos_idvehiculos = $vehiculo_id;
+        $this->tipo_precios_idtipo_precios = $idTipoPublico;
+        $this->intereses_idintereses = $idInteres;
+
+        return $this->actualizar_precio();
+    }
+
+
+    public function modificar_precio() {
+        $con = $this->getConexion();
+
+        $query = "
+            UPDATE precios_vehiculos 
+            SET precio = '$this->precio', 
+                tipo_precios_idtipo_precios = '$this->tipo_precios_idtipo_precios',
+                intereses_idintereses = '$this->intereses_idintereses'
+            WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'
+        ";
+
+        $ok = $con->query($query);
+        $this->cerrarConexion($con);
+        return $ok;
+    }
+
+    public function eliminar_precio() {
+        $con = $this->getConexion();
         $query = "UPDATE precios_vehiculos SET activo_precio = 0 WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'";
-        return $conexion->actualizar($query);
+        $ok = $con->query($query);
+        $this->cerrarConexion($con);
+        return $ok;
     }
 
     public function traer_los_precios(){
@@ -73,6 +161,9 @@ class PrecioVehiculo extends Paginacion{
                 modelos.nombre AS nombre_modelo,
                 tipo_vehiculos.nombre AS nombre_tipo, 
                 colores.descripcion AS nombre_color,
+
+                -- Estado del vehículo
+                estado_vehiculo.estado_vehiculo AS nombre_estado,
 
                 -- Precio tomado (última fecha)
                 precios_tomado.precio AS precio_tomado,
@@ -95,6 +186,9 @@ class PrecioVehiculo extends Paginacion{
                 ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
             INNER JOIN colores 
                 ON vehiculos.colores_idcolores = colores.idcolores
+                -- 🔹 Estado del vehículo
+            LEFT JOIN estado_vehiculo 
+            ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
 
             -- JOIN para precio TOMADO (último)
             LEFT JOIN precios_vehiculos AS precios_tomado 
@@ -195,6 +289,8 @@ class PrecioVehiculo extends Paginacion{
                 modelos.nombre AS nombre_modelo,
                 tipo_vehiculos.nombre AS nombre_tipo, 
                 colores.descripcion AS nombre_color,
+                -- Estado del vehículo
+                estado_vehiculo.estado_vehiculo AS nombre_estado,
 
                 -- Precio tomado (última fecha)
                 precios_tomado.precio AS precio_tomado,
@@ -217,6 +313,9 @@ class PrecioVehiculo extends Paginacion{
                 ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
             INNER JOIN colores 
                 ON vehiculos.colores_idcolores = colores.idcolores
+                -- JOIN para estado del vehículo
+            LEFT JOIN estado_vehiculo
+                ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
 
             -- JOIN para precio TOMADO (último)
             LEFT JOIN precios_vehiculos AS precios_tomado 
@@ -290,10 +389,6 @@ class PrecioVehiculo extends Paginacion{
 
         return $conexion->consultar($query);
     }
-
-
-
-    
 
 
     public function traer_los_vehiculos_con_precio_json($vehiculos_idvehiculos) {
@@ -380,7 +475,18 @@ class PrecioVehiculo extends Paginacion{
         return null;
     }
 
-
+    public function traer_precios_por_idvehiculo($idvehiculo) {
+        $conexion = new Conexion();
+        $query = "SELECT 
+                    MAX(CASE WHEN tipo_precios.descripcion = 'tomado' THEN precio END) AS precio_tomado,
+                    MAX(CASE WHEN tipo_precios.descripcion = 'publico' THEN precio END) AS precio_publico
+                FROM precios_vehiculos
+                INNER JOIN tipo_precios 
+                ON precios_vehiculos.tipo_precios_idtipo_precios = tipo_precios.idtipo_precios
+                WHERE vehiculos_idvehiculos = '$idvehiculo' AND activo_precio = 1";
+        $resultado = $conexion->consultar($query);
+        return $resultado->fetch_assoc();
+    }
 
 
 

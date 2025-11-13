@@ -1,0 +1,164 @@
+/* =========================================================
+   🎨 ESTILOS ESPECÍFICOS PARA MÓDULO DE CAJA
+   No modifica las clases globales de Bootstrap ni tu style.css
+   ========================================================= */
+
+/* ======== CONTENEDOR PRINCIPAL ======== */
+.caja-container {
+    background-color: #f7f7f7;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ======== TÍTULOS ======== */
+.caja-titulo {
+    color: #333A56;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.caja-titulo i {
+    color: #52658F;
+}
+
+/* ======== SECCIONES (Balance, Cierre, Historial) ======== */
+.caja-section {
+    background: #ffffff;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    padding: 25px 20px;
+    box-shadow: 1px 3px 8px rgba(0,0,0,0.2);
+}
+
+.caja-section h5 {
+    color: #333A56;
+    font-weight: 600;
+}
+
+.caja-header {
+    background-color: #52658F;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 15px;
+    border-radius: 8px 8px 0 0;
+    margin: -25px -20px 20px -20px;
+}
+
+/* ======== BOTONES ======== */
+.caja-btn {
+    background-color: #52658F;
+    color: #fff;
+    font-weight: 500;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.caja-btn:hover {
+    background-color: #333A56;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    color: #fff;
+}
+
+.caja-btn-outline {
+    border: 1px solid #52658F;
+    color: #52658F;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.caja-btn-outline:hover {
+    background-color: #52658F;
+    color: #fff;
+}
+
+/* ======== FORMULARIOS ======== */
+.caja-section textarea,
+.caja-section input {
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    border: 1px solid #ccc;
+}
+
+.caja-section label {
+    font-weight: 600;
+    color: #333;
+}
+
+/* ======== TABLA HISTORIAL ======== */
+.caja-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.caja-tabla th {
+    background-color: #333A56;
+    color: #fff;
+    text-align: center;
+    padding: 12px;
+    font-weight: 600;
+}
+
+.caja-tabla td {
+    background-color: #fff;
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.caja-tabla tr:hover td {
+    background-color: #f2f2f2;
+}
+
+/* ======== BALANCE CARDS INTERNAS ======== */
+.caja-balance-box {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+
+.caja-balance-box:hover {
+    transform: translateY(-3px);
+}
+
+.caja-balance-box h5 {
+    font-weight: 600;
+}
+
+.caja-balance-box h4 {
+    font-size: 1.5rem;
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+@media (max-width: 768px) {
+    .caja-container {
+        padding: 15px;
+    }
+
+    .caja-balance-box {
+        margin-bottom: 15px;
+    }
+
+    .caja-titulo {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .caja-tabla th,
+    .caja-tabla td {
+        font-size: 0.85rem;
+        padding: 6px;
+    }
+
+    .caja-section {
+        padding: 15px;
+    }
+}

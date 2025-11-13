@@ -20,52 +20,28 @@ if (isset($_POST['action'])) {
 
 class PrecioVehiculoControlador
 {
-    public function agregar()
-    {   
+    public function agregar() {
         if (empty($_POST['precio_nuevo'])) {
             header('location: ../../index.php?page=listado_vehiculos&mensaje=Campo vacío.&status=error');
             return;
         }
 
         $idVehiculo = $_POST['idvehiculos'];
-        if($_POST['action'] === 'publico'){
-            $precioNuevo = str_replace(['.', ','], '', $_POST['precio_actual']); // elimina puntos y comas
-        } else {
-            $precioNuevo = str_replace('.', '', $_POST['precio_nuevo']); // elimina puntos de miles
-        }
+        $precioNuevo = str_replace(['.', ','], '', $_POST['precio_nuevo']);
         $idInteres = $_POST['interes_id'] ?? null;
 
-        $tipoPrecio = new Tipo_Precios();
         $precio = new PrecioVehiculo();
 
-        // 1️⃣ Guardar el PRECIO TOMADO
-        $idTipoTomado = $tipoPrecio->obtenerIdPorDescripcion('tomado');
-        $precio->setPrecio($precioNuevo);
-        $precio->setVehiculos_idvehiculos($idVehiculo);
-        $precio->setTipo_precios_idtipo_precios($idTipoTomado);
-        if($_POST['action'] === 'publico'){
-            $precio->setIntereses_idintereses(1); // ID del interés “Sin interés” o base
-        }
-        $precio->actualizar_precio();
-
-        // 2️⃣ Si se seleccionó un interés → generar y guardar el PRECIO PÚBLICO
-        if (!empty($idInteres)) {
+        if ($_POST['action'] === 'publico') {
+            // Calcular precio público con interés
             $interesModel = new Intereses();
             $interes = $interesModel->obtenerPorId($idInteres);
+            $porcentaje = $interes ? floatval($interes['porcentaje']) : 0;
+            $precioPublico = $precioNuevo * (1 + $porcentaje / 100);
 
-            if ($interes && isset($interes['porcentaje'])) {
-                $porcentaje = floatval($interes['porcentaje']);
-                $precioPublico = $precioNuevo * (1 + $porcentaje / 100);
-
-                $idTipoPublico = $tipoPrecio->obtenerIdPorDescripcion('publico');
-
-                $precioPublicoObj = new PrecioVehiculo();
-                $precioPublicoObj->setPrecio($precioPublico);
-                $precioPublicoObj->setVehiculos_idvehiculos($idVehiculo);
-                $precioPublicoObj->setTipo_precios_idtipo_precios($idTipoPublico);
-                $precioPublicoObj->setIntereses_idintereses($idInteres);
-                $precioPublicoObj->actualizar_precio();
-            }
+            $precio->guardarPrecioPublico($idVehiculo, $precioPublico, $idInteres);
+        } else {
+            $precio->guardarPrecioTomado($idVehiculo, $precioNuevo);
         }
 
         header('location: ../../index.php?page=listado_vehiculos&mensaje=Precio agregado correctamente.&status=success');

@@ -2,7 +2,11 @@
 
 require_once('conexion.php');
 
-class ComprarVehiculo{
+class ComprarVehiculo {
+
+    private $_con = null;
+    private $conexion_externa = false;
+
     private $idcompras;
     private $descripcion;
     private $fecha_compra;
@@ -11,7 +15,19 @@ class ComprarVehiculo{
     private $titular_vehiculo_idtitular_vehiculo;
     private $empleados_idempleados;
 
-    public function __construct($idcompras='', $descripcion='', $fecha_compra='', $tipo_pago_idtipo_pago='', $vehiculo_idvehiculo='', $titular_vehiculo_idtitular_vehiculo='', $empleados_idempleados='') {
+    // ===========================================================
+    // CONSTRUCTOR COMPATIBLE CON CONEXIÓN COMPARTIDA
+    // ===========================================================
+    public function __construct(
+        $idcompras = '',
+        $descripcion = '',
+        $fecha_compra = '',
+        $tipo_pago_idtipo_pago = '',
+        $vehiculo_idvehiculo = '',
+        $titular_vehiculo_idtitular_vehiculo = '',
+        $empleados_idempleados = '',
+        $conn = null
+    ) {
         $this->idcompras = $idcompras;
         $this->descripcion = $descripcion;
         $this->fecha_compra = $fecha_compra;
@@ -19,46 +35,149 @@ class ComprarVehiculo{
         $this->vehiculo_idvehiculo = $vehiculo_idvehiculo;
         $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
         $this->empleados_idempleados = $empleados_idempleados;
-    }
 
-    public function agregar_compra(){
-        $conexion = new Conexion();
-        $query = "INSERT INTO compras (descripcion, fecha_compra, tipo_pago_idtipo_pago, vehiculo_idvehiculo, titular_vehiculo_idtitular_vehiculo, empleados_idempleados) VALUES ('$this->descripcion', CURDATE(), '$this->tipo_pago_idtipo_pago', '$this->vehiculo_idvehiculo', '$this->titular_vehiculo_idtitular_vehiculo', '$this->empleados_idempleados')";
-        return $conexion->insertar($query);
-    }
-
-    public function traer_compras(){
-        $conexion = new Conexion();
-        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM compras INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitulares WHERE DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
-        return $conexion->consultar($query);
-    }
-
-    public function traer_compra_por_id($idcompras){
-        $conexion = new Conexion();
-        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago, contactos.valor as valor_contacto, documentos.valor as valor_documento, domicilios.descripcion as nombre_domicilio, barrios.descripcion as nombre_barrio, localidades.descripcion as nombre_localidad, provincias.descripcion as nombre_provincia, colores.descripcion as nombre_descripcion, tipo_vehiculos.nombre as nombre_tipo FROM compras INNER JOIN empleados ON empleados.idempleados = compras.empleados_idempleados INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN tipo_vehiculos ON tipo_vehiculos.idtipo_vehiculos = vehiculos.tipo_vehiculos_idtipo_vehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN colores ON vehiculos.colores_idcolores = colores.idcolores INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas INNER JOIN contactos ON contactos.Personas_idPersonas = personas.idpersonas INNER JOIN documentos ON documentos.Personas_idPersonas = personas.idpersonas INNER JOIN domicilios ON domicilios.Personas_idPersonas = personas.idpersonas INNER JOIN barrios ON domicilios.barrios_idbarrios = barrios.idbarrios INNER JOIN localidades ON barrios.localidades_idlocalidades = localidades.idlocalidades INNER JOIN provincias ON localidades.provincias_idprovincias = provincias.idprovincias WHERE idcompras = $idcompras";
-        $resultado = $conexion->consultar($query);
-        if ($resultado->num_rows > 0) {
-            return $resultado->fetch_assoc();
+        // Si pasa conexión externa → usarla
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
         }
-        return null;
     }
 
-    public function buscar_compra($buscador){
+    // ===========================================================
+    // MANEJO DE CONEXIÓN
+    // ===========================================================
+    private function getConexion() {
+        if ($this->conexion_externa && $this->_con instanceof mysqli) {
+            return $this->_con;
+        }
+        // conexión normal
         $conexion = new Conexion();
-        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM compras INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas WHERE (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%') AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
-        return $conexion->consultar($query);
+        $conexion->conectar();
+        return $conexion->_con;
     }
 
-    public function traer_cantidad_compras(){
-        $conexion = new Conexion();
+    private function cerrarConexion($con) {
+        if (!$this->conexion_externa && $con instanceof mysqli) {
+            $con->close();
+        }
+    }
+
+    public function agregar_compra() {
+        $con = $this->getConexion();
+
+        $query = "
+            INSERT INTO compras 
+            (descripcion, fecha_compra, tipo_pago_idtipo_pago, vehiculo_idvehiculo, 
+             titular_vehiculo_idtitular_vehiculo, empleados_idempleados)
+            VALUES 
+            ('$this->descripcion', CURDATE(), '$this->tipo_pago_idtipo_pago', 
+             '$this->vehiculo_idvehiculo', '$this->titular_vehiculo_idtitular_vehiculo', 
+             '$this->empleados_idempleados')
+        ";
+
+        $ok = $con->query($query);
+        $id = $ok ? $con->insert_id : null;
+
+        $this->cerrarConexion($con);
+        return $id;
+    }
+
+    public function traer_compras() {
+        $con = $this->getConexion();
+
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago 
+        FROM compras 
+        INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago 
+        INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos 
+        INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos 
+        INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas 
+        INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
+        INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitulares 
+        WHERE DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
+
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
+    }
+
+    public function traer_compra_por_id($idcompras) {
+        $con = $this->getConexion();
+
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago, contactos.valor as valor_contacto, documentos.valor as valor_documento, domicilios.descripcion as nombre_domicilio, barrios.descripcion as nombre_barrio, localidades.descripcion as nombre_localidad, provincias.descripcion as nombre_provincia, colores.descripcion as nombre_descripcion, tipo_vehiculos.nombre as nombre_tipo 
+        FROM compras 
+        INNER JOIN empleados ON empleados.idempleados = compras.empleados_idempleados 
+        INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago 
+        INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos 
+        INNER JOIN tipo_vehiculos ON tipo_vehiculos.idtipo_vehiculos = vehiculos.tipo_vehiculos_idtipo_vehiculos 
+        INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos 
+        INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas 
+        INNER JOIN colores ON vehiculos.colores_idcolores = colores.idcolores 
+        INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
+        INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
+        INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
+        INNER JOIN contactos ON contactos.Personas_idPersonas = personas.idpersonas 
+        INNER JOIN documentos ON documentos.Personas_idPersonas = personas.idpersonas 
+        INNER JOIN domicilios ON domicilios.Personas_idPersonas = personas.idpersonas 
+        INNER JOIN barrios ON domicilios.barrios_idbarrios = barrios.idbarrios 
+        INNER JOIN localidades ON barrios.localidades_idlocalidades = localidades.idlocalidades 
+        INNER JOIN provincias ON localidades.provincias_idprovincias = provincias.idprovincias 
+        WHERE idcompras = $idcompras";
+
+        $res = $con->query($query);
+        $fila = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+
+        $this->cerrarConexion($con);
+        return $fila;
+    }
+
+    public function buscar_compra($buscador) {
+        $con = $this->getConexion();
+
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago 
+        FROM compras 
+        INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago 
+        INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos 
+        INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos 
+        INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas 
+        INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
+        INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
+        INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
+        WHERE (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' 
+           OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%' 
+           OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%')
+        AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
+
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
+    }
+
+    public function traer_cantidad_compras() {
+        $con = $this->getConexion();
         $query = "SELECT count(*) as total FROM compras";
-        return $conexion->consultar($query);
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
-    public function traer_compras_paginacion($inicio,$cantidad){
-        $conexion = new Conexion();
-        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM compras INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas WHERE DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) LIMIT $inicio,$cantidad";
-        return $conexion->consultar($query);
+    public function traer_compras_paginacion($inicio, $cantidad) {
+        $con = $this->getConexion();
+
+        $query = "SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, compras.descripcion as observacion, tipo_pago.descripcion as nombre_pago 
+        FROM compras 
+        INNER JOIN tipo_pago ON compras.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago 
+        INNER JOIN vehiculos ON compras.vehiculo_idvehiculo = vehiculos.idvehiculos 
+        INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos 
+        INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas 
+        INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
+        INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
+        INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
+        WHERE DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) 
+        LIMIT $inicio,$cantidad";
+
+        $res = $con->query($query);
+        $this->cerrarConexion($con);
+        return $res;
     }
 
     /**

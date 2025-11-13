@@ -39,6 +39,29 @@ class Documentacion{
         return $conexion->insertar($query);
     }
 
+    public function guardar_documentacion() {
+        $conexion = new Conexion();
+
+        // Valores limpios y seguros
+        $url = $this->URL_descripcion ?? '';
+        $estado = $this->estado_doc ?? 1;
+        $digitalizado = $this->digitalizado ?? 1;
+        $vehiculo = $this->vehiculos_idvehiculos ?? 0;
+        $tipo = $this->tipo_documentacion_idtipo_documentacion ?? null;
+
+        if (empty($vehiculo) || empty($tipo)) {
+            return false; // No se puede guardar sin vehículo o tipo
+        }
+
+        $query = "
+            INSERT INTO Documentaciones 
+            (URL_descripcion, estado_doc, digitalizado, vehiculos_idvehiculos, tipo_documentacion_idtipo_documentacion) 
+            VALUES ('$url', '$estado', '$digitalizado', '$vehiculo', '$tipo')
+        ";
+
+        return $conexion->insertar($query);
+    }
+
     public function contar_no_digitalizados($vehiculo_id) {
         $conexion = new Conexion();
         $query = "SELECT COUNT(*) AS total 
@@ -125,8 +148,8 @@ class Documentacion{
                     URL_descripcion = '$this->URL_descripcion',
                     digitalizado = '$this->digitalizado'
                 WHERE idDocumentaciones = '$this->idDocumentaciones'";
-
-        return $conexion->insertar($query); // Usamos "insertar" aunque sea UPDATE según tu clase Conexion
+        $resultado = $conexion->insertar($query);
+        return $resultado;
     }
 
     public function traer_todos_los_docs() {

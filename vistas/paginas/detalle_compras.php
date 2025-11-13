@@ -11,7 +11,7 @@ if ($resultado_compra) {
 ?>
 
     <div class="container mt-5 hacer_padding">
-        <h1 class="text-center">Detalles de Compra - Nro <?=$resultado_compra['idcompras']; ?></h1>
+        <h1 class="text-center">Detalle de Vehículo Ingresado - Nro <?=$resultado_compra['idcompras']; ?></h1>
 
         <h2>Datos del Cliente</h2>
         <ul class="list-group mb-4">
@@ -29,16 +29,15 @@ if ($resultado_compra) {
             <li class="list-group-item"><strong>Color:</strong> <?=$resultado_compra['nombre_descripcion']; ?></li>
         </ul>
 
-        <h2>Datos de la Compra</h2>
+        <h2>Datos del Ingreso</h2>
         <ul class="list-group mb-4">
             <li class="list-group-item">
-                <strong>Fecha de Compra:</strong> 
+                <strong>Fecha de Ingreso:</strong> 
                 <?php
                     $fecha_original = new DateTime($resultado_compra['fecha_compra']);
                     echo $fecha_original->format('d-m-Y');
                 ?>
             </li>
-            <li class="list-group-item"><strong>Tipo de Pago:</strong> <?=$resultado_compra['nombre_pago']; ?></li>
             <li class="list-group-item"><strong>Monto:</strong> $<?=$resultado_compra['precio']; ?></li>
             <li class="list-group-item"><strong>Observaciones:</strong> <?=$resultado_compra['observacion']; ?></li>
         </ul>

@@ -39,7 +39,7 @@ class Fichas_Tenicas{
                     cristales_idcristales = '$this->cristales_idcristales',
                     vencimiento_rto = '$this->vencimiento_RTO',
                     vencimiento_bateria = '$this->vencimiento_bateria',
-                    vencimiento_service = '$this->vencimiento_service',
+                    vencimiento_service = '$this->vencimiento_service'
                 WHERE vehiculos_idvehiculos = '$this->vehiculos_idvehiculos'";
         
         $conexion = new Conexion();

@@ -420,6 +420,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                         </div>
                         <div class="col-md-8 col-lg-12">
                             <input type="hidden" name="vehiculos_idvehiculos" id="idvehiculos_1">
+                            <input type="hidden" name="titular_vehiculo" id="titular_vehiculo">
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label for="id_patente" class="form-label">Patente</label>
@@ -562,10 +563,12 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
 
                             <!-- Monto -->
                             <div class="col-md-4 mb-3">
-                                <label for="id_precio" class="form-label">Monto:</label>
+                                <input type="hidden" name="precio_tomado" id="id_precio_tomado">
+                                <input type="hidden" name="precio_publico_real" id="precio_publico_real">
+                                <label for="id_precio_publico" class="form-label">Monto:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="text" class="form-control text-end" id="id_precio" name="id_precio" readonly>
+                                    <input type="text" class="form-control text-end" id="id_precio_publico" name="precio_publico" readonly>
                                 </div>
                             </div>
 
@@ -727,7 +730,64 @@ $(document).ready(function() {
     });
 </script>
 
+<script>
+document.getElementById('formPatente').addEventListener('submit', function(e) {
+    e.preventDefault(); // evita la recarga de la página
 
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: this.method,
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atención',
+                text: data.error,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#52658F'
+            }).then(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('buscarVehiculoModal'));
+                if (modal) modal.hide();
+            });
+        } else {
+            // acá podés continuar tu flujo normal si el vehículo existe
+            console.log("Vehículo encontrado:", data);
+            // por ejemplo, rellenar inputs de otro formulario o mostrar los datos
+        }
+    })
+    .catch(err => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un problema al consultar el vehículo.'
+        });
+    });
+});
+</script>
+
+
+<!-- 🔹 Validación del formulario principal -->
+<script>
+document.getElementById('ventaForm').addEventListener('submit', function(e) {
+    const cliente = document.getElementById('id_usuario').value;
+    const vehiculo = document.getElementById('idvehiculos_1').value;
+    const titular = document.getElementById('titular_vehiculo').value;
+
+    if (!cliente || !vehiculo || !titular) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Datos incompletos',
+            text: 'Debe seleccionar cliente, vehículo y asegurarse de que el titular esté vinculado.',
+            confirmButtonColor: '#52658F'
+        });
+    }
+});
+</script>
 
 <script src="assets/js/json/traer_datos_cliente.js"></script>
 <script src="assets/js/json/traer_datos_vehiculo.js"></script>

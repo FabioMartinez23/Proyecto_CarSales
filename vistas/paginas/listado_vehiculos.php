@@ -87,81 +87,174 @@ $result_intereses = $intereses->traer_interes();
     <!-- MODAL DE AGREGAR / ACTUALIZAR PRECIO VEHÍCULO -->
     <!-- ============================================================= -->
     <div class="modal fade" id="ActualizarPrecioModal" tabindex="-1" aria-labelledby="ActualizarPrecioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-modal text-white">
+                <h5 class="modal-title" id="ActualizarPrecioModalLabel">
+                <i class="fa-solid fa-sack-dollar me-2"></i> Gestión de Precio del Vehículo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+                <h4 id="marcaModeloVehiculo" class="text-center mb-4 fw-semibold text-dark"></h4>
+
+                <form id="vehiculo-form" method="POST" action="controladores/vehiculos/precio_vehiculo.controlador.php">
+                <input type="hidden" name="action" id="action" value="agregar">
+                <input type="hidden" name="idvehiculos" id="idvehiculos">
+
+                <!-- =================================================== -->
+                <!-- FILA COMPACTA DE PRECIOS ACTUALES -->
+                <!-- =================================================== -->
+                <div class="row mb-4 justify-content-center" id="preciosActualesFila" style="display: none;">
+                    <div class="col-md-4 text-center">
+                    <label class="form-label fw-bold text-secondary">Precio Tomado</label>
+                    <p id="precio_actual_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
+                    <input type="hidden" id="precio_actual" name="precio_actual">
+                    </div>
+                    <div class="col-md-4 text-center">
+                    <label class="form-label fw-bold text-secondary">Precio al Público</label>
+                    <p id="precio_publico_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
+                    <input type="hidden" id="precio_publico" name="precio_publico">
+                    </div>
+                    <div class="col-md-4 text-center">
+                    <label class="form-label fw-bold text-secondary">Interés Aplicado</label>
+                    <p id="interes_aplicado_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
+                    </div>
+                </div>
+
+                <!-- NUEVO PRECIO TOMADO -->
+                <div class="row mb-3" id="nuevoPrecioTomadoContainer">
+                    <div class="col-md-6">
+                    <label for="precio_nuevo_agregar" class="form-label fw-bold text-secondary">Nuevo Precio Tomado:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input oninput="formatearNumero(this)" type="text" id="precio_nuevo_agregar" name="precio_nuevo" class="form-control" placeholder="0.00">
+                    </div>
+                    </div>
+                </div>
+
+                <!-- INTERÉS Y NUEVO PRECIO PÚBLICO -->
+                <div class="row mb-3" id="precioPublicoContainer">
+                    <div class="col-md-6">
+                    <label for="interes" class="form-label fw-bold text-secondary">Interés (%):</label>
+                    <select id="interes" name="interes_id" class="form-select">
+                        <option value="">Seleccionar interés</option>
+                        <?php while ($row = $result_intereses->fetch_assoc()): ?>
+                        <option value="<?= $row['idintereses']; ?>" data-porcentaje="<?= $row['porcentaje']; ?>">
+                        <?= $row['descripcion']; ?> (<?= $row['porcentaje']; ?>%)
+                        </option>
+                        <?php endwhile; ?>
+                    </select>
+                    </div>
+                    <div class="col-md-6">
+                    <label for="precio_calculado" class="form-label fw-bold text-secondary">Nuevo Precio al Público:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="text" id="precio_calculado" name="precio_calculado" class="form-control bg-light" readonly placeholder="Calculado automáticamente">
+                    </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-action">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Precio
+                    </button>
+                </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- MODAL FICHA TÉCNICA (Vehículo Disponible)                 -->
+    <!-- ========================================================= -->
+    <div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
+        <div class="modal-content shadow-lg border-0 rounded-3">
         <div class="modal-header bg-modal text-white">
-            <h5 class="modal-title" id="ActualizarPrecioModalLabel">
-            <i class="fa-solid fa-sack-dollar me-2"></i> Gestión de Precio del Vehículo
+            <h5 class="modal-title">
+            <i class="fa-solid fa-gears me-2"></i> Ficha Técnica del Vehículo
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
 
         <div class="modal-body">
-            <h4 id="marcaModeloVehiculo" class="text-center mb-4 fw-semibold text-dark"></h4>
+            <h4 id="marcaModeloVehiculo" class="text-center mb-4 fw-semibold text-secondary"></h4>
 
-            <form id="vehiculo-form" method="POST" action="controladores/vehiculos/precio_vehiculo.controlador.php">
-            <input type="hidden" name="action" id="action" value="agregar">
-            <input type="hidden" name="idvehiculos" id="idvehiculos">
+            <form id="ficha-tecnica-form" method="POST" action="controladores/ficha_tecnica/ficha_tecnica.controlador.php">
+            <input type="hidden" name="action" value="guardar">
+            <input type="hidden" name="vehiculos_idvehiculos" id="vehiculos_idvehiculos">
 
-            <!-- =================================================== -->
-            <!-- FILA COMPACTA DE PRECIOS ACTUALES -->
-            <!-- =================================================== -->
-            <div class="row mb-4 justify-content-center" id="preciosActualesFila" style="display: none;">
-                <div class="col-md-4 text-center">
-                <label class="form-label fw-bold text-secondary">Precio Tomado</label>
-                <p id="precio_actual_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
-                <input type="hidden" id="precio_actual" name="precio_actual">
+            <!-- ==================== REVISIÓN TÉCNICA ==================== -->
+            <h5 class="border-bottom pb-2 mb-3">Revisión Técnica</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                <label for="vencimientoBateria" class="form-label">Batería</label>
+                <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
                 </div>
-                <div class="col-md-4 text-center">
-                <label class="form-label fw-bold text-secondary">Precio al Público</label>
-                <p id="precio_publico_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
-                <input type="hidden" id="precio_publico" name="precio_publico">
+                <div class="col-md-4 mb-3">
+                <label for="vencimientoRTO" class="form-label">RTO</label>
+                <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
                 </div>
-                <div class="col-md-4 text-center">
-                <label class="form-label fw-bold text-secondary">Interés Aplicado</label>
-                <p id="interes_aplicado_texto" class="form-control-plaintext fs-5 fw-semibold text-dark mb-0"></p>
+                <div class="col-md-4 mb-3">
+                <label for="vencimientoService" class="form-label">Service</label>
+                <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
                 </div>
             </div>
 
-            <!-- NUEVO PRECIO TOMADO -->
-            <div class="row mb-3" id="nuevoPrecioTomadoContainer">
-                <div class="col-md-6">
-                <label for="precio_nuevo_agregar" class="form-label fw-bold text-secondary">Nuevo Precio Tomado:</label>
-                <div class="input-group">
-                    <span class="input-group-text">$</span>
-                    <input oninput="formatearNumero(this)" type="text" id="precio_nuevo_agregar" name="precio_nuevo" class="form-control" placeholder="0.00">
-                </div>
-                </div>
-            </div>
-
-            <!-- INTERÉS Y NUEVO PRECIO PÚBLICO -->
-            <div class="row mb-3" id="precioPublicoContainer">
-                <div class="col-md-6">
-                <label for="interes" class="form-label fw-bold text-secondary">Interés (%):</label>
-                <select id="interes" name="interes_id" class="form-select">
-                    <option value="">Seleccionar interés</option>
-                    <?php while ($row = $result_intereses->fetch_assoc()): ?>
-                    <option value="<?= $row['idintereses']; ?>" data-porcentaje="<?= $row['porcentaje']; ?>">
-                    <?= $row['descripcion']; ?> (<?= $row['porcentaje']; ?>%)
+            <!-- ==================== ESTADO DEL VEHÍCULO ==================== -->
+            <h5 class="border-bottom pb-2 mb-3">Estado del Vehículo</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                <label for="descripcionCarroceria" class="form-label">Carrocería</label>
+                <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
+                    <?php foreach($result_carroceria as $carroceria): ?>
+                    <option value="<?= $carroceria['idcarroceria']; ?>">
+                        <?= htmlspecialchars($carroceria['descripcion_carroceria']); ?>
                     </option>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </select>
                 </div>
-                <div class="col-md-6">
-                <label for="precio_calculado" class="form-label fw-bold text-secondary">Nuevo Precio al Público:</label>
-                <div class="input-group">
-                    <span class="input-group-text">$</span>
-                    <input type="text" id="precio_calculado" name="precio_calculado" class="form-control bg-light" readonly placeholder="Calculado automáticamente">
+
+                <div class="col-md-4 mb-3">
+                <label for="descripcionNeumaticos" class="form-label">Neumáticos</label>
+                <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
+                    <?php foreach($result_neumatico as $neumatico): ?>
+                    <option value="<?= $neumatico['idneumaticos']; ?>">
+                        <?= htmlspecialchars($neumatico['descripcion_neumaticos']); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
                 </div>
+
+                <div class="col-md-4 mb-3">
+                <label for="descripcionCristales" class="form-label">Cristales</label>
+                <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
+                    <?php foreach($result_cristal as $cristal): ?>
+                    <option value="<?= $cristal['idcristales']; ?>">
+                        <?= htmlspecialchars($cristal['descripcion_cristales']); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="fa-solid fa-xmark me-1"></i> Cancelar
-                </button>
-                <button type="submit" class="btn btn-action">
-                <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Precio
+            <!-- ==================== DOCUMENTACIÓN ==================== -->
+            <h5 class="border-bottom pb-2 mb-3">Documentación del Vehículo</h5>
+            <div id="contenedorDocumentacion" class="p-3 border rounded bg-light text-center">
+                <p class="text-muted">Cargando documentación...</p>
+            </div>
+
+            <!-- ==================== BOTÓN GUARDAR ==================== -->
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-action px-4">
+                <i class="fa-solid fa-pen-to-square me-1"></i> Actualizar Ficha Técnica
                 </button>
             </div>
             </form>
@@ -171,94 +264,14 @@ $result_intereses = $intereses->traer_interes();
     </div>
 
 
-    <!-- Modal de Ficha Técnica -->
-    <div class="modal fade" id="fichaTecnicaModal" tabindex="-1" aria-labelledby="fichaTecnicaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fichaTecnicaModalLabel">Ficha Técnica del Vehículo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h3 id="marcaModeloVehiculo"></h3>
-
-                    <form id="nuevo-vehiculo-form" method="POST" action="controladores/ficha_tecnica/ficha_tecnica.controlador.php">
-                        <input type="hidden" name="action" value="guardar">
-                        <input type="hidden" name="vehiculos_idvehiculos" id="vehiculos_idvehiculos">
-
-                        <!-- ==================== Revisión Técnica ==================== -->
-                        <h2 class="mb-3">Revisión Técnica</h2>
-
-                        <h6>Vencimientos</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoBateria" class="form-label">Batería</label>
-                                <input type="date" class="form-control" id="vencimientoBateria" name="vencimiento_bateria">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoRTO" class="form-label">RTO - Revisión Técnica</label>
-                                <input type="date" class="form-control" id="vencimientoRTO" name="vencimiento_rto">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="vencimientoService" class="form-label">Service Automotor</label>
-                                <input type="date" class="form-control" id="vencimientoService" name="vencimiento_service">
-                            </div>
-                        </div>
-
-                        <!-- ==================== Estado de Carrocería ==================== -->
-                        <h6>Estado Carrocería</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionCarroceria" class="form-label">Descripción de la Carrocería:</label>
-                                <select id="descripcionCarroceria" name="descripcion_carroceria" class="form-select">
-                                    <?php foreach($result_carroceria as $carroceria): ?>
-                                        <option value="<?php echo $carroceria['idcarroceria']; ?>"><?php echo $carroceria['descripcion_carroceria']; ?></option>
-                                    <?php endforeach;?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionNeumaticos" class="form-label">Descripción de los Neumáticos:</label>
-                                <select id="descripcionNeumaticos" name="descripcion_neumatico" class="form-select">
-                                    <?php foreach($result_neumatico as $neumatico): ?>
-                                        <option value="<?php echo $neumatico['idneumaticos']; ?>"><?php echo $neumatico['descripcion_neumaticos']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="descripcionCristales" class="form-label">Descripción de Cristales:</label>
-                                <select id="descripcionCristales" name="descripcion_cristales" class="form-select">
-                                    <?php foreach($result_cristal as $cristal): ?>
-                                        <option value="<?php echo $cristal['idcristales']; ?>"><?php echo $cristal['descripcion_cristales']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- ==================== Documentación dinámica ==================== -->
-                        <h6>Documentación del Vehículo</h6>
-                        <div id="contenedorDocumentacion">
-                            <p class="text-muted">Cargando documentación...</p>
-                        </div>
-
-                        <!-- Botón Guardar -->
-                        <div class="text-end mt-3">
-                            <button type="submit" class="btn btn-action">Guardar Datos</button>
-                        </div>
-
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
     <!-- Modal de Imágenes y Documentos del Vehículo -->
     <div class="modal fade" id="DocumentosModal" tabindex="-1" aria-labelledby="DocumentosModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="DocumentosModalLabel">Documentación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-modal text-white">
+                    <h5 class="modal-title" id="DocumentosModalLabel"><i class="fa-solid fa-file-invoice me-2"></i>Documentación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <h3 id="marcaModeloVehiculoDoc"></h3> <!-- Aquí se mostrará la marca y modelo -->
@@ -416,15 +429,23 @@ $result_intereses = $intereses->traer_interes();
                         <th>Marca</th>
                         <th>Modelo</th>
                         <th>Tipo</th>
-                        <th>Precio Tomado</th>
-                        <th>Precio Público</th>
-                        <th>Actualizar Precio</th>
-                        <th>Ficha Técnica</th>
-                        <th>Modificar</th>
-                        <th>Agregar</th>
-                        <th>Eliminar</th>
+                        <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
+                            <th>Precio Tomado</th>
+                            <th>Precio Público</th>
+                            <th>Actualizar Precio</th>
+                            <th>Ficha Técnica</th>
+                            <th>Modificar</th>
+                            <th>Agregar</th>
+                            <th>Eliminar</th>
+                        <?php else: ?>
+                            <th>Precio Público</th>
+                            <th>Ficha Técnica</th>
+                            <th>Modificar</th>
+                            <th>Agregar</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
+
                 <tbody>
                 <?php if (!empty($result_vehiculos_array)): ?>
                     <?php foreach ($result_vehiculos_array as $vehiculo_): ?>
@@ -435,69 +456,80 @@ $result_intereses = $intereses->traer_interes();
                             <td><?= htmlspecialchars($vehiculo_['nombre_modelo']); ?></td>
                             <td><?= htmlspecialchars($vehiculo_['nombre_tipo']); ?></td>
 
-                            <!-- Precio Tomado -->
-                            <td>
-                                <?php if (!empty($vehiculo_['precio_tomado'])): ?>
-                                    <span class="fw-bold text-success">
-                                        $<?= htmlspecialchars(number_format($vehiculo_['precio_tomado'], 0, ',', '.')); ?>
-                                    </span>
-                                <?php else: ?>
-                                    <a title="Agregar Precio Tomado" href="#" class="btn btn-outline-success btn-sm" 
-                                        data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
-                                        data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>" 
-                                        data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>" 
-                                        data-año="<?= htmlspecialchars($vehiculo_['anio']); ?>"
-                                        data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
-                                        data-tipo="tomado"
-                                        data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado'] ?? ''); ?>">
-                                        <i class="fa-solid fa-sack-dollar"></i> Ingresar precio tomado
-                                    </a>
-                                <?php endif; ?>
-                            </td>
+                            <!-- Solo ADMIN: Precio Tomado -->
+                            <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
+                                <td>
+                                    <?php if (!empty($vehiculo_['precio_tomado'])): ?>
+                                        <span class="fw-bold text-success">
+                                            $<?= number_format($vehiculo_['precio_tomado'], 0, ',', '.'); ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <a title="Agregar Precio Tomado" href="#" class="btn btn-outline-success btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
+                                            data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>" 
+                                            data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>" 
+                                            data-año="<?= htmlspecialchars($vehiculo_['anio']); ?>"
+                                            data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
+                                            data-tipo="tomado"
+                                            data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado'] ?? ''); ?>">
+                                            <i class="fa-solid fa-sack-dollar"></i> Ingresar precio tomado
+                                        </a>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
 
                             <!-- Precio Público -->
                             <td>
                                 <?php if (!empty($vehiculo_['precio_publico'])): ?>
                                     <span class="fw-bold text-primary">
-                                        $<?= htmlspecialchars(number_format($vehiculo_['precio_publico'], 0, ',', '.')); ?>
+                                        $<?= number_format($vehiculo_['precio_publico'], 0, ',', '.'); ?>
                                     </span>
                                 <?php else: ?>
-                                    <a title="Agregar Precio Público" href="#" class="btn btn-outline-primary btn-sm" 
-                                        data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
-                                        data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>" 
-                                        data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>" 
-                                        data-año="<?= htmlspecialchars($vehiculo_['anio']); ?>"
-                                        data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
-                                        data-tipo="publico"
-                                        data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado'] ?? ''); ?>">
-                                        <i class="fa-solid fa-tags"></i> Ingresar precio al público
-                                    </a>
+                                    <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
+                                        <a title="Agregar Precio Público" href="#" class="btn btn-outline-primary btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal" 
+                                            data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>" 
+                                            data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>" 
+                                            data-anio="<?= htmlspecialchars($vehiculo_['anio']); ?>"
+                                            data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
+                                            data-tipo="publico"
+                                            data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado'] ?? ''); ?>">
+                                            <i class="fa-solid fa-tags"></i> Ingresar precio al público
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted fst-italic">
+                                            Sin Precio Público – Comunicarse con Administración
+                                        </span>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Botón de actualizar precios -->
-                            <td>
-                                <a title="Actualizar Precios" href="#" class="btn btn-warning btn-sm" 
-                                    data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal"
-                                    data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
-                                    data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
-                                    data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
-                                    data-anio="<?= htmlspecialchars($vehiculo_['anio']); ?>"
-                                    data-tipo="actualizar"
-                                    data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado']); ?>"
-                                    data-precio-publico="<?= htmlspecialchars($vehiculo_['precio_publico']); ?>"
-                                    data-interes="<?= htmlspecialchars($vehiculo_['porcentaje_interes_publico']); ?>">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
-                                </a>
-                            </td>
+                            <!-- Solo ADMIN: Botón actualizar precios -->
+                            <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
+                                <td>
+                                    <a title="Actualizar Precios" href="#" class="btn btn-warning btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#ActualizarPrecioModal"
+                                        data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>"
+                                        data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>"
+                                        data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>"
+                                        data-anio="<?= htmlspecialchars($vehiculo_['anio']); ?>"
+                                        data-tipo="actualizar"
+                                        data-precio="<?= htmlspecialchars($vehiculo_['precio_tomado']); ?>"
+                                        data-precio-publico="<?= htmlspecialchars($vehiculo_['precio_publico']); ?>"
+                                        data-interes="<?= htmlspecialchars($vehiculo_['porcentaje_interes_publico']); ?>">
+                                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                                    </a>
+                                </td>
+                            <?php endif; ?>
 
                             <!-- Ficha técnica -->
                             <td>
-                                <a title="Agregar Ficha" href="#" class="btn btn-primary btn-sm" 
+                                <a title="Ver / Editar Ficha Técnica" href="#" class="btn btn-primary btn-sm" 
                                     data-bs-toggle="modal" data-bs-target="#fichaTecnicaModal" 
                                     data-marca="<?= htmlspecialchars($vehiculo_['nombre_marca']); ?>" 
                                     data-modelo="<?= htmlspecialchars($vehiculo_['nombre_modelo']); ?>" 
-                                    data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>">
+                                    data-idvehiculo="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>" 
+                                    data-estado="<?= htmlspecialchars($vehiculo_['nombre_estado']); ?>">
                                     <i class="fa-solid fa-gears"></i>
                                 </a>
                             </td>
@@ -510,7 +542,7 @@ $result_intereses = $intereses->traer_interes();
                                 </a>
                             </td>
 
-                            <!-- Agregar Documentación -->
+                           <!-- Agregar Documentación -->
                             <td>
                                 <a title="Agregar img/doc" href="#" class="btn btn-info btn-sm" 
                                     data-bs-toggle="modal" data-bs-target="#DocumentosModal"
@@ -521,9 +553,11 @@ $result_intereses = $intereses->traer_interes();
                                 </a>
                             </td>
 
-                            <!-- Eliminar -->
+                            <!-- Eliminar (solo para Administrador) -->
+                            <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
                             <td>
-                                <form id="formulario-eliminar-<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>" method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
+                                <form id="formulario-eliminar-<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>" 
+                                    method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
                                     <input type="hidden" name="action" value="eliminar">
                                     <input type="hidden" name="idvehiculos" value="<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>">
                                     <button onclick="confirmarAccion(event, 'eliminar', 'formulario-eliminar-<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>')" 
@@ -532,6 +566,7 @@ $result_intereses = $intereses->traer_interes();
                                     </button>
                                 </form>
                             </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -542,9 +577,9 @@ $result_intereses = $intereses->traer_interes();
                     </tr>
                 <?php endif; ?>
                 </tbody>
-
             </table>
         </div>
+
 
 
 
@@ -588,90 +623,76 @@ $result_intereses = $intereses->traer_interes();
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var fichaTecnicaModal = document.getElementById('fichaTecnicaModal');
+    document.addEventListener('DOMContentLoaded', function () {
+        const fichaTecnicaModal = document.getElementById('fichaTecnicaModal');
 
-    fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
+        fichaTecnicaModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const marca = button.getAttribute('data-marca');
+            const modelo = button.getAttribute('data-modelo');
+            const idvehiculo = button.getAttribute('data-idvehiculo');
+            const estadoVehiculo = button.getAttribute('data-estado'); // viene de data-estado="disponible"
 
-        var marca = button.getAttribute('data-marca');
-        var modelo = button.getAttribute('data-modelo');
-        var idvehiculo = button.getAttribute('data-idvehiculo');
+            document.getElementById('marcaModeloVehiculo').textContent = `${marca} - ${modelo}`;
+            document.getElementById('vehiculos_idvehiculos').value = idvehiculo;
 
-        document.getElementById('marcaModeloVehiculo').textContent = marca + ' - ' + modelo;
-        document.getElementById('vehiculos_idvehiculos').value = idvehiculo;
-        document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "guardar";
+            // ===============================
+            // 1️⃣ Traer ficha técnica existente
+            // ===============================
+            const formData = new FormData();
+            formData.append("action", "consultar_ficha_tecnica");
+            formData.append("id_vehiculo", idvehiculo);
 
-        // 🔹 1️⃣ Traer ficha técnica
-        let formData = new FormData();
-        formData.append("action", "consultar_ficha_tecnica");
-        formData.append("id_vehiculo", idvehiculo);
-
-        fetch('controladores/ventas/ventas.controlador.php', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.error && data.ficha_tecnica) {
-                let f = data.ficha_tecnica;
-                document.querySelector("#nuevo-vehiculo-form input[name='action']").value = "actualizar";
-
-                document.getElementById("vencimientoBateria").value = f.vencimiento_bateria?.split(" ")[0] || '';
-                document.getElementById("vencimientoRTO").value = f.vencimiento_RTO?.split(" ")[0] || '';
-                document.getElementById("vencimientoService").value = f.vencimiento_service?.split(" ")[0] || '';
-
-                document.getElementById("descripcionCarroceria").value = f.carroceria_idcarroceria || '';
-                document.getElementById("descripcionNeumaticos").value = f.neumaticos_idneumaticos || '';
-                document.getElementById("descripcionCristales").value = f.cristales_idcristales || '';
-            } else {
-                // Limpiar visibles
-                document.querySelectorAll("#fichaTecnicaModal input, #fichaTecnicaModal select").forEach(el => {
-                    if (el.type === "checkbox") el.checked = false;
-                    else if (el.type === "date" || el.tagName === "SELECT" || el.type === "text") el.value = "";
-                });
-            }
-        })
-        .catch(err => console.error(err));
-
-        // 🔹 2️⃣ Traer documentación dinámica
-        fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('contenedorDocumentacion').innerHTML = html;
-
-            // 🔹 3️⃣ Guardado automático de switches (solo después de cargar la doc)
-            document.querySelectorAll('#contenedorDocumentacion .switch-doc').forEach(switchEl => {
-                switchEl.addEventListener('change', function() {
-                    const estado = this.checked ? 1 : 0;
-                    const tipo_doc_id = this.dataset.idtipo;
-                    
-                    let formData = new FormData();
-                    formData.append('action', 'actualizar_estado_doc');
-                    formData.append('vehiculo_id', idvehiculo);
-                    formData.append('tipo_doc_id', tipo_doc_id);
-                    formData.append('estado_doc', estado);
-
-                    fetch('controladores/documentos/actualizar_estado_doc.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            alert('No se pudo actualizar la documentación.');
-                            this.checked = !this.checked; // revertir visual
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('Error al actualizar la documentación.');
-                        this.checked = !this.checked; // revertir visual
+            fetch('controladores/ventas/ventas.controlador.php', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.error && data.ficha_tecnica) {
+                    const f = data.ficha_tecnica;
+                    document.querySelector("#ficha-tecnica-form input[name='action']").value = "actualizar";
+                    document.getElementById("vencimientoBateria").value = f.vencimiento_bateria?.split(" ")[0] || '';
+                    document.getElementById("vencimientoRTO").value = f.vencimiento_RTO?.split(" ")[0] || '';
+                    document.getElementById("vencimientoService").value = f.vencimiento_service?.split(" ")[0] || '';
+                    document.getElementById("descripcionCarroceria").value = f.carroceria_idcarroceria || '';
+                    document.getElementById("descripcionNeumaticos").value = f.neumaticos_idneumaticos || '';
+                    document.getElementById("descripcionCristales").value = f.cristales_idcristales || '';
+                } else {
+                    document.querySelectorAll("#fichaTecnicaModal input, #fichaTecnicaModal select").forEach(el => {
+                        if (el.type === "checkbox") el.checked = false;
+                        else el.value = "";
                     });
-                });
+                }
             });
-        })
-        .catch(err => console.error(err));
+
+            // ===============================
+            // 2️⃣ Traer documentación (solo vista)
+            // ===============================
+            fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
+            .then(res => res.text())
+            .then(html => {
+                const contenedor = document.getElementById('contenedorDocumentacion');
+                contenedor.innerHTML = html;
+
+                // 👇 Si el vehículo está disponible → reemplazar los switches por íconos
+                if (estadoVehiculo?.toLowerCase() === 'disponible') {
+                    contenedor.querySelectorAll('.form-check').forEach(div => {
+                        const input = div.querySelector('input[type="checkbox"]');
+                        const label = div.querySelector('label');
+                        if (input && label) {
+                            const icono = input.checked
+                                ? '<i class="fa-solid fa-check text-success ms-2"></i>'
+                                : '<i class="fa-solid fa-xmark text-danger ms-2"></i>';
+                            input.remove(); // quita el switch
+                            label.insertAdjacentHTML('beforeend', icono);
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error(err));
+        });
     });
-});
 </script>
+
+
 
 
 <script>
@@ -748,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <!-- ============================================================= -->
-<!-- SCRIPT DE CONTROL DEL MODAL -->
+<!-- SCRIPT DE CONTROL DEL MODAL PRECIOS -->
 <!-- ============================================================= -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -795,9 +816,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // ----- Configuración según tipo -----
         if (tipo === 'publico') {
         actionInput.value = 'publico';
-        preciosActualesFila.style.display = 'none';
+        preciosActualesFila.style.display = 'flex';
         nuevoPrecioTomadoContainer.style.display = 'none';
         precioPublicoContainer.style.display = 'flex';
+        precioActualTexto.textContent = precioTomado ? '$ ' + formato.format(precioTomado) : 'Sin precio tomado';
+        precioPublicoTexto.textContent = precioPublico ? '$ ' + formato.format(precioPublico) : 'Sin precio público';
+        interesAplicadoTexto.textContent = interesPorcentaje ? interesPorcentaje + ' %' : '-';
         precioActualInput.value = precioTomado;
         precioNuevoInput.value = precioTomado;
         precioNuevoInput.readOnly = true;

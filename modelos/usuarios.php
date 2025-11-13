@@ -4,80 +4,118 @@ require_once('conexion.php');
 require_once('paginacion.php');
 
 class Usuario extends Paginacion {
-private $idusuarios;
-private $username;
-private $email;
-private $password;
-private $perfiles_idperfiles;
-private $personas_idpersonas;
 
-public function __construct($idusuarios='', $username='', $email='', $password='',$perfiles_idperfiles='', $personas_idpersonas='') {
+    // 🔹 Soporte conexión externa (para transacciones)
+    private $_con = null;
+    private $conexion_externa = false;
+
+    private $idusuarios;
+    private $username;
+    private $email;
+    private $password;
+    private $perfiles_idperfiles;
+    private $personas_idpersonas;
+
+    public function __construct(
+        $idusuarios = '',
+        $username = '',
+        $email = '',
+        $password = '',
+        $perfiles_idperfiles = '',
+        $personas_idpersonas = '',
+        $conn = null
+    ) {
         $this->idusuarios = $idusuarios;
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
         $this->perfiles_idperfiles = $perfiles_idperfiles;
         $this->personas_idpersonas = $personas_idpersonas;
-}
+
+        // ✅ Si viene una conexión de afuera (transacción), la usamos
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
+        }
+    }
+
+    /* ==========================================================
+       Helpers de conexión (para métodos que los necesiten)
+    ========================================================== */
+    private function getConexion() {
+        if ($this->conexion_externa && $this->_con instanceof mysqli) {
+            return $this->_con;
+        }
+        $conexion = new Conexion();
+        $conexion->conectar();
+        return $conexion->_con;
+    }
+
+    private function cerrarConexion($con) {
+        if (!$this->conexion_externa && $con instanceof mysqli) {
+            $con->close();
+        }
+    }
 
 public function guardar(){
         $conexion = new Conexion();
         $password = password_hash($this->password, PASSWORD_DEFAULT);
         $query = "INSERT INTO usuarios (username, email, password,fecha_alta, perfiles_idperfiles, personas_idpersonas) VALUES ('$this->username','$this->email','$password', CURDATE(),'$this->perfiles_idperfiles', '$this->personas_idpersonas')";
         return $conexion->insertar($query);
-}
+    }
 
-public function actualizar(){
+    public function actualizar(){
         $conexion = new Conexion();
         $password = password_hash($this->password, PASSWORD_DEFAULT);
         $query = "UPDATE usuarios SET username = '$this->username', email = '$this->email', password = '$password', perfiles_idperfiles = '$this->perfiles_idperfiles'";
         return $conexion->actualizar($query);
-}
+    }
 
-public function actualizar_usuario(){
+    public function actualizar_usuario(){
         $conexion = new Conexion();
         $query = "UPDATE usuarios SET username = '$this->username', email = '$this->email' WHERE idusuarios = '$this->idusuarios'";
         $conexion->actualizar($query);
-}
+    }
 
-public function eliminar(){
+    public function eliminar(){
         $conexion = new Conexion();
         $fecha_baja = date('Y-m-d');
         $query = "UPDATE usuarios SET activo_usuario = 0, fecha_baja = '$fecha_baja' WHERE idusuarios = '$this->idusuarios'";
         return $conexion->actualizar($query);
-}
+    }
 
-public function validar_usuario(){
+    public function validar_usuario(){
         $conexion = new Conexion;
         $query = "SELECT * FROM usuarios WHERE username = '$this->username'";
         return $conexion->consultar($query);
-}
+    }
 
-public function validar_usuario_por_id(){
+    public function validar_usuario_por_id(){
         $conexion = new Conexion;
         $query = "SELECT password FROM usuarios WHERE idusuarios = '$this->idusuarios'";
         $resultado = $conexion->consultar($query);
         if ($resultado->num_rows > 0) {
-                return $resultado->fetch_assoc();
+            return $resultado->fetch_assoc();
         }
         return null; 
-}
+    }
 
-public function verificar_perfil($idusuarios) {
-    $conexion = new Conexion();
-    $query = "UPDATE usuarios SET verificado_perfil = 1 WHERE idusuarios = $idusuarios";
-    return $conexion->consultar($query);
-}
+    public function verificar_perfil($idusuarios) {
+        $conexion = new Conexion();
+        $query = "UPDATE usuarios SET verificado_perfil = 1 WHERE idusuarios = $idusuarios";
+        return $conexion->consultar($query);
+    }
 
-public function traer_usuario_por_id($idusuarios){
+
+    public function traer_usuario_por_id($idusuarios){
         $conexion = new Conexion();
         $query = "SELECT usuarios.*, personas.*,tipo_sexo.*, tipo_sexo.descripcion as nombre_tipo_sexo, documentos.*, documentos.valor as valor_documento, Tipo_documento.*, Tipo_documento.descripcion as nombre_tipo_documento, contactos.*, contactos.valor as valor_contacto, tipo_contacto.*, tipo_contacto.descripcion as nombre_tipo_contacto, tipo_domicilio.*, tipo_domicilio.descripcion as nombre_tipo_domicilio, domicilios.*, domicilios.descripcion as nombre_domicilio, barrios.*, barrios.descripcion as nombre_barrio, localidades.*, localidades.descripcion as nombre_localidad, provincias.*, provincias.descripcion as nombre_provincia, paises.*, paises.descripcion as nombre_pais FROM usuarios INNER JOIN personas on usuarios.personas_idpersonas = personas.idpersonas INNER JOIN tipo_sexo on personas.tipo_sexo_idtipo_sexo = tipo_sexo.idtipo_sexo INNER JOIN documentos on documentos.Personas_idPersonas = personas.idpersonas INNER JOIN Tipo_documento on documentos.Tipo_documento_idTipo_documento = Tipo_documento.idTipo_documento INNER JOIN contactos on contactos.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_contacto on contactos.tipo_contactos_idtipo_contactos = tipo_contacto.idtipo_contacto INNER JOIN domicilios on domicilios.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_domicilio on domicilios.tipo_domicilio_idtipo_domicilio = tipo_domicilio.idtipo_domicilio INNER JOIN barrios on domicilios.barrios_idbarrios = barrios.idbarrios INNER JOIN localidades on barrios.localidades_idlocalidades = localidades.idlocalidades INNER JOIN provincias on localidades.provincias_idprovincias = provincias.idprovincias INNER JOIN paises on provincias.paises_idpaises = paises.idpaises WHERE idusuarios = $idusuarios";
         $resultado = $conexion->consultar($query);
         if ($resultado->num_rows > 0) {
-                return $resultado->fetch_assoc();
+            return $resultado->fetch_assoc();
         }
         return null; 
-}
+    }
 
 public function traer_usuario_por_idpersona_json($personas_idpersonas){
         $conexion = new Conexion();
@@ -197,6 +235,29 @@ public function obtener_id_por_username($username) {
         }
         return false;
 }
+
+// 🔹 ESTA es la que usa la transacción de venta
+    public function traer_perfil_por_id($idusuarios)
+    {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT p.descripcion AS perfil
+            FROM usuarios u
+            INNER JOIN perfiles p ON u.perfiles_idperfiles = p.idperfiles
+            WHERE u.idusuarios = '$idusuarios'
+            LIMIT 1
+        ";
+        $resultado = $con->query($query);
+
+        $fila = null;
+        if ($resultado && $resultado->num_rows > 0) {
+            $fila = $resultado->fetch_assoc();
+        }
+
+        $this->cerrarConexion($con);
+        return $fila;
+    }
 
 
 /**
@@ -320,8 +381,4 @@ return $this;
 }
 
 }
-
-#$usuarios = new Usuario('','proyecto','proyecto@gmail.com','proyecto','1');
-#$resultado = $usuarios->guardar();
-#echo $resultado;
 ?>

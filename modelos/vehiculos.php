@@ -3,6 +3,10 @@ require_once('conexion.php');
 require_once('paginacion.php');
 
 class Vehiculos extends Paginacion{
+
+    private $_con = null;              // 🔹 conexión compartida opcional
+    private $conexion_externa = false; // 🔹 indica si viene desde transacción
+
     private $idvehiculos;
     private $patente;
     private $chasis;
@@ -14,7 +18,15 @@ class Vehiculos extends Paginacion{
     private $tipo_vehiculos_idtipo_vehiculos;
     private $estado_vehiculo_idestado_vehiculo;
 
-    public function __construct($idvehiculos='',$patente='',$chasis='',$motor='',$año='', $kilometraje = '', $modelos_idmodelos='',$colores_idcolores='', $tipo_vehiculos_idtipo_vehiculos='', $estado_vehiculo_idestado_vehiculo='') {
+    // ===========================================================
+    // CONSTRUCTOR — AGREGO $conn SOLO PARA LOS MÉTODOS NECESARIOS
+    // ===========================================================
+    public function __construct(
+        $idvehiculos = '', $patente = '', $chasis = '', $motor = '',
+        $año = '', $kilometraje = '', $modelos_idmodelos = '',
+        $colores_idcolores = '', $tipo_vehiculos_idtipo_vehiculos = '',
+        $estado_vehiculo_idestado_vehiculo = '', $conn = null
+    ) {
         $this->idvehiculos = $idvehiculos;
         $this->patente = $patente;
         $this->chasis = $chasis;
@@ -25,6 +37,32 @@ class Vehiculos extends Paginacion{
         $this->colores_idcolores = $colores_idcolores;
         $this->tipo_vehiculos_idtipo_vehiculos = $tipo_vehiculos_idtipo_vehiculos;
         $this->estado_vehiculo_idestado_vehiculo = $estado_vehiculo_idestado_vehiculo;
+
+        // 🔹 si me pasás una conexión (transacción), no abro otra
+        if ($conn instanceof mysqli) {
+            $this->_con = $conn;
+            $this->conexion_externa = true;
+        }
+    }
+
+    // ===========================================================
+    // MÉTODOS AUXILIARES — SOLO PARA LOS QUE TIENEN TRANSACCIÓN
+    // ===========================================================
+    private function getConexion() {
+        if ($this->conexion_externa && $this->_con instanceof mysqli) {
+            return $this->_con; // 🟩 usa la conexión de la venta
+        }
+
+        // 🟩 métodos normales: usan conexión estándar
+        $conexion = new Conexion();
+        $conexion->conectar();
+        return $conexion->_con;
+    }
+
+    private function cerrarConexion($con) {
+        if (!$this->conexion_externa && $con instanceof mysqli) {
+            $con->close();
+        }
     }
 
     public function agregar_vehiculo(){
@@ -44,6 +82,25 @@ class Vehiculos extends Paginacion{
         $conexion = new Conexion();
         $query = "UPDATE vehiculos SET activo_vehiculo = 0 WHERE idvehiculos = '$this->idvehiculos'";
         return $conexion->actualizar($query);
+    }
+
+    public function eliminar_vehiculo_venta() {
+        $con = $this->getConexion();
+
+        $query = "UPDATE vehiculos 
+                SET activo_vehiculo = 0, 
+                    estado_vehiculo_idestado_vehiculo = (
+                        SELECT idestado_vehiculo 
+                        FROM estado_vehiculo 
+                        WHERE estado_vehiculo = 'vendido' 
+                        LIMIT 1
+                    )
+                WHERE idvehiculos = '$this->idvehiculos'";
+
+        $resultado = $con->query($query);
+
+        $this->cerrarConexion($con);
+        return $resultado;
     }
 
     public function traer_cantidad_vehiculo(){
@@ -87,6 +144,7 @@ class Vehiculos extends Paginacion{
             modelos.nombre AS nombre_modelo,
             tipo_vehiculos.nombre AS nombre_tipo, 
             colores.descripcion AS nombre_color,
+            estado_vehiculo.estado_vehiculo AS nombre_estado,
 
             -- Precio tomado (última fecha)
             precios_tomado.precio AS precio_tomado,
@@ -109,6 +167,8 @@ class Vehiculos extends Paginacion{
             ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
         INNER JOIN colores 
             ON vehiculos.colores_idcolores = colores.idcolores
+        LEFT JOIN estado_vehiculo
+            ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
 
         -- JOIN para precio TOMADO (último)
         LEFT JOIN precios_vehiculos AS precios_tomado 
@@ -181,13 +241,31 @@ class Vehiculos extends Paginacion{
 
     public function traer_vehiculo_por_patente_ventas($patente){
         $conexion = new Conexion();
-        $query = "SELECT *, marcas.idmarcas, marcas.nombre as nombre_marca,modelos.idmodelos, modelos.nombre as nombre_modelo,tipo_vehiculos.idtipo_vehiculos, tipo_vehiculos.nombre as nombre_tipo_vehiculo FROM vehiculos INNER JOIN modelos on vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas on modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos on vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos INNER JOIN precios_vehiculos on vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos INNER JOIN compras on vehiculos.idvehiculos = compras.vehiculo_idvehiculo WHERE patente = '$patente' AND activo_vehiculo = 1 AND activo_precio = 1";
+        $query = "SELECT *, 
+                        marcas.idmarcas, marcas.nombre AS nombre_marca,
+                        modelos.idmodelos, modelos.nombre AS nombre_modelo,
+                        tipo_vehiculos.idtipo_vehiculos, tipo_vehiculos.nombre AS nombre_tipo_vehiculo
+                FROM vehiculos
+                INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos
+                INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas
+                INNER JOIN tipo_vehiculos ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
+                INNER JOIN estado_vehiculo ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
+                INNER JOIN precios_vehiculos ON vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos
+                INNER JOIN tipo_precios ON precios_vehiculos.tipo_precios_idtipo_precios = tipo_precios.idtipo_precios
+                INNER JOIN compras ON vehiculos.idvehiculos = compras.vehiculo_idvehiculo
+                WHERE patente = '$patente' 
+                AND activo_vehiculo = 1 
+                AND activo_precio = 1
+                AND tipo_precios.descripcion = 'publico'
+                AND estado_vehiculo.estado_vehiculo = 'disponible'";
+
         $resultado = $conexion->consultar($query);
         if ($resultado->num_rows > 0) {
             return $resultado->fetch_assoc();
         }
         return null; 
     }
+
 
 
     public function traer_vehiculos_filtrados($filtros, $inicio, $cantidad) {
@@ -284,9 +362,16 @@ class Vehiculos extends Paginacion{
     }
 
     public function actualizar_estado($vehiculos_idvehiculos, $estado_vehiculo_idestado_vehiculo){
-        $conexion = new Conexion();
-        $query = "UPDATE vehiculos SET estado_vehiculo_idestado_vehiculo = '$estado_vehiculo_idestado_vehiculo' WHERE idvehiculos = '$vehiculos_idvehiculos'";
-        return $conexion->actualizar($query);
+        $con = $this->getConexion();
+
+        $query = "UPDATE vehiculos 
+                  SET estado_vehiculo_idestado_vehiculo = '$estado_vehiculo_idestado_vehiculo' 
+                  WHERE idvehiculos = '$vehiculos_idvehiculos'";
+
+        $resultado = $con->query($query);
+
+        $this->cerrarConexion($con);
+        return $resultado;
     }
 
     public function actualizar_disponible($idvehiculos, $estado_nombre) {

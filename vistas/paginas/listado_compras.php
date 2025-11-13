@@ -56,7 +56,7 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                 <thead>
                     <tr>
                         <th>Nro de Ingreso</th>
-                        <th>Precio de Ingreso</th>
+                        <th>Precio Tomado</th>
                         <th>Titular del Vehiculo</th>
                         <th>Vehículo Ingresado</th>
                         <th>Patente</th>
@@ -69,7 +69,7 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                     foreach ($result_compras as $compra) { ?>
                     <tr>
                         <td><?= $compra['idcompras'];?></td>
-                        <td><?= $compra['precio'];?></td>
+                        <td><?= number_format($compra['precio'], 0, ',', '.')?></td>
                         <td><?= $compra['nombre']." ".$compra['apellido'];?></td>
                         <td><?= $compra['nombre_marca']." ".$compra['nombre_modelo'];?></td>
                         <td><?= $compra['patente'];?></td>
