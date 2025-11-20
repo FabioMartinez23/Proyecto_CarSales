@@ -21,7 +21,7 @@ $inicio = ($pagina_actual - 1) * $filas_por_pagina;
 // Si hay una búsqueda activa
 if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
     $busqueda = $_GET['buscador'];
-    $result_vehiculos = $cantidad_vehiculo->buscar_vehiculo($busqueda, 1);
+    $result_vehiculos = $cantidad_vehiculo->buscar_vehiculo($busqueda, 'disponible');
 } else {
     // Si no hay búsqueda, manejar los filtros o traer todos los vehículos
     $filtros = [
@@ -34,7 +34,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
 
     if (array_filter($filtros)) {
         // Si hay filtros aplicados
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_filtrado($filtros, $inicio, $filas_por_pagina, 1);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_filtrado($filtros, $inicio, $filas_por_pagina, 'disponible');
     } else {
         // Si no hay filtros, obtener el total de vehículos
         $result_vehiculos_total = $vehiculos->traer_cantidad_vehiculo();
@@ -42,7 +42,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
             $total_registros = $vehiculo_1['total'];
         }
         // Traer vehículos con paginación
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($inicio, $filas_por_pagina, 1);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($inicio, $filas_por_pagina, 'disponible');
     }
 }
 
@@ -265,51 +265,90 @@ $result_intereses = $intereses->traer_interes();
 
 
 
-    <!-- Modal de Imágenes y Documentos del Vehículo -->
+    <!-- ========================================================= -->
+    <!-- MODAL DOCUMENTACIÓN DEL VEHÍCULO                          -->
+    <!-- ========================================================= -->
     <div class="modal fade" id="DocumentosModal" tabindex="-1" aria-labelledby="DocumentosModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+            <div class="modal-content shadow-lg border-0">
+
+                <!-- HEADER -->
                 <div class="modal-header bg-modal text-white">
-                    <h5 class="modal-title" id="DocumentosModalLabel"><i class="fa-solid fa-file-invoice me-2"></i>Documentación</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="DocumentosModalLabel">
+                        <i class="fa-solid fa-file-invoice me-2"></i> Documentación del Vehículo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
+                <!-- BODY -->
                 <div class="modal-body">
-                    <h3 id="marcaModeloVehiculoDoc"></h3> <!-- Aquí se mostrará la marca y modelo -->
 
-                    <form id="documentos-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
+                    <h3 id="marcaModeloVehiculoDoc" class="text-center mb-4 fw-semibold"></h3>
+
+                    <form id="documentos-form" 
+                        method="POST"
+                        action="controladores/documentos/documentos.controlador.php" 
+                        enctype="multipart/form-data">
+
                         <input type="hidden" name="action" value="guardar">
-                        <input type="hidden" name="vehiculos_idvehiculos" id="doc_idvehiculos"> <!-- Campo oculto para el id del vehículo -->
+                        <input type="hidden" name="vehiculos_idvehiculos" id="doc_idvehiculos">
 
-                        <!-- Sección de Imágenes del Vehículo -->
-                        <div class="mb-4">
-                            <h5>Imágenes del Vehículo</h5>
-                            <input type="file" class="form-control" name="imagen_vehiculo[]" accept=".jpg, .jpeg, .png" multiple>
-                            <small class="form-text text-muted">Subir imágenes en formato JPG o PNG.</small>
-                        </div>
-                        <div id="imagenesSubidas" class="mb-4">
-                            <!-- Aquí se mostrarán las imágenes subidas -->
-                        </div>
+                        <!-- ========================================================= -->
+                        <!-- SECCIÓN: IMÁGENES SUBIDAS                                 -->
+                        <!-- ========================================================= -->
+                        <h5 class="mb-2 border-bottom pb-1">Imágenes del Vehículo</h5>
 
-                        <!-- Sección de Documentación -->
-                        <div class="mb-4">
-                            <h5>Documentación</h5>
-                            <input type="file" class="form-control" name="documentos_vehiculo[]" accept=".pdf" multiple>
-                            <small class="form-text text-muted">Subir documentos en formato PDF.</small>
-                        </div>
-                        <div id="documentosSubidos" class="mb-4">
-                            <!-- Aquí se mostrarán los documentos subidos -->
+                        <!-- INPUT PARA SUBIR IMÁGENES -->
+                        <div class="mb-3">
+                            <input type="file"
+                                name="imagen_vehiculo[]"
+                                class="form-control"
+                                accept=".jpg,.jpeg,.png"
+                                multiple>
+                            <small class="text-muted">Formatos permitidos: JPG / PNG</small>
                         </div>
 
-                        <!-- Botón de Enviar -->
-                        <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="submit" class="btn btn-action">Guardar</button>
+                        <!-- GRILLA DE IMÁGENES -->
+                        <div id="imagenesSubidas" class="row g-3 mb-4">
+                            <!-- AJAX carga aquí -->
+                        </div>
+
+                        <!-- ========================================================= -->
+                        <!-- SECCIÓN: DOCUMENTOS PDF SUBIDOS                           -->
+                        <!-- ========================================================= -->
+                        <h5 class="mb-2 border-bottom pb-1">Documentación PDF</h5>
+
+                        <div id="documentosSubidos" class="row">
+                            <!-- AJAX carga aquí -->
+                        </div>
+
+                        <!-- ========================================================= -->
+                        <!-- SUBIR NUEVOS DOCUMENTOS (TIPOS FALTANTES)                 -->
+                        <!-- ========================================================= -->
+                        <h5 class="mb-2 border-bottom pb-1">Subir Nuevos Documentos</h5>
+
+                        <div id="inputsTiposDocumentos" class="row g-3">
+                            <!-- AJAX carga aquí -->
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Cerrar
+                            </button>
+
+                            <button type="submit" class="btn btn-action">
+                                Guardar Cambios
+                            </button>
                         </div>
                     </form>
                 </div>
+
             </div>
         </div>
     </div>
+
+
     
     <!-- Breadcrumb -->
 <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
@@ -436,6 +475,8 @@ $result_intereses = $intereses->traer_interes();
                             <th>Ficha Técnica</th>
                             <th>Modificar</th>
                             <th>Agregar</th>
+                            <th>Ver Gastos</th>
+                            <th>Costos</th>
                             <th>Eliminar</th>
                         <?php else: ?>
                             <th>Precio Público</th>
@@ -553,8 +594,21 @@ $result_intereses = $intereses->traer_interes();
                                 </a>
                             </td>
 
-                            <!-- Eliminar (solo para Administrador) -->
+                            <!-- Gastos y Eliminar (solo para Administrador) -->
                             <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
+                            <td>
+                                <a href="index.php?page=listado_gastos&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
+                                class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="index.php?page=costo_vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>" 
+                                class="btn btn-sm btn-outline-primary"
+                                title="Ver Costos Totales del Vehículo">
+                                    <i class="fa-solid fa-coins"></i>
+                                </a>
+                            </td>
                             <td>
                                 <form id="formulario-eliminar-<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>" 
                                     method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
@@ -580,9 +634,6 @@ $result_intereses = $intereses->traer_interes();
             </table>
         </div>
 
-
-
-
         <!-- Paginación centrada -->
         <nav aria-label="..." class="d-flex justify-content-center">
             <ul class="pagination">
@@ -605,6 +656,30 @@ $result_intereses = $intereses->traer_interes();
             </ul>
         </nav>
     </div>
+
+            <!-- MODAL: Ampliar Imagen -->
+        <div class="modal fade" id="modalAmpliarImagen" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-transparent border-0 shadow-none">
+                    <div class="modal-body p-0 text-center">
+
+                        <img id="imagenAmpliada"
+                            src=""
+                            class="img-fluid rounded shadow-lg"
+                            style="animation: zoomIn 0.25s ease-out; cursor: zoom-out;"
+                            onclick="cerrarAmpliada()">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        @keyframes zoomIn {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        </style>
 
 <script>
         // Mostrar y ocultar filtros
@@ -664,30 +739,31 @@ $result_intereses = $intereses->traer_interes();
             });
 
             // ===============================
-            // 2️⃣ Traer documentación (solo vista)
+            // 2️⃣ Solo lectura de documentación
             // ===============================
-            fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
-            .then(res => res.text())
-            .then(html => {
-                const contenedor = document.getElementById('contenedorDocumentacion');
-                contenedor.innerHTML = html;
+            fetch(`controladores/documentos/cargar_tipo_doc_LECTURA.php?idvehiculo=${idvehiculo}`)
+                .then(res => res.text())
+                .then(html => {
+                    const contenedor = document.getElementById('contenedorDocumentacion');
+                    contenedor.innerHTML = html;
 
-                // 👇 Si el vehículo está disponible → reemplazar los switches por íconos
-                if (estadoVehiculo?.toLowerCase() === 'disponible') {
+                    // Convertir switches en solo lectura (íconos ✔ ❌)
                     contenedor.querySelectorAll('.form-check').forEach(div => {
                         const input = div.querySelector('input[type="checkbox"]');
                         const label = div.querySelector('label');
-                        if (input && label) {
-                            const icono = input.checked
-                                ? '<i class="fa-solid fa-check text-success ms-2"></i>'
-                                : '<i class="fa-solid fa-xmark text-danger ms-2"></i>';
-                            input.remove(); // quita el switch
-                            label.insertAdjacentHTML('beforeend', icono);
-                        }
+
+                        let icono = `<i class="fa-solid fa-xmark text-danger ms-2"></i>`;
+                        if (input.checked) icono = `<i class="fa-solid fa-check text-success ms-2"></i>`;
+
+                        input.remove(); // Quitar el switch
+                        label.insertAdjacentHTML('beforeend', icono);
                     });
-                }
-            })
-            .catch(err => console.error(err));
+
+                    // Ajustar formato para lectura
+                    contenedor.classList.add("row", "g-3");
+                    contenedor.querySelectorAll(".col-md-6").forEach(c => c.classList.add("mb-2"));
+                })
+                .catch(err => console.error(err));
         });
     });
 </script>
@@ -696,76 +772,159 @@ $result_intereses = $intereses->traer_interes();
 
 
 <script>
+// ==========================================================
+// CARGA COMPLETA DEL MODAL DE DOCUMENTACIÓN
+// ==========================================================
 document.addEventListener('DOMContentLoaded', function () {
-    var documentosModal = document.getElementById('DocumentosModal');
 
-    documentosModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-        var marca = button.getAttribute('data-marca');
-        var modelo = button.getAttribute('data-modelo');
-        var idvehiculo = button.getAttribute('data-idvehiculo');
-        var marcaModeloText = marca + ' - ' + modelo;
+    const modal = document.getElementById('DocumentosModal');
 
-        document.getElementById('marcaModeloVehiculo').textContent = marcaModeloText;
+    modal.addEventListener('show.bs.modal', function (event) {
+
+        const button = event.relatedTarget;
+        const marca = button.getAttribute('data-marca');
+        const modelo = button.getAttribute('data-modelo');
+        const idvehiculo = button.getAttribute('data-idvehiculo');
+
+        // Nombre del vehículo
+        document.getElementById('marcaModeloVehiculoDoc').textContent = `${marca} - ${modelo}`;
         document.getElementById('doc_idvehiculos').value = idvehiculo;
 
+        // ============================
+        // 1️⃣ Cargar imágenes + PDFs + tipos faltantes
+        // ============================
         $.ajax({
             url: 'controladores/documentos/obtener_documentos.php',
             method: 'POST',
-            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'todos' },
+            data: { vehiculos_idvehiculos: idvehiculo },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
+
                 $('#imagenesSubidas').html(response.imagenes);
                 $('#documentosSubidos').html(response.documentos);
-
-                // Añadir eventos para ampliar imagen al hacer clic
-                $('#imagenesSubidas img').on('click', function() {
-                    var src = $(this).attr('src');
-                    showImageModal(src);
-                });
-
-                // Añadir eventos para eliminar imagen
-                $('.delete-image').on('click', function() {
-                    var imageId = $(this).data('image-id');
-                    deleteFile(imageId, 'image');
-                });
-
-                // Añadir eventos para eliminar documento
-                $('.delete-document').on('click', function() {
-                    var docId = $(this).data('doc-id');
-                    deleteFile(docId, 'document');
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Error en la petición AJAX: " + textStatus, errorThrown);
+                $('#inputsTiposDocumentos').html(response.tipos);
             }
         });
+
     });
-
-    // Función para mostrar la imagen en un modal de vista ampliada
-    function showImageModal(src) {
-        var modalHtml = `
-            <div class="modal fade" id="imageViewModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="${src}" class="img-fluid" alt="Imagen del Vehículo">
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        $('body').append(modalHtml);
-        $('#imageViewModal').modal('show');
-
-        // Eliminar el modal del DOM al cerrarlo
-        $('#imageViewModal').on('hidden.bs.modal', function () {
-            $(this).remove();
-        });
-    }
 });
+
+
+// ==========================================================
+// Eliminar documento
+// ==========================================================
+function eliminarDocumento(id, elemento) {
+
+    Swal.fire({
+        title: '¿Eliminar documento?',
+        text: 'Esta acción eliminará el archivo permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            // 🔄 Animación de cargando
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: "controladores/documentos/eliminar_documentos.php",
+                type: "POST",
+                data: { idDocumentacion: id },
+                dataType: "json",
+
+                success: function(res) {
+                    Swal.close();
+
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: 'El documento fue eliminado correctamente.',
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+
+                        // 🔄 Eliminar visualmente la tarjeta del archivo sin recargar modal
+                        let card = $(elemento).closest('[data-id]');
+                        card.fadeOut(300, function () { $(this).remove(); });
+
+                        // Opcional: volver a cargar los tipos faltantes para subir
+                        recargarTiposFaltantes();
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: res.message || 'No se pudo eliminar el archivo.'
+                        });
+                    }
+                },
+
+                error: function(xhr) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error en el servidor',
+                        text: 'Ocurrió un problema al eliminar el documento.'
+                    });
+                }
+            });
+        }
+    });
+}
+
+
+// ==========================================================
+// Recargar tipos faltantes (sin recargar modal completo)
+// ==========================================================
+function recargarTiposFaltantes() {
+    let idvehiculo = $("#doc_idvehiculos").val();
+
+    $.ajax({
+        url: 'controladores/documentos/obtener_documentos.php',
+        method: 'POST',
+        data: { vehiculos_idvehiculos: idvehiculo, tipo: 'documentos' },
+        dataType: 'json',
+        success: function(response) {
+            $('#documentosSubidos').html(response.documentos);
+            $('#tiposFaltantesContainer').html(response.tipos);
+        }
+    });
+}
+
+
+// ==========================================================
+// Ampliar imagen
+// ==========================================================
+function ampliarImagen(url) {
+    const img = document.getElementById("imagenAmpliada");
+
+    if (!img) {
+        console.error("❌ Error: No se encontró #imagenAmpliada");
+        return;
+    }
+
+    img.src = url;
+
+    const modal = new bootstrap.Modal(document.getElementById("modalAmpliarImagen"));
+    modal.show();
+}
+
+function cerrarAmpliada() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById("modalAmpliarImagen"));
+    if (modal) modal.hide();
+}
+
 </script>
 
 <!-- ============================================================= -->
@@ -827,17 +986,18 @@ document.addEventListener('DOMContentLoaded', function () {
         precioNuevoInput.readOnly = true;
 
         } else if (tipo === 'actualizar') {
-        actionInput.value = 'actualizar';
-        preciosActualesFila.style.display = 'flex';
-        nuevoPrecioTomadoContainer.style.display = 'flex';
-        precioPublicoContainer.style.display = 'flex';
+            actionInput.value = 'actualizar';
+            preciosActualesFila.style.display = 'flex';
+            nuevoPrecioTomadoContainer.style.display = 'flex';
+            precioPublicoContainer.style.display = 'flex';
 
-        precioActualTexto.textContent = precioTomado ? '$ ' + formato.format(precioTomado) : 'Sin precio tomado';
-        precioPublicoTexto.textContent = precioPublico ? '$ ' + formato.format(precioPublico) : 'Sin precio público';
-        interesAplicadoTexto.textContent = interesPorcentaje ? interesPorcentaje + ' %' : '-';
+            precioActualTexto.textContent = precioTomado ? '$ ' + formato.format(precioTomado) : 'Sin precio tomado';
+            precioPublicoTexto.textContent = precioPublico ? '$ ' + formato.format(precioPublico) : 'Sin precio público';
+            interesAplicadoTexto.textContent = interesPorcentaje ? interesPorcentaje + ' %' : '-';
 
-        precioActualInput.value = precioTomado;
-        precioNuevoInput.value = formato.format(precioTomado);
+            precioActualInput.value = precioTomado;
+            // Dejalo sin formatear, que lo formatee tu oninput si hace falta
+            precioNuevoInput.value = precioTomado;
 
         } else if (tipo === 'tomado') {
         actionInput.value = 'tomado';
@@ -865,38 +1025,44 @@ document.addEventListener('DOMContentLoaded', function () {
     interesSelect.addEventListener('change', calcularPrecioPublico);
     precioNuevoInput.addEventListener('input', calcularPrecioPublico);
 
+    function limpiarNumero(valor) {
+        if (!valor) return 0;
+
+        // Quitar NBSP, THIN SPACE, ESPACIOS NORMALES y otros invisibles
+        valor = valor.replace(/[\u00A0\u202F\s]/g, '');
+
+        // Quitar todo lo que NO sea dígitos, coma o punto
+        valor = valor.replace(/[^\d,.,-]/g, '');
+
+        // Si tiene coma y punto → los puntos son miles → se eliminan
+        if (valor.indexOf(',') !== -1 && valor.indexOf('.') !== -1) {
+            valor = valor.replace(/\./g, '');
+        }
+
+        // Convertir coma a punto
+        valor = valor.replace(',', '.');
+
+        const n = parseFloat(valor);
+        return isNaN(n) ? 0 : n;
+    }
+
     function calcularPrecioPublico() {
-        const interes = parseFloat(interesSelect.options[interesSelect.selectedIndex]?.dataset.porcentaje || 0);
-        const base = parseFloat(precioNuevoInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+        const interes = parseFloat(
+            interesSelect.options[interesSelect.selectedIndex]?.dataset.porcentaje || 0
+        );
+
+        const base = limpiarNumero(precioNuevoInput.value);
+
         if (interes > 0 && base > 0) {
-        const publico = base * (1 + interes / 100);
-        precioCalculadoInput.value = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2 }).format(publico);
+            const publico = base * (1 + interes / 100);
+            precioCalculadoInput.value = new Intl.NumberFormat('es-AR', { 
+                minimumFractionDigits: 2 
+            }).format(publico);
         } else {
-        precioCalculadoInput.value = '';
+            precioCalculadoInput.value = '';
         }
     }
     });
-</script>
-
-
-
-<script>
-    function eliminarDocumento(id) {
-        if (confirm("¿Está seguro de que desea eliminar este documento?")) {
-            $.ajax({
-                url: 'controladores/documentos/eliminar_documentos.php',
-                type: 'POST',
-                data: { idDocumentacion: id },
-                success: function(response) {
-                    alert('Documento eliminado');
-                    location.reload();
-                },
-                error: function() {
-                    alert('Error al eliminar el documento.');
-                }
-            });
-        }
-    }
 </script>
 
 

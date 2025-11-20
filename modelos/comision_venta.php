@@ -2,6 +2,8 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/2do_Cuatrimestre/PP_2/Proyecto_Septiembre_02/modelos/conexion.php');
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 class Comisiones_Ventas {
     private $_con;
     private $conexion_externa = false;
@@ -169,6 +171,74 @@ class Comisiones_Ventas {
         }
 
         return $res;
+    }
+
+
+    /* ===========================================================
+    COMISIONES DEL EMPLEADO - TOTAL MENSUAL
+    =========================================================== */
+    public function comisiones_empleado_mes($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT 
+                SUM(cv.monto_empleado) AS total
+            FROM comisiones_ventas cv
+            INNER JOIN ventas v ON v.idventas = cv.ventas_idventas
+            INNER JOIN empleados e ON e.idempleados = v.empleados_idempleados
+            WHERE e.Usuarios_idusuarios = '$idusuario'
+            AND DATE_FORMAT(cv.fecha_registro, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+        ";
+
+        $res = $con->query($query);
+        return $res ? $res->fetch_assoc() : ['total' => 0];
+    }
+
+
+
+    /* ===========================================================
+    COMISIONES DEL EMPLEADO AGRUPADAS POR MES (para gráfico anual)
+    =========================================================== */
+    public function comisiones_empleado_anual($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT 
+                DATE_FORMAT(cv.fecha_registro, '%Y-%m') AS periodo,
+                SUM(cv.monto_empleado) AS total
+            FROM comisiones_ventas cv
+            INNER JOIN ventas v ON v.idventas = cv.ventas_idventas
+            INNER JOIN empleados e ON e.idempleados = v.empleados_idempleados
+            WHERE e.Usuarios_idusuarios = '$idusuario'
+            AND YEAR(cv.fecha_registro) = YEAR(NOW())
+            GROUP BY DATE_FORMAT(cv.fecha_registro, '%Y-%m')
+            ORDER BY periodo ASC
+        ";
+
+        return $con->query($query);
+    }
+
+
+    /* ===========================================================
+    LISTADO DE COMISIONES DEL MES (por si necesitás detalle)
+    =========================================================== */
+    public function listar_comisiones_empleado_mes($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT 
+                cv.*, 
+                v.fecha_venta, 
+                v.vehiculo_idvehiculo
+            FROM comisiones_ventas cv
+            INNER JOIN ventas v ON v.idventas = cv.ventas_idventas
+            INNER JOIN empleados e ON e.idempleados = v.empleados_idempleados
+            WHERE e.Usuarios_idusuarios = '$idusuario'
+            AND DATE_FORMAT(cv.fecha_registro, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            ORDER BY cv.fecha_registro DESC
+        ";
+
+        return $con->query($query);
     }
 
 

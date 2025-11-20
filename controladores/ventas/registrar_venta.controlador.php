@@ -20,6 +20,7 @@ require_once('../../modelos/ventas_forma_pagos.php');
 require_once('../../modelos/comision_venta.php');
 require_once('../../modelos/tablas_maestras/tipo_comision.php');
 require_once('../../modelos/caja.php');
+require_once('../../modelos/gastos_generales.php');   // <<< AGREGADO
 require_once('../../modelos/conexion.php');
 
 if (isset($_POST['action']) && $_POST['action'] == 'registrar_venta') {
@@ -32,7 +33,7 @@ class RegistrarVentaControlador {
     public function registrar_venta() {
 
         /* ===============================================================
-           🔹 1 — Crear conexión GLOBAL compartida para TODA la transacción
+           🔹 1 — CONEXIÓN GLOBAL PARA TODA LA TRANSACCIÓN
         =============================================================== */
         $db = new Conexion();
         $db->conectar();
@@ -56,13 +57,11 @@ class RegistrarVentaControlador {
                 $registrar_cliente->setUsuarios_idusuarios($_POST['id_usuario']);
                 $cliente_id = $registrar_cliente->agregar_cliente();
 
-                if (!$cliente_id) {
-                    throw new Exception("Error al registrar cliente.");
-                }
+                if (!$cliente_id) throw new Exception("Error al registrar cliente.");
             }
 
             /* ===============================================================
-               3 — VENTA
+               3 — REGISTRAR LA VENTA
             =============================================================== */
             $venta = new VenderVehiculo('', '', '', '', '', '', '', '', $conn);
             $venta->setDescripcion($_POST['observaciones']);
@@ -71,11 +70,10 @@ class RegistrarVentaControlador {
             $venta->setRegistro_clientes_idregistro_clientes($cliente_id);
             $venta->setEmpleados_idempleados($_POST['idempleado']);
             $venta->setTitular_vehiculo_idtitular_vehiculo($_POST['titular_vehiculo']);
+            $venta->setPrecio_venta($_POST['precio_publico_real']);
 
             $idventa = $venta->agregar_venta();
-            if (!$idventa) {
-                throw new Exception("Error al registrar la venta.");
-            }
+            if (!$idventa) throw new Exception("Error al registrar la venta.");
 
             /* ===============================================================
                4 — COMISIONES
@@ -83,13 +81,12 @@ class RegistrarVentaControlador {
             $precio_tomado  = floatval($_POST['precio_tomado'] ?? 0);
             $precio_publico = floatval($_POST['precio_publico_real'] ?? 0);
 
-            if ($precio_publico <= 0 || $precio_tomado <= 0) {
+            if ($precio_publico <= 0 || $precio_tomado <= 0)
                 throw new Exception("No se pudieron obtener los precios del vehículo.");
-            }
 
             $ganancia = max($precio_publico - $precio_tomado, 0);
 
-            // Perfil empleado
+            // Perfil del empleado
             $usuario = new Usuario('', '', '', '', '', '', $conn);
             $perfil_data = $usuario->traer_perfil_por_id($_POST['idempleado']);
             $perfil = strtolower(trim($perfil_data['perfil'] ?? ''));
@@ -99,15 +96,15 @@ class RegistrarVentaControlador {
                 $porc_conces = 100;
                 $tipo_comision = 1;
             } else {
-                $porc_emp = 30;
-                $porc_conces = 70;
+                $porc_emp = 15;
+                $porc_conces = 85;
                 $tipo_comision = 2;
             }
 
             $monto_emp = ($ganancia * $porc_emp) / 100;
             $monto_conces = ($ganancia * $porc_conces) / 100;
 
-            // Registrar comisiones
+            // Registrar comisión
             $comision = new Comisiones_Ventas('', '', '', '', '', '', '', '', $conn);
             $comision->setPorcentaje_empleado($porc_emp);
             $comision->setPorcentaje_concesionaria($porc_conces);
@@ -116,9 +113,8 @@ class RegistrarVentaControlador {
             $comision->setTipo_comisiones_idtipo_comisiones($tipo_comision);
             $comision->setVentas_idventas($idventa);
 
-            if (!$comision->agregar_comision_venta()) {
+            if (!$comision->agregar_comision_venta())
                 throw new Exception("Error al registrar comisión.");
-            }
 
             /* ===============================================================
                5 — CAJA
@@ -126,9 +122,7 @@ class RegistrarVentaControlador {
             $caja = new Caja('', '', '', '', '', '', '', $conn);
             $cajaActiva = $caja->verificar_o_abrir_caja_mensual($_SESSION['idusuarios']);
 
-            if (!$cajaActiva) {
-                throw new Exception("No hay caja activa.");
-            }
+            if (!$cajaActiva) throw new Exception("No hay caja activa.");
 
             $datosCaja = $cajaActiva->fetch_assoc();
             $idcaja = $datosCaja['idcaja'];
@@ -136,7 +130,7 @@ class RegistrarVentaControlador {
             $idTipoVenta = $caja->obtener_id_tipo_movimiento('Venta vehículo');
             $idTipoComision = $caja->obtener_id_tipo_movimiento('Comisión empleado');
 
-            // Movimiento ingreso
+            // INGRESO de la concesionaria
             $caja->registrar_movimiento(
                 'ingreso',
                 $monto_conces,
@@ -149,7 +143,7 @@ class RegistrarVentaControlador {
                 $_SESSION['idusuarios']
             );
 
-            // Movimiento egreso
+            // EGRESO comisión empleado
             if ($monto_emp > 0) {
                 $caja->registrar_movimiento(
                     'egreso',
@@ -165,17 +159,20 @@ class RegistrarVentaControlador {
             }
 
             /* ===============================================================
-               6 — VEHÍCULO vendido
+               6 — GASTOS AUTOMÁTICOS DE VENTA (AQUÍ) - NO CORRESPONDE
+            =============================================================== */
+
+            /* ===============================================================
+               7 — VEHÍCULO VENDIDO
             =============================================================== */
             $vehiculo = new Vehiculos('', '', '', '', '', '', '', '', '', '', $conn);
             $vehiculo->setIdvehiculos($_POST['vehiculos_idvehiculos']);
-            $vehiculo->eliminar_vehiculo_venta(); // ✔ versión correcta para transacciones
+            $vehiculo->eliminar_vehiculo_venta();
 
             /* ===============================================================
-               7 — NOTIFICACIÓN
+               8 — NOTIFICACIÓN
             =============================================================== */
             require_once __DIR__ . '/../notificacion_trigger.php';
-
             $pusher->trigger('notificaciones', 'nuevo-evento', [
                 'tipo' => 'venta',
                 'mensaje' => "Nueva venta ID $idventa",
@@ -183,7 +180,7 @@ class RegistrarVentaControlador {
             ]);
 
             /* ===============================================================
-               8 — CONFIRMAR TODO
+               9 — COMMIT FINAL
             =============================================================== */
             $conn->commit();
 

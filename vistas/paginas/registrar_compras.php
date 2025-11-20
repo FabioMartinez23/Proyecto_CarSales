@@ -208,7 +208,7 @@ $result_tipo_doc = $tipo_doc->mostrar_tipo_doc();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button id="buscar_cliente_btn" type="button" class="btn btn-primary">Buscar</button> 
+                <button id="buscar_cliente_btn" type="button" class="btn btn-action">Buscar</button> 
             </div>
         </div>
     </div>
@@ -507,6 +507,25 @@ $result_tipo_doc = $tipo_doc->mostrar_tipo_doc();
 </div>
 
 <script src="assets/js/json/traer_datos_cliente_compra.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formCompra = document.getElementById("CompraForm");
+    const loader = document.getElementById("loader-overlay");
+
+    formCompra.addEventListener("submit", function(e) {
+
+        // Si ya detectaste errores (por ejemplo documentación faltante), no mostrar loader
+        const aviso = document.getElementById('avisoEnvioDocumentacion');
+        if (aviso && aviso.textContent.trim() !== "") {
+            return; 
+        }
+
+        // Mostrar loader
+        loader.style.display = "flex";
+    });
+});
+</script>
 
 <script>
 document.getElementById("guardarFicha").addEventListener("click", function() {

@@ -4,15 +4,39 @@ require_once('../../modelos/precios_vehiculos.php');
 require_once('../../modelos/tablas_maestras/tipo_precio.php');
 require_once('../../modelos/tablas_maestras/interes.php');
 
+/* ============================================================
+   FUNCIÓN PARA LIMPIAR NÚMEROS (FORMATO AR: 20.500.000,00)
+   Limpia NBSP, thin-spaces, puntos, comas y devuelve float.
+============================================================ */
+function limpiarNumero($valor)
+{
+    if (!$valor) return 0;
+
+    // Quitar espacios normales, NBSP, THIN SPACE, etc.
+    $valor = preg_replace('/[\x{00A0}\x{202F}\s]+/u', '', $valor);
+
+    // Si tiene coma y punto → los puntos son miles → se eliminan
+    if (strpos($valor, ',') !== false && strpos($valor, '.') !== false) {
+        $valor = str_replace('.', '', $valor);
+    }
+
+    // Convertir coma en punto para formato numérico
+    $valor = str_replace(',', '.', $valor);
+
+    return floatval($valor);
+}
+
 if (isset($_POST['action'])) {
     $precio_controlador = new PrecioVehiculoControlador();
 
     if ($_POST['action'] == 'agregar') {
         $precio_controlador->agregar();
     }
+
     if ($_POST['action'] == 'actualizar') {
         $precio_controlador->actualizar();
     }
+
     if ($_POST['action'] == 'publico') {
         $precio_controlador->agregar();
     }
@@ -20,33 +44,47 @@ if (isset($_POST['action'])) {
 
 class PrecioVehiculoControlador
 {
-    public function agregar() {
+    /* ============================================================
+       AGREGAR PRECIO (TOMADO o PUBLICO)
+    ============================================================ */
+    public function agregar()
+    {
         if (empty($_POST['precio_nuevo'])) {
             header('location: ../../index.php?page=listado_vehiculos&mensaje=Campo vacío.&status=error');
             return;
         }
 
         $idVehiculo = $_POST['idvehiculos'];
-        $precioNuevo = str_replace(['.', ','], '', $_POST['precio_nuevo']);
         $idInteres = $_POST['interes_id'] ?? null;
+
+        // LIMPIEZA PROFESIONAL DEL NÚMERO
+        $precioNuevo = limpiarNumero($_POST['precio_nuevo']);
 
         $precio = new PrecioVehiculo();
 
+        // ≡ AGREGAR PRECIO PÚBLICO
         if ($_POST['action'] === 'publico') {
-            // Calcular precio público con interés
+
             $interesModel = new Intereses();
             $interes = $interesModel->obtenerPorId($idInteres);
             $porcentaje = $interes ? floatval($interes['porcentaje']) : 0;
+
             $precioPublico = $precioNuevo * (1 + $porcentaje / 100);
 
             $precio->guardarPrecioPublico($idVehiculo, $precioPublico, $idInteres);
-        } else {
+        }
+
+        // ≡ AGREGAR PRECIO TOMADO
+        else {
             $precio->guardarPrecioTomado($idVehiculo, $precioNuevo);
         }
 
         header('location: ../../index.php?page=listado_vehiculos&mensaje=Precio agregado correctamente.&status=success');
     }
 
+    /* ============================================================
+       ACTUALIZAR PRECIOS (TOMADO + PUBLICO)
+    ============================================================ */
     public function actualizar()
     {
         if (empty($_POST['precio_nuevo'])) {
@@ -56,32 +94,36 @@ class PrecioVehiculoControlador
 
         $idVehiculo = $_POST['idvehiculos'];
         $idInteres = $_POST['interes_id'] ?? null;
+
         $tipoPrecio = new Tipo_Precios();
 
-        // 🔹 1) Limpiar y convertir el precio ingresado (elimina puntos y comas)
-        $precioTexto = $_POST['precio_nuevo'];
-        $precioLimpio = str_replace(['.', ','], '', $precioTexto); // elimina separadores
-        $precioNuevo = floatval($precioLimpio); // convierte a número puro
+        // LIMPIEZA DEL VALOR INGRESADO (FORMATO LOCAL)
+        $precioNuevo = limpiarNumero($_POST['precio_nuevo']);
 
-        // 1️⃣ Guardar PRECIO TOMADO (sin interés)
+        /* ============================================================
+           1️⃣ ACTUALIZAR PRECIO TOMADO
+        ============================================================ */
         $idTipoTomado = $tipoPrecio->obtenerIdPorDescripcion('tomado');
 
         $precioTomado = new PrecioVehiculo();
         $precioTomado->setPrecio($precioNuevo);
         $precioTomado->setVehiculos_idvehiculos($idVehiculo);
         $precioTomado->setTipo_precios_idtipo_precios($idTipoTomado);
-        $precioTomado->setIntereses_idintereses(1); // ID del interés “Sin interés” o base
+
+        // Usás "1" como interés base/sin interés
+        $precioTomado->setIntereses_idintereses(1);
         $precioTomado->actualizar_precio();
 
-        // 2️⃣ Si se seleccionó interés → calcular PRECIO PÚBLICO
+        /* ============================================================
+           2️⃣ SI HAY INTERÉS → CALCULAR Y ACTUALIZAR PRECIO PUBLICO
+        ============================================================ */
         if (!empty($idInteres)) {
             $interesModel = new Intereses();
             $interes = $interesModel->obtenerPorId($idInteres);
 
             if ($interes && isset($interes['porcentaje'])) {
-                $porcentaje = floatval($interes['porcentaje']);
 
-                // Calcular nuevo precio con el porcentaje aplicado
+                $porcentaje = floatval($interes['porcentaje']);
                 $precioPublico = $precioNuevo * (1 + $porcentaje / 100);
 
                 $idTipoPublico = $tipoPrecio->obtenerIdPorDescripcion('publico');
@@ -99,3 +141,4 @@ class PrecioVehiculoControlador
     }
 }
 ?>
+

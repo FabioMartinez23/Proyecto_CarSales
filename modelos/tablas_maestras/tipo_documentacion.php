@@ -89,6 +89,24 @@ class Tipo_Documentacion {
         return null;
     }
 
+    
+    public function traer_por_id($id) {
+        $conexion = new Conexion();
+
+        $query = "SELECT idtipo_documentacion, descripcion
+                  FROM tipo_documentacion
+                  WHERE idtipo_documentacion = '$id'
+                  LIMIT 1";
+
+        $res = $conexion->consultar($query);
+
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc();
+        }
+
+        return null;
+    }
+
     /**
      * Get the value of idtipo_documentacion
      */ 

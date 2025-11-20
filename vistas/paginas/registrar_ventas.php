@@ -8,6 +8,15 @@ if (isset($_SESSION['idusuarios'])){
     $idusuarios = $_SESSION['idusuarios'];
 }
 
+// ======= Traer idempleados =================
+$empleado = new Empleado();
+$idempleado = $empleado->traerEmpleadoPorUsuario($idusuarios);
+
+if (!$idempleado) {
+    echo "No se encontró el empleado para este usuario.";
+    exit;
+}
+
 // PARTE PERSONAS
 
 $tipo_sexo = new Tipo_Sexos();
@@ -269,7 +278,7 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
     </div>
     <form id="ventaForm" action="controladores/ventas/registrar_venta.controlador.php" method="POST">
         <input type="hidden" id="venta" name="action" value="registrar_venta">
-        <input type="hidden" name="idempleado" value="<?php echo $idusuarios?>">
+        <input type="hidden" name="idempleado" value="<?php echo $idempleado; ?>">
         <div class="accordion" id="accordionExample">
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -590,6 +599,18 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
         </div>    
     </form>
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formVenta = document.getElementById("ventaForm");
+    const loader = document.getElementById("loader-overlay");
+
+    formVenta.addEventListener("submit", function () {
+        loader.style.display = "flex";  // Mostrar loader
+    });
+});
+</script>
 
 <script>
 $(document).ready(function() {

@@ -22,8 +22,8 @@
                 Vehiculos
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="index.php?page=comprar_vehiculo">Comprar Vehiculo</a></li>
-                <li><a class="dropdown-item" href="index.php?page=form_contacto">Vender Vehiculo</a></li>
+                <li><a class="dropdown-item" href="index.php?page=comprar_vehiculo">Vehículos Disponibles</a></li>
+                <li><a class="dropdown-item" href="index.php?page=form_contacto">Vender Vehículo</a></li>
             </ul>
             </li>
             <li class="nav-item">

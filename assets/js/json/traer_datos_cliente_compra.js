@@ -4,8 +4,6 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
     // Recolectar los datos del formulario
     let dni = document.getElementById("dni").value;
     let tipo_sexo_idtipo_sexo = document.getElementById("id_tipo_sexo").value;
-    console.log("DNI:", dni);
-    console.log("Tipo de Sexo:", tipo_sexo_idtipo_sexo);
 
     // Crear un objeto FormData
     let formData = new FormData();
@@ -18,44 +16,49 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
         body: formData
     })
     .then(response => {
-        console.log("Estado de la respuesta:", response.status); // Verificar el código de estado
         if (!response.ok) {
             throw new Error('Error en la respuesta del servidor: ' + response.statusText);
         }
         return response.text(); // Obtener respuesta como texto para depuración
     })
     .then(text => {
-        //console.log("Respuesta del servidor (texto):", text); // Mostrar la respuesta cruda
         let data;
         try {
             data = JSON.parse(text); // Intentar convertir la respuesta a JSON
-            console.log("Datos JSON:", data);
         } catch (e) {
             console.error("La respuesta no es un JSON válido:", e);
-            alert('El tipo de sexo es incorrecto.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'El tipo de sexo es incorrecto.'
+            });
             return; // Salir de la función si hay error en el JSON
         }
 
         // Verificar si el servidor envió un error
         if (data.error) {
-            alert(data.error); // Mostrar el mensaje de error
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.error
+            });
         } else {
-
-            console.log("Campo id_documento:", document.getElementById("id_documento"));
-            console.log("Campo id_domicilio:", document.getElementById("id_domicilio"));
-            console.log("Campo id_tipo_sexo:", document.getElementById("id_tipo_sexo"));
-            console.log("Campo id_contacto:", document.getElementById("id_contacto"));
+            Swal.fire({
+                icon: 'success',
+                title: 'Cliente encontrado',
+                text: 'La información se cargó correctamente',
+                timer: 3000,
+                showConfirmButton: false
+            });
 
 
             // Rellenar el formulario con los datos recibidos
             document.getElementById("id_personas").value = data.persona?.idpersonas || '';
             document.getElementById("id_nombre").value = data.persona?.nombre || '';
-            document.getElementById("id_apellido").value = data.persona?.apellido || '';            console.log("Select sexo antes:", document.getElementById("id_tipo_sexo_1").innerHTML);
-            console.log("Valor recibido:", data.persona?.tipo_sexo_idtipo_sexo);
+            document.getElementById("id_apellido").value = data.persona?.apellido || '';      
 
             document.getElementById("id_tipo_sexo_1").value = data.persona?.tipo_sexo_idtipo_sexo || '';
 
-            console.log("Select sexo después (value):", document.getElementById("id_tipo_sexo_1").value);
             document.getElementById("id_fecha_nacimiento").value = data.persona?.fecha_nacimiento || '';
             document.getElementById("id_tipo_documento").value = data.documento?.idTipo_documento || '';
             document.getElementById("id_tipo_contacto").value = data.contacto?.idtipo_contacto || '';
@@ -95,7 +98,11 @@ document.getElementById("buscar_cliente_btn").addEventListener("click", function
     })
     .catch(error => {
         console.error("Error al buscar cliente:", error);
-        alert('Hubo un error al procesar la solicitud.'); // Mensaje de alerta al usuario
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un error al procesar la solicitud.'
+        });
     });
 
 });

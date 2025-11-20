@@ -7,45 +7,63 @@ error_reporting(E_ALL);
 $compra = new ComprarVehiculo();
 $resultado_compra = $compra->traer_compra_por_id($_GET['idcompra']);
 
-if ($resultado_compra) { 
 ?>
 
-    <div class="container mt-5 hacer_padding">
-        <h1 class="text-center">Detalle de Vehículo Ingresado - Nro <?=$resultado_compra['idcompras']; ?></h1>
+<div class="detalle-container hacer_padding">
 
-        <h2>Datos del Cliente</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item"><strong>Nombre:</strong> <?=$resultado_compra['nombre']." ".$resultado_compra['apellido']; ?></li>
-            <li class="list-group-item"><strong>DNI:</strong> <?=$resultado_compra['valor_documento']; ?></li>
-            <li class="list-group-item"><strong>Teléfono:</strong> <?=$resultado_compra['valor_contacto']; ?></li>
-            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_compra['nombre_domicilio'].' - Barrio: '.$resultado_compra['nombre_barrio'].' - Localidad: '.$resultado_compra['nombre_localidad'].' - Provincia: '.$resultado_compra['nombre_provincia']; ?></li>
-        </ul>
+<?php if ($resultado_compra) { ?>
 
-        <h2>Datos del Auto</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item"><strong>Marca:</strong> <?=$resultado_compra['nombre_marca']; ?></li>
-            <li class="list-group-item"><strong>Modelo:</strong> <?=$resultado_compra['nombre_modelo']; ?></li>
-            <li class="list-group-item"><strong>Año:</strong> <?=$resultado_compra['anio'];?></li>
-            <li class="list-group-item"><strong>Color:</strong> <?=$resultado_compra['nombre_descripcion']; ?></li>
-        </ul>
+    <!-- Título Principal -->
+    <div class="detalle-header">
+        <h1>Ingreso de Vehículo Nº <?= $resultado_compra['idcompras']; ?></h1>
+        <p class="detalle-subtitle">
+            <?= $resultado_compra['nombre_marca'] . " " . $resultado_compra['nombre_modelo'] ?>
+            (<?= $resultado_compra['anio']; ?>)
+        </p>
+    </div>
 
-        <h2>Datos del Ingreso</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item">
-                <strong>Fecha de Ingreso:</strong> 
-                <?php
-                    $fecha_original = new DateTime($resultado_compra['fecha_compra']);
-                    echo $fecha_original->format('d-m-Y');
-                ?>
-            </li>
-            <li class="list-group-item"><strong>Monto:</strong> $<?=$resultado_compra['precio']; ?></li>
-            <li class="list-group-item"><strong>Observaciones:</strong> <?=$resultado_compra['observacion']; ?></li>
-        </ul>
-
-        <div class="text-center">
-            <a href="index.php?page=listado_compras" class="btn btn-dark">Volver</a>
-            <a href="reportes_pdf/detalle_compra.php?idcompra=<?=$_GET['idcompra'];?>" target="_blank" class="btn btn-success">Descargar Boleto Compra/Venta</a>
+    <!-- SECCIÓN CLIENTE -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos del Cliente</h2>
+        <div class="detalle-row"><span>Nombre:</span> <?= $resultado_compra['nombre']." ".$resultado_compra['apellido']; ?></div>
+        <div class="detalle-row"><span>DNI:</span> <?= $resultado_compra['valor_documento']; ?></div>
+        <div class="detalle-row"><span>Teléfono:</span> <?= $resultado_compra['valor_contacto']; ?></div>
+        <div class="detalle-row">
+            <span>Dirección:</span>
+            <?= $resultado_compra['nombre_domicilio'] ?> - Barrio <?= $resultado_compra['nombre_barrio'] ?>,
+            <?= $resultado_compra['nombre_localidad'] ?>, <?= $resultado_compra['nombre_provincia'] ?>
         </div>
+    </div>
+
+    <!-- SECCIÓN VEHÍCULO -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos del Vehículo</h2>
+        <div class="detalle-row"><span>Marca:</span> <?= $resultado_compra['nombre_marca']; ?></div>
+        <div class="detalle-row"><span>Modelo:</span> <?= $resultado_compra['nombre_modelo']; ?></div>
+        <div class="detalle-row"><span>Año:</span> <?= $resultado_compra['anio']; ?></div>
+        <div class="detalle-row"><span>Color:</span> <?= $resultado_compra['nombre_descripcion']; ?></div>
+    </div>
+
+    <!-- SECCIÓN COMPRA -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos del Ingreso</h2>
+        <div class="detalle-row">
+            <span>Fecha de Ingreso:</span>
+            <?php
+                $fecha_original = new DateTime($resultado_compra['fecha_compra']);
+                echo $fecha_original->format('d-m-Y');
+            ?>
+        </div>
+        <div class="detalle-row"><span>Monto:</span> $<?= number_format($resultado_compra['precio'], 0, ',', '.'); ?></div>
+        <div class="detalle-row"><span>Observaciones:</span> <?= $resultado_compra['observacion']; ?></div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="detalle-buttons">
+        <a href="index.php?page=listado_compras" class="btn-volver">Volver</a>
+        <a href="reportes_pdf/detalle_compra.php?idcompra=<?= $_GET['idcompra']; ?>" target="_blank" class="btn-descargar">
+            Descargar Boleto Compra/Venta
+        </a>
     </div>
 
 <?php 
@@ -53,3 +71,6 @@ if ($resultado_compra) {
     echo "<div class='alert alert-danger'>No se encontró la compra.</div>";
 }
 ?>
+
+</div>
+

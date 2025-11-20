@@ -127,12 +127,159 @@ class Vehiculos extends Paginacion{
         return $conexion->consultar($query);
     }
 
-    public function traer_vehiculos_por_id($idvehiculos){
-        $conexion = new Conexion();
-        $query = "SELECT vehiculos.*,colores.idcolores, colores.descripcion as nombre_color, marcas.idmarcas, marcas.nombre as nombre_marca,modelos.idmodelos, modelos.nombre as nombre_modelo,tipo_vehiculos.idtipo_vehiculos, tipo_vehiculos.nombre as nombre_tipo_vehiculo FROM vehiculos INNER JOIN modelos on vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN colores on vehiculos.colores_idcolores = colores.idcolores INNER JOIN marcas on modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos on vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos WHERE idvehiculos = '$idvehiculos'";
-        return $conexion->consultar($query);
+    public function traer_vehiculo_por_id($idvehiculos)
+    {
+        $idvehiculos = intval($idvehiculos);
+
+        $con = new Conexion();
+        $con->conectar();         // ← SIN ESTO tu conexión está NULL
+        $db = $con->_con; 
+
+        $query = "
+            SELECT 
+                v.*,
+                m.nombre AS nombre_marca,
+                mo.nombre AS nombre_modelo,
+                c.descripcion AS nombre_color,
+                tv.nombre AS nombre_tipo_vehiculo,
+                ev.estado_vehiculo AS estado,
+
+                -- Precio tomado (último)
+                (
+                    SELECT pv.precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'tomado'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS precio_tomado,
+
+                -- Fecha del precio tomado
+                (
+                    SELECT pv.fecha_precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'tomado'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS fecha_tomado,
+
+                -- Precio público (último)
+                (
+                    SELECT pv.precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'publico'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS precio_publico,
+
+                (
+                    SELECT pv.fecha_precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'publico'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS fecha_publico
+
+            FROM vehiculos v
+            INNER JOIN modelos mo ON v.modelos_idmodelos = mo.idmodelos
+            INNER JOIN marcas m ON mo.marcas_idmarcas = m.idmarcas
+            INNER JOIN colores c ON v.colores_idcolores = c.idcolores
+            INNER JOIN tipo_vehiculos tv ON v.tipo_vehiculos_idtipo_vehiculos = tv.idtipo_vehiculos
+            LEFT JOIN estado_vehiculo ev ON v.estado_vehiculo_idestado_vehiculo = ev.idestado_vehiculo
+            WHERE v.idvehiculos = $idvehiculos
+            LIMIT 1
+        ";
+
+        $res = $db->query($query);
+
+        return ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
     }
-    
+
+    public function traer_vehiculo_por_id_modificar($idvehiculos)
+    {
+        $idvehiculos = intval($idvehiculos);
+
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                v.*,
+                m.*,
+                m.nombre AS nombre_marca,
+                mo.nombre AS nombre_modelo,
+                c.descripcion AS nombre_color,
+                tv.nombre AS nombre_tipo_vehiculo,
+                ev.estado_vehiculo AS estado,
+
+                -- Precio tomado (último)
+                (
+                    SELECT pv.precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'tomado'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS precio_tomado,
+
+                -- Fecha precio tomado
+                (
+                    SELECT pv.fecha_precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'tomado'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS fecha_tomado,
+
+                -- Precio público (último)
+                (
+                    SELECT pv.precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'publico'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS precio_publico,
+
+                -- Fecha precio público
+                (
+                    SELECT pv.fecha_precio
+                    FROM precios_vehiculos pv
+                    INNER JOIN tipo_precios tp ON pv.tipo_precios_idtipo_precios = tp.idtipo_precios
+                    WHERE pv.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp.descripcion = 'publico'
+                    ORDER BY pv.fecha_precio DESC
+                    LIMIT 1
+                ) AS fecha_publico
+
+            FROM vehiculos v
+            INNER JOIN modelos mo ON v.modelos_idmodelos = mo.idmodelos
+            INNER JOIN marcas m ON mo.marcas_idmarcas = m.idmarcas
+            INNER JOIN colores c ON v.colores_idcolores = c.idcolores
+            INNER JOIN tipo_vehiculos tv ON v.tipo_vehiculos_idtipo_vehiculos = tv.idtipo_vehiculos
+            LEFT JOIN estado_vehiculo ev ON v.estado_vehiculo_idestado_vehiculo = ev.idestado_vehiculo
+
+            WHERE v.idvehiculos = $idvehiculos
+            LIMIT 1
+        ";
+
+        $res = $conexion->consultar($query);
+
+        return ($res && $res->num_rows > 0) 
+            ? $res->fetch_assoc()
+            : null;
+    }
+
 
     public function buscar_vehiculo($buscador, $estado = null){
         $conexion = new Conexion();
@@ -220,7 +367,7 @@ class Vehiculos extends Paginacion{
 
         
         if ($estado) {
-            $query .= " AND estado_vehiculo_idestado_vehiculo = $estado";
+            $query .= " AND estado_vehiculo.estado_vehiculo = '$estado'";
         }
         
         $query .= " ORDER BY vehiculos.idvehiculos";

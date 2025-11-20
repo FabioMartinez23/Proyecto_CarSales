@@ -10,71 +10,123 @@ $resultado_venta = $venta->traer_venta_por_id($_GET['idventa']);
 $parte_pago = new VentaFormaPago();
 $result_parte_pago = $parte_pago->traer_vehiculo_forma_pago($_GET['idventa']);
 
-if ($resultado_venta) { 
 ?>
 
-    <div class="container mt-5 hacer_padding">
-        <h1 class="text-center">Detalles de Venta - Nro <?=$resultado_venta['idventas']; ?></h1>
+<div class="detalle-container hacer_padding">
 
-        <h2>Datos del Cliente</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item"><strong>Nombre:</strong> <?=$resultado_venta['nombre']." ".$resultado_venta['apellido']; ?></li>
-            <li class="list-group-item"><strong>DNI:</strong> <?=$resultado_venta['valor_documento']; ?></li>
-            <li class="list-group-item"><strong>Teléfono:</strong> <?=$resultado_venta['valor_contacto']; ?></li>
-            <li class="list-group-item"><strong>Barrio:</strong> <?=$resultado_venta['nombre_barrio']; ?></li>
-            <li class="list-group-item"><strong>Dirección:</strong> <?=$resultado_venta['nombre_domicilio'].' - Barrio: '.$resultado_venta['nombre_barrio'].' - Localidad: '.$resultado_venta['nombre_localidad'].' - Provincia: '.$resultado_venta['nombre_provincia']; ?></li>
-        </ul>
+<?php if ($resultado_venta) { ?>
 
-        <h2>Datos del Auto</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item"><strong>Marca:</strong> <?=$resultado_venta['nombre_marca']; ?></li>
-            <li class="list-group-item"><strong>Modelo:</strong> <?=$resultado_venta['nombre_modelo']; ?></li>
-            <li class="list-group-item"><strong>Año:</strong> <?=$resultado_venta['anio'];?></li>
-            <li class="list-group-item"><strong>Color:</strong> <?=$resultado_venta['nombre_descripcion']; ?></li>
-        </ul>
+    <!-- HEADER -->
+    <div class="detalle-header">
+        <h1>Venta Nº <?= $resultado_venta['idventas']; ?></h1>
+        <p class="detalle-subtitle">
+            <?= $resultado_venta['nombre_marca'] . " " . $resultado_venta['nombre_modelo'] ?>
+            (<?= $resultado_venta['anio']; ?>)
+        </p>
+    </div>
 
-        <h2>Datos de la Venta</h2>
-        <ul class="list-group mb-4">
-            <li class="list-group-item">
-                <strong>Fecha de Venta:</strong> 
-                <?php
-                    $fecha_original = new DateTime($resultado_venta['fecha_venta']);
-                    echo $fecha_original->format('d-m-Y');
-                ?>
-            </li>
-            <li class="list-group-item"><strong>Tipo de Pago:</strong> <?=$resultado_venta['nombre_pago']; ?></li>
-            <li class="list-group-item"><strong>Monto:</strong> $<?=$resultado_venta['precio']; ?></li>
-            <li class="list-group-item"><strong>Observaciones:</strong> <?=$resultado_venta['observacion']; ?></li>
-        </ul>
 
-            <?php if (!empty($result_parte_pago)) { ?>
-        <h2>Entrega de Vehículo como Parte de Pago</h2>
-            <ul class="list-group mb-4">
-                <li class="list-group-item"><strong>Marca:</strong> <?=$result_parte_pago['nombre_marca']; ?></li>
-                <li class="list-group-item"><strong>Modelo:</strong> <?=$result_parte_pago['nombre_modelo']; ?></li>
-                <li class="list-group-item"><strong>Tipo:</strong> <?=$result_parte_pago['nombre_tipo_vehiculo']; ?></li>
-                <li class="list-group-item"><strong>Valor Tasado:</strong> $<?=$result_parte_pago['precio']; ?></li>
-            </ul>
-        <?php } ?>
+    <!-- SECCIÓN CLIENTE -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos del Cliente</h2>
 
-        <?php 
-            if (!empty($result_parte_pago)) {
-                $total_venta = floatval(str_replace(['.', ','], ['', '.'], $resultado_venta['precio']));
-                $valor_parte_pago = floatval(str_replace(['.', ','], ['', '.'], $result_parte_pago['precio']));
-                $total_entrega = $total_venta - $valor_parte_pago;
-        ?>
-                <div class="mt-4 p-4 bg-light border rounded text-center">
-                    <h3 class="text-danger">Total a Pagar (diferencia): $<?= number_format($total_entrega, 2, ',', '.'); ?></h3>
-                    <small class="text-muted">(Precio de venta: $<?= number_format($total_venta, 2, ',', '.'); ?> - Parte de pago: $<?= number_format($valor_parte_pago, 2, ',', '.'); ?>)</small>
-                </div>
-        <?php 
-            }
-        ?>
+        <div class="detalle-row"><span>Nombre:</span> <?= $resultado_venta['nombre']." ".$resultado_venta['apellido']; ?></div>
+        <div class="detalle-row"><span>DNI:</span> <?= $resultado_venta['valor_documento']; ?></div>
+        <div class="detalle-row"><span>Teléfono:</span> <?= $resultado_venta['valor_contacto']; ?></div>
 
-        <div class="text-center">
-            <a href="index.php?page=listado_ventas" class="btn btn-dark">Volver</a>
-            <a href="reportes_pdf/detalle_venta.php?idventa=<?=$_GET['idventa'];?>" target="_blank" class="btn btn-success">Descargar Botelo Compra/Venta</a>
+        <div class="detalle-row">
+            <span>Dirección:</span>
+            <?= $resultado_venta['nombre_domicilio'] ?> - Barrio <?= $resultado_venta['nombre_barrio'] ?>,
+            <?= $resultado_venta['nombre_localidad'] ?>, <?= $resultado_venta['nombre_provincia'] ?>
         </div>
+    </div>
+
+
+    <!-- SECCIÓN VEHÍCULO -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos del Vehículo</h2>
+
+        <div class="detalle-row"><span>Marca:</span> <?= $resultado_venta['nombre_marca']; ?></div>
+        <div class="detalle-row"><span>Modelo:</span> <?= $resultado_venta['nombre_modelo']; ?></div>
+        <div class="detalle-row"><span>Año:</span> <?= $resultado_venta['anio']; ?></div>
+        <div class="detalle-row"><span>Color:</span> <?= $resultado_venta['nombre_descripcion']; ?></div>
+    </div>
+
+
+    <!-- SECCIÓN VENTA -->
+    <div class="detalle-box">
+        <h2 class="detalle-box-title">Datos de la Venta</h2>
+
+        <div class="detalle-row">
+            <span>Fecha:</span>
+            <?php
+                $fecha = new DateTime($resultado_venta['fecha_venta']);
+                echo $fecha->format('d-m-Y');
+            ?>
+        </div>
+
+        <div class="detalle-row"><span>Tipo de Pago:</span> <?= $resultado_venta['nombre_pago']; ?></div>
+
+        <div class="detalle-row">
+            <span>Monto Total:</span> $<?= number_format($resultado_venta['precio'], 0, ',', '.'); ?>
+        </div>
+
+        <div class="detalle-row"><span>Observaciones:</span> <?= $resultado_venta['observacion']; ?></div>
+    </div>
+
+
+    <!-- SECCIÓN PARTE DE PAGO -->
+    <?php if (!empty($result_parte_pago)) { ?>
+
+        <div class="detalle-box">
+            <h2 class="detalle-box-title">Vehículo Entregado en Parte de Pago</h2>
+
+            <div class="detalle-row"><span>Marca:</span> <?= $result_parte_pago['nombre_marca']; ?></div>
+            <div class="detalle-row"><span>Modelo:</span> <?= $result_parte_pago['nombre_modelo']; ?></div>
+            <div class="detalle-row"><span>Tipo:</span> <?= $result_parte_pago['nombre_tipo_vehiculo']; ?></div>
+
+            <div class="detalle-row">
+                <span>Valor Tasado:</span> 
+                $<?= number_format($result_parte_pago['precio'], 0, ',', '.'); ?>
+            </div>
+        </div>
+
+        <!-- DIFERENCIA A PAGAR -->
+        <?php
+            $total_venta = floatval($resultado_venta['precio']);
+            $valor_parte = floatval($result_parte_pago['precio']);
+            $total_pagar = $total_venta - $valor_parte;
+        ?>
+
+        <div class="detalle-box">
+            <h2 class="detalle-box-title">Diferencia a Abonar</h2>
+
+            <div class="detalle-row">
+                <span>Total a Pagar:</span>
+                <span style="font-weight:700; color:#B00020;">
+                    $<?= number_format($total_pagar, 0, ',', '.'); ?>
+                </span>
+            </div>
+
+            <div class="detalle-row">
+                <span style="font-weight:600;">Detalle:</span>
+                Precio venta $<?= number_format($total_venta, 0, ',', '.') ?> -
+                Parte de pago $<?= number_format($valor_parte, 0, ',', '.') ?>
+            </div>
+        </div>
+
+    <?php } ?>
+
+
+    <!-- BOTONES -->
+    <div class="detalle-buttons">
+        <a href="index.php?page=listado_ventas" class="btn-volver">Volver</a>
+
+        <a href="reportes_pdf/detalle_venta.php?idventa=<?= $_GET['idventa']; ?>" 
+           target="_blank" 
+           class="btn-descargar">
+            Descargar Boleto Compra/Venta
+        </a>
     </div>
 
 <?php 
@@ -83,3 +135,4 @@ if ($resultado_venta) {
 }
 ?>
 
+</div>

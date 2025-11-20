@@ -16,6 +16,8 @@ require_once('../../modelos/documentaciones.php');
 require_once('../../modelos/tablas_maestras/estado_vehiculo.php');
 require_once('../../modelos/tablas_maestras/tipo_documentacion.php');
 require_once('../../modelos/tablas_maestras/tipo_precio.php');
+require_once('../../modelos/gastos_generales.php');   // <<< AGREGADO
+require_once('../../modelos/caja.php');
 require_once('../../modelos/conexion.php');
 
 if (isset($_POST['action']) && $_POST['action'] == 'registrar_compra') {
@@ -29,9 +31,11 @@ class RegistrarCompraControlador {
 
         $db = new Conexion();
         $db->conectar();
-        $db->_con->begin_transaction(); // 🔹 Iniciar transacción
+        $conn = $db->_con;
+        $conn->begin_transaction();
 
         try {
+
             /* ===============================================================
                1️⃣ VALIDAR EDAD
             =============================================================== */
@@ -44,9 +48,10 @@ class RegistrarCompraControlador {
             }
 
             /* ===============================================================
-               2️⃣ REGISTRAR PERSONA Y DATOS RELACIONADOS
+               2️⃣ REGISTRAR PERSONA
             =============================================================== */
             if (empty($_POST['id_personas'])) {
+
                 $persona = new Persona();
                 $persona->setNombre($_POST['nombre']);
                 $persona->setApellido($_POST['apellido']);
@@ -112,7 +117,7 @@ class RegistrarCompraControlador {
 
             $vehiculos_idvehiculos = $vehiculo->getIdvehiculos();
 
-            // Titular del vehículo
+            // Titular
             $titular = new Titular_Vehiculo();
             $titular->setVehiculos_idvehiculos($vehiculos_idvehiculos);
             $titular->setPersonas_idpersonas($personas_idpersonas);
@@ -155,6 +160,7 @@ class RegistrarCompraControlador {
             }
 
             $obligatorios = [2, 6];
+
             $faltantes = array_diff($obligatorios, $id_array);
             if (!empty($faltantes)) {
                 throw new Exception('Faltan documentos obligatorios (Formulario 08 y Cédula Vehicular).');
@@ -176,8 +182,8 @@ class RegistrarCompraControlador {
             $estadoVehiculo = new Estado_Vehiculo();
             $tipo_documentacion = new Tipo_Documentacion();
 
-            $documentos_requeridos = $tipo_documentacion->traer_todos_los_tipos();
-            $total_tipos = count($documentos_requeridos ?? []);
+            $documentos_totales = $tipo_documentacion->traer_todos_los_tipos();
+            $total_tipos = count($documentos_totales ?? []);
 
             $documentos_fisicos = count($id_array);
             $no_digitalizados = $documentacion->contar_no_digitalizados($vehiculos_idvehiculos);
@@ -193,7 +199,7 @@ class RegistrarCompraControlador {
             $vehiculo->actualizar_estado($vehiculos_idvehiculos, $id_estado);
 
             /* ===============================================================
-               7️⃣ PRECIO
+               7️⃣ PRECIO TOMADO
             =============================================================== */
             $tipo_precio = new Tipo_Precios();
             $resultado = $tipo_precio->mostrar_tipo_precio();
@@ -211,7 +217,7 @@ class RegistrarCompraControlador {
             $precio_limpio = str_replace(['.', ',', '$', ' '], '', $_POST['precio']);
             $precio->setPrecio($precio_limpio);
             $precio->setVehiculos_idvehiculos($vehiculos_idvehiculos);
-            $precio->setIntereses_idintereses(1); // Sin interés
+            $precio->setIntereses_idintereses(1);
             $precio->setTipo_precios_idtipo_precios($precio_tipo_array['tomado']);
 
             if (!$precio->actualizar_precio()) {
@@ -233,16 +239,22 @@ class RegistrarCompraControlador {
             }
 
             /* ===============================================================
-               ✅ SI TODO SALE BIEN, GUARDAR CAMBIOS
+               9️⃣ GASTOS AUTOMÁTICOS DEL VEHÍCULO - NO CORRESPONDE
             =============================================================== */
-            $db->_con->commit();
+
+            /* ===============================================================
+               🔟 COMMIT FINAL
+            =============================================================== */
+            $conn->commit();
 
             header('location: ../../index.php?page=listado_compras&mensaje=Vehículo registrado correctamente.&status=success');
             exit();
 
         } catch (Exception $e) {
-            $db->_con->rollback(); // ❌ Revertir todos los cambios
+
+            $conn->rollback();
             error_log("Error en registrar_compra: " . $e->getMessage());
+
             header('location: ../../index.php?page=registrar_compras&mensaje=' . urlencode($e->getMessage()) . '&status=error');
             exit();
 

@@ -675,6 +675,51 @@ div.contenido-tarjeta p{
     font-weight: 700;
 }
 
+/* Fondo oscuro del visor */
+#visorImagen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    animation: fadeIn .25s ease-out;
+}
+
+/* Imagen ampliada */
+#visorImagen img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
+    animation: zoomIn .25s ease-out;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes zoomIn {
+    from { transform: scale(0.6); opacity:0; }
+    to { transform: scale(1); opacity:1; }
+}
+
+
+
+.fila-highlight {
+    animation: flashRow 3.5s ease-out;
+}
+
+@keyframes flashRow {
+    0%   { background-color: #79e88c; }
+    100% { background-color: transparent; }
+}
+
 /* RESPONSIVE */
 
 @media (max-width: 1180px){

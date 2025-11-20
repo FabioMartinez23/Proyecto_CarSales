@@ -8,6 +8,7 @@ class VenderVehiculo {
 
     private $idventas;
     private $descripcion;
+    private $precio_venta;
     private $fecha_venta;
     private $tipo_pago_idtipo_pago;
     private $vehiculo_idvehiculo;
@@ -23,6 +24,7 @@ class VenderVehiculo {
         $tipo_pago_idtipo_pago = '', $vehiculo_idvehiculo = '',
         $registro_clientes_idregistro_clientes = '',
         $empleados_idempleados = '', $titular_vehiculo_idtitular_vehiculo = '',
+        $precio_venta = '',
         $conn = null
     ) {
         $this->idventas = $idventas;
@@ -33,6 +35,7 @@ class VenderVehiculo {
         $this->registro_clientes_idregistro_clientes = $registro_clientes_idregistro_clientes;
         $this->empleados_idempleados = $empleados_idempleados;
         $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+        $this->precio_venta = $precio_venta;
 
         if ($conn instanceof mysqli) {
             $this->_con = $conn;
@@ -66,10 +69,11 @@ class VenderVehiculo {
 
         $query = "
             INSERT INTO ventas 
-            (descripcion, fecha_venta, tipo_pago_idtipo_pago, vehiculo_idvehiculo, 
+            (descripcion,  precio_venta, fecha_venta, tipo_pago_idtipo_pago, vehiculo_idvehiculo, 
              registro_clientes_idregistro_clientes, empleados_idempleados, titular_vehiculo_idtitular_vehiculo)
             VALUES (
                 '$this->descripcion',
+                '$this->precio_venta',
                 CURDATE(),
                 '$this->tipo_pago_idtipo_pago',
                 '$this->vehiculo_idvehiculo',
@@ -110,7 +114,7 @@ class VenderVehiculo {
 
 public function buscar_ventas($buscador){
         $con = $this->getConexion();
-        $query = " SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas WHERE activo_precio = 1 AND estado_venta = 'Realizada' AND patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR año LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%'";
+        $query = " SELECT *, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas INNER JOIN tipo_precios ON precios_vehiculos.tipo_precios_idtipo_precios = tipo_precios.idtipo_precios WHERE activo_precio = 1 AND tipo_precios.descripcion = 'publico'  AND estado_venta = 'Realizada' AND patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%' OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%'";
         $res = $con->query($query);
         $this->cerrarConexion($con);
         return $res;
@@ -139,6 +143,74 @@ public function buscar_ventas($buscador){
         $res = $con->query($query);
         $this->cerrarConexion($con);
         return $res;
+    }
+
+
+    /* ===========================================================
+    VENTAS DEL EMPLEADO POR DÍA DEL MES (para gráfico)
+    =========================================================== */
+    public function ventas_empleado_mes($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT 
+                DATE(v.fecha_venta) AS dia,
+                COUNT(*) AS cantidad
+            FROM ventas v
+            WHERE v.empleados_idempleados = (
+                SELECT idempleados 
+                FROM empleados 
+                WHERE Usuarios_idusuarios = '$idusuario'
+            )
+            AND DATE_FORMAT(v.fecha_venta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            AND v.estado_venta = 'Realizada'
+            GROUP BY DATE(v.fecha_venta)
+            ORDER BY dia ASC
+        ";
+
+        return $con->query($query);
+    }
+
+
+    /* ===========================================================
+    TOTAL DE VENTAS DEL EMPLEADO
+    =========================================================== */
+    public function ventas_empleado_total($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM ventas
+            WHERE empleados_idempleados = (
+                SELECT idempleados 
+                FROM empleados 
+                WHERE Usuarios_idusuarios = '$idusuario'
+            )
+            AND estado_venta = 'Realizada'
+        ";
+
+        return $con->query($query)->fetch_assoc();
+    }
+
+
+    /* ===========================================================
+    TOTAL DE VENTAS ANULADAS DEL EMPLEADO
+    =========================================================== */
+    public function ventas_empleado_anuladas($idusuario) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM ventas
+            WHERE empleados_idempleados = (
+                SELECT idempleados 
+                FROM empleados 
+                WHERE Usuarios_idusuarios = '$idusuario'
+            )
+            AND estado_venta = 'Anulada'
+        ";
+
+        return $con->query($query)->fetch_assoc();
     }
 
     /**
@@ -299,6 +371,26 @@ public function buscar_ventas($buscador){
     public function setTitular_vehiculo_idtitular_vehiculo($titular_vehiculo_idtitular_vehiculo)
     {
         $this->titular_vehiculo_idtitular_vehiculo = $titular_vehiculo_idtitular_vehiculo;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of precio_venta
+     */ 
+    public function getPrecio_venta()
+    {
+        return $this->precio_venta;
+    }
+
+    /**
+     * Set the value of precio_venta
+     *
+     * @return  self
+     */ 
+    public function setPrecio_venta($precio_venta)
+    {
+        $this->precio_venta = $precio_venta;
 
         return $this;
     }

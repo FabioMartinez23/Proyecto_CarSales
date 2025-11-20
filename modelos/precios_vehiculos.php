@@ -234,8 +234,95 @@ class PrecioVehiculo extends Paginacion {
         ";
 
         if ($estado) {
-            $query .= " AND vehiculos.estado_vehiculo_idestado_vehiculo = $estado";
+            $query .= " AND estado_vehiculo.estado_vehiculo = '$estado'";
         }
+
+        $query .= " ORDER BY vehiculos.idvehiculos LIMIT $inicio, $cantidad";
+
+        return $conexion->consultar($query);
+    }
+
+    public function traer_los_vehiculos_con_precio_compra($inicio, $cantidad){
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                vehiculos.*, 
+                marcas.nombre AS nombre_marca, 
+                modelos.nombre AS nombre_modelo,
+                tipo_vehiculos.nombre AS nombre_tipo, 
+                colores.descripcion AS nombre_color,
+
+                -- Estado del vehículo
+                estado_vehiculo.estado_vehiculo AS nombre_estado,
+
+                -- Precio tomado (última fecha)
+                precios_tomado.precio AS precio_tomado,
+                precios_tomado.fecha_precio AS fecha_tomado,
+
+                -- Precio público (última fecha)
+                precios_publico.precio AS precio_publico,
+                precios_publico.fecha_precio AS fecha_publico,
+
+                -- Interés aplicado al precio público
+                intereses_publico.descripcion AS descripcion_interes_publico,
+                intereses_publico.porcentaje AS porcentaje_interes_publico
+
+            FROM vehiculos
+            INNER JOIN modelos 
+                ON vehiculos.modelos_idmodelos = modelos.idmodelos
+            INNER JOIN marcas 
+                ON modelos.marcas_idmarcas = marcas.idmarcas
+            INNER JOIN tipo_vehiculos 
+                ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
+            INNER JOIN colores 
+                ON vehiculos.colores_idcolores = colores.idcolores
+                -- 🔹 Estado del vehículo
+            LEFT JOIN estado_vehiculo 
+            ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
+
+            -- JOIN para precio TOMADO (último)
+            LEFT JOIN precios_vehiculos AS precios_tomado 
+                ON precios_tomado.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND precios_tomado.tipo_precios_idtipo_precios = (
+                    SELECT idtipo_precios 
+                    FROM tipo_precios 
+                    WHERE descripcion = 'tomado' 
+                    LIMIT 1
+                )
+                AND precios_tomado.fecha_precio = (
+                    SELECT MAX(p1.fecha_precio)
+                    FROM precios_vehiculos p1
+                    INNER JOIN tipo_precios tp1 
+                        ON p1.tipo_precios_idtipo_precios = tp1.idtipo_precios
+                    WHERE p1.vehiculos_idvehiculos = vehiculos.idvehiculos
+                    AND tp1.descripcion = 'tomado'
+                )
+
+            -- JOIN para precio PÚBLICO (último)
+            LEFT JOIN precios_vehiculos AS precios_publico 
+                ON precios_publico.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND precios_publico.tipo_precios_idtipo_precios = (
+                    SELECT idtipo_precios 
+                    FROM tipo_precios 
+                    WHERE descripcion = 'publico' 
+                    LIMIT 1
+                )
+                AND precios_publico.fecha_precio = (
+                    SELECT MAX(p2.fecha_precio)
+                    FROM precios_vehiculos p2
+                    INNER JOIN tipo_precios tp2 
+                        ON p2.tipo_precios_idtipo_precios = tp2.idtipo_precios
+                    WHERE p2.vehiculos_idvehiculos = vehiculos.idvehiculos
+                    AND tp2.descripcion = 'publico'
+                )
+
+            -- 🔹 Relación con tabla de intereses (solo para el precio público)
+            LEFT JOIN intereses AS intereses_publico 
+                ON precios_publico.intereses_idintereses = intereses_publico.idintereses
+
+            WHERE vehiculos.activo_vehiculo = 1 AND estado_vehiculo.estado_vehiculo = 'Disponible'
+        ";
 
         $query .= " ORDER BY vehiculos.idvehiculos LIMIT $inicio, $cantidad";
 
@@ -270,6 +357,17 @@ class PrecioVehiculo extends Paginacion {
             WHERE p.vehiculos_idvehiculos = vehiculos.idvehiculos
             AND p.fecha_precio <= NOW()) WHERE 
         (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%') AND activo_vehiculo = 1 ORDER BY vehiculos.idvehiculos";
+        return $conexion->consultar($query);
+    }
+
+    public function buscar_vehiculo_precio_compra($buscador){
+        $conexion = new Conexion();
+        $query = "SELECT vehiculos.*, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, tipo_vehiculos.nombre as nombre_tipo, precios_vehiculos.precio, colores.descripcion as nombre_color FROM vehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN tipo_vehiculos ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos INNER JOIN colores on vehiculos.colores_idcolores = colores.idcolores INNER JOIN estado_vehiculo ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo LEFT JOIN precios_vehiculos ON vehiculos.idvehiculos = precios_vehiculos.vehiculos_idvehiculos AND precios_vehiculos.fecha_precio = (
+            SELECT MAX(fecha_precio)
+            FROM precios_vehiculos AS p
+            WHERE p.vehiculos_idvehiculos = vehiculos.idvehiculos
+            AND p.fecha_precio <= NOW()) WHERE 
+        (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%') AND activo_vehiculo = 1 AND estado_vehiculo.estado_vehiculo = 'Disponible' ORDER BY vehiculos.idvehiculos";
         return $conexion->consultar($query);
     }
 
@@ -382,7 +480,115 @@ class PrecioVehiculo extends Paginacion {
         }
 
         if ($estado) {
-            $query .= " AND vehiculos.estado_vehiculo_idestado_vehiculo = $estado";
+            $query .= " AND estado_vehiculo.estado_vehiculo = '$estado'";
+        }
+
+        $query .= " ORDER BY vehiculos.idvehiculos LIMIT $inicio, $cantidad";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function traer_los_vehiculos_con_precio_compra_filtrado($filtros, $inicio, $cantidad) {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                vehiculos.*, 
+                marcas.nombre AS nombre_marca, 
+                modelos.nombre AS nombre_modelo,
+                tipo_vehiculos.nombre AS nombre_tipo, 
+                colores.descripcion AS nombre_color,
+                -- Estado del vehículo
+                estado_vehiculo.estado_vehiculo AS nombre_estado,
+
+                -- Precio tomado (última fecha)
+                precios_tomado.precio AS precio_tomado,
+                precios_tomado.fecha_precio AS fecha_tomado,
+
+                -- Precio público (última fecha)
+                precios_publico.precio AS precio_publico,
+                precios_publico.fecha_precio AS fecha_publico,
+
+                -- Interés aplicado al precio público
+                intereses_publico.descripcion AS descripcion_interes_publico,
+                intereses_publico.porcentaje AS porcentaje_interes_publico
+
+            FROM vehiculos
+            INNER JOIN modelos 
+                ON vehiculos.modelos_idmodelos = modelos.idmodelos
+            INNER JOIN marcas 
+                ON modelos.marcas_idmarcas = marcas.idmarcas
+            INNER JOIN tipo_vehiculos 
+                ON vehiculos.tipo_vehiculos_idtipo_vehiculos = tipo_vehiculos.idtipo_vehiculos
+            INNER JOIN colores 
+                ON vehiculos.colores_idcolores = colores.idcolores
+                -- JOIN para estado del vehículo
+            LEFT JOIN estado_vehiculo
+                ON vehiculos.estado_vehiculo_idestado_vehiculo = estado_vehiculo.idestado_vehiculo
+
+            -- JOIN para precio TOMADO (último)
+            LEFT JOIN precios_vehiculos AS precios_tomado 
+                ON precios_tomado.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND precios_tomado.tipo_precios_idtipo_precios = (
+                    SELECT idtipo_precios 
+                    FROM tipo_precios 
+                    WHERE descripcion = 'tomado' 
+                    LIMIT 1
+                )
+                AND precios_tomado.fecha_precio = (
+                    SELECT MAX(p1.fecha_precio)
+                    FROM precios_vehiculos p1
+                    INNER JOIN tipo_precios tp1 
+                        ON p1.tipo_precios_idtipo_precios = tp1.idtipo_precios
+                    WHERE p1.vehiculos_idvehiculos = vehiculos.idvehiculos
+                    AND tp1.descripcion = 'tomado'
+                )
+
+            -- JOIN para precio PÚBLICO (último)
+            LEFT JOIN precios_vehiculos AS precios_publico 
+                ON precios_publico.vehiculos_idvehiculos = vehiculos.idvehiculos
+                AND precios_publico.tipo_precios_idtipo_precios = (
+                    SELECT idtipo_precios 
+                    FROM tipo_precios 
+                    WHERE descripcion = 'publico' 
+                    LIMIT 1
+                )
+                AND precios_publico.fecha_precio = (
+                    SELECT MAX(p2.fecha_precio)
+                    FROM precios_vehiculos p2
+                    INNER JOIN tipo_precios tp2 
+                        ON p2.tipo_precios_idtipo_precios = tp2.idtipo_precios
+                    WHERE p2.vehiculos_idvehiculos = vehiculos.idvehiculos
+                    AND tp2.descripcion = 'publico'
+                )
+
+            -- Relación con intereses (solo precio público)
+            LEFT JOIN intereses AS intereses_publico 
+                ON precios_publico.intereses_idintereses = intereses_publico.idintereses
+
+            WHERE vehiculos.activo_vehiculo = 1 AND estado_vehiculo.estado_vehiculo = 'Disponible'
+        ";
+
+        // ---- Filtros dinámicos sin implode ----
+        if (!empty($filtros['marca'])) {
+            $query .= " AND marcas.nombre = '" . $filtros['marca'] . "'";
+        }
+
+        if (!empty($filtros['modelo'])) {
+            $query .= " AND modelos.nombre = '" . $filtros['modelo'] . "'";
+        }
+
+        if (!empty($filtros['color'])) {
+            $query .= " AND colores.descripcion = '" . $filtros['color'] . "'";
+        }
+
+        if (!empty($filtros['año'])) {
+            $query .= " AND vehiculos.año = '" . $filtros['año'] . "'";
+        }
+
+        if (!empty($filtros['tipo'])) {
+            $query .= " AND tipo_vehiculos.nombre = '" . $filtros['tipo'] . "'";
         }
 
         $query .= " ORDER BY vehiculos.idvehiculos LIMIT $inicio, $cantidad";

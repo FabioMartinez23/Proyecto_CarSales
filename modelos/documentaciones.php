@@ -121,12 +121,32 @@ class Documentacion{
     public function eliminar_img_doc(){
         $conexion = new Conexion();
         $query = "DELETE FROM Documentaciones WHERE idDocumentaciones = '$this->idDocumentaciones'";
-        return $conexion->insertar($query);
+        return $conexion->actualizar($query); // O ejecutar($query)
     }
 
     public function traer_doc_completa_vehiculo($vehiculos_idvehiculos) {
         $conexion = new Conexion();
-        $query = "SELECT td.idtipo_documentacion, td.descripcion AS tipo_doc, d.idDocumentaciones, d.estado_doc, d.URL_descripcion, d.digitalizado FROM tipo_documentacion td LEFT JOIN Documentaciones d ON td.idtipo_documentacion = d.tipo_documentacion_idtipo_documentacion AND d.vehiculos_idvehiculos = $vehiculos_idvehiculos AND (d.URL_descripcion IS NULL OR (d.URL_descripcion NOT LIKE '%.jpg' AND d.URL_descripcion NOT LIKE '%.png' AND d.URL_descripcion NOT LIKE '%.jpeg')) WHERE td.descripcion != 'imagen' ORDER BY td.idtipo_documentacion ASC";
+        $query = "
+            SELECT 
+                td.idtipo_documentacion,
+                td.descripcion AS tipo_doc,
+
+                d.idDocumentaciones,
+                d.estado_doc,
+                d.URL_descripcion,
+                d.digitalizado
+
+            FROM tipo_documentacion td
+
+            LEFT JOIN Documentaciones d 
+                ON d.tipo_documentacion_idtipo_documentacion = td.idtipo_documentacion
+                AND d.vehiculos_idvehiculos = $vehiculos_idvehiculos
+
+            WHERE td.descripcion != 'imagen'
+
+            ORDER BY td.idtipo_documentacion ASC
+        ";
+
         return $conexion->consultar($query);
     }
 

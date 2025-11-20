@@ -1,0 +1,95 @@
+/* ============================================================
+   ESTILOS EXCLUSIVOS PARA EL MÓDULO DE GASTOS
+   Solo afecta elementos dentro de .gastos-container
+============================================================ */
+
+/* Contenedor principal */
+.gastos-container {
+    max-width: 900px;
+    margin: auto;
+    margin-top: 25px;
+}
+
+/* Caja principal */
+.gastos-box {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #e3e6ee;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Título */
+.gastos-title {
+    font-size: 1.5rem;
+    color: #333A56;
+    font-weight: 600;
+    border-bottom: 2px solid #333A56;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+/* Labels */
+.gastos-container .form-label {
+    font-weight: 500;
+    color: #444;
+}
+
+/* Input y selects */
+.gastos-container .form-control,
+.gastos-container .form-select {
+    border-radius: 8px;
+    border: 1px solid #cfd4dd;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.gastos-container .form-control:focus,
+.gastos-container .form-select:focus {
+    border-color: #52658F;
+    box-shadow: 0 0 0 0.2rem rgba(82, 101, 143, 0.25) !important;
+}
+
+/* Botón registrar */
+.gastos-btn-save {
+    background-color: #52658F;
+    border: none;
+    padding: 10px 25px;
+    font-size: 1rem;
+    border-radius: 8px;
+    color: #fff;
+    transition: 0.2s ease;
+}
+
+.gastos-btn-save:hover {
+    background-color: #333A56;
+}
+
+/* Campos dinámicos */
+.gastos-dynamic-box {
+    padding: 15px;
+    background: #f6f8fc;
+    border-left: 4px solid #52658F;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+/* Resultados del buscador de vehículo */
+.gastos-resultado {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e7f4ff;
+    border: 1px solid #b6d7ff;
+    color: #084298;
+}
+
+/* Botón buscar patente */
+.gastos-btn-buscar {
+    background-color: #333A56 !important;
+    border: none;
+}
+
+.gastos-btn-buscar:hover {
+    background-color: #52658F !important;
+}

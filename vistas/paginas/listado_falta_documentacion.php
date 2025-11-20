@@ -8,6 +8,8 @@ $filas_por_pagina = 5;  // Número de filas que se muestran por página
 $total_registros = 0;
 $pagina_actual = isset($_GET['pagina_actual']) ? (int)$_GET['pagina_actual'] : 1;
 
+$id_highlight = isset($_GET['id_highlight']) ? intval($_GET['id_highlight']) : null;
+
 $cantidad_vehiculo = new Vehiculos();
 
 // Asegúrate de que la página actual nunca sea menor que 1
@@ -18,7 +20,7 @@ if ($pagina_actual < 1) {
 // Calcular el OFFSET
 $inicio = ($pagina_actual - 1) * $filas_por_pagina;
 
-$estado_actual = isset($_GET['estado']) ? (int)$_GET['estado'] : 2; // 2 por defecto
+$estado_actual = isset($_GET['estado']) ? $_GET['estado'] : 'falta_documento'; // 'falta_documento' por defecto
 
 // Si hay una búsqueda activa
 if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
@@ -199,11 +201,12 @@ $result_neumatico = $neumatico->traer_neumatico();
                 <form id="imagenes-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
                     <input type="hidden" name="vehiculos_idvehiculos" id="img_idvehiculos">
                     <input type="hidden" name="action" value="guardar_imagenes">
+                    <input type="hidden" name="estado_actual" value="<?= $estado_actual ?>">
                     <div class="mb-3">
                         <label class="form-label">Subir Imágenes (JPG, PNG)</label>
                         <input type="file" class="form-control" name="imagen_vehiculo[]" accept=".jpg,.jpeg,.png" multiple>
                     </div>
-                    <div id="imagenesSubidas" class="mb-4">
+                    <div id="imagenesSubidas" class="row g-3">
                         <!-- Aquí se mostrarán las imágenes subidas -->
                     </div>
 
@@ -233,19 +236,12 @@ $result_neumatico = $neumatico->traer_neumatico();
                 <form id="documentos-form" method="POST" action="controladores/documentos/documentos.controlador.php" enctype="multipart/form-data">
                     <input type="hidden" name="vehiculos_idvehiculos" id="doc_idvehiculos">
                     <input type="hidden" name="action" value="guardar_documentos">
+                    <input type="hidden" name="estado_actual" value="<?= $estado_actual ?>">
 
                     <!-- Select para Tipo de Documento -->
-                    <div class="mb-3">
-                        <label class="form-label">Tipo de Documento</label>
-                        <select class="form-select" name="tipo_documentacion_idtipo_documentacion" id="tipo_documentacion_idtipo_documentacion" required>
-                            <option value="">Cargando tipos...</option>
-                            <!-- Se rellena dinámicamente por AJAX -->
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Subir Documentos (PDF)</label>
-                        <input type="file" class="form-control" name="documentos_vehiculo[]" accept=".pdf" multiple required>
+                    <h5 class="mt-4">Subir Documentos Faltantes</h5>
+                    <div class="row" id="tiposFaltantesContainer">
+                        <!-- Aquí AJAX insertará las TARJETAS -->
                     </div>
 
                     <div id="documentosSubidos" class="mb-4">
@@ -363,12 +359,19 @@ $result_neumatico = $neumatico->traer_neumatico();
         </div>
         <!-- Tabla centrada -->
         <?php
+        echo "<script>console.log('ID High:', " . json_encode($id_highlight) . ");</script>";
         // Convertir el resultado a array contable
         $result_vehiculos_array = [];
         if ($result_vehiculos) {
             while ($row = $result_vehiculos->fetch_assoc()) {
                 $result_vehiculos_array[] = $row;
             }
+        }
+
+        $estado_vehiculo = new Estado_Vehiculo();
+        $result_estado = $estado_vehiculo->traer_estado_vehiculo();
+        foreach ($result_estado as $estado_) {
+            $nombre_estado_actual = $estado_['estado_vehiculo'];
         }
         ?>
 
@@ -378,18 +381,21 @@ $result_neumatico = $neumatico->traer_neumatico();
             <!-- Pestañas de Estado -->
             <ul class="nav nav-tabs custom-nav-tabs mb-0">
                 <li class="nav-item">
-                    <a class="nav-link <?= ($estado_actual == 2) ? 'active' : '' ?>"
-                    href="?page=listado_falta_documentacion&estado=2">
+                    <a class="nav-link <?= ($estado_actual == 'falta_documento') ? 'active' : '' ?>"
+                    href="?page=listado_falta_documentacion&estado=falta_documento">
                     Falta Documentación
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= ($estado_actual == 3) ? 'active' : '' ?>"
-                    href="?page=listado_falta_documentacion&estado=3">
+                    <a class="nav-link <?= ($estado_actual == 'falta_digitalizacion') ? 'active' : '' ?>"
+                    href="?page=listado_falta_documentacion&estado=falta_digitalizacion">
                     Falta Digitalización
                     </a>
                 </li>
             </ul>
+            <?php
+            echo "<script>console.log('ID Highlight: $id_highlight');</script>";
+            ?>
 
             <table class="table table-hover text-center align-middle">
                 <thead>
@@ -403,12 +409,14 @@ $result_neumatico = $neumatico->traer_neumatico();
                         <th>Imágenes</th>
                         <th>Documentación (Digital)</th>
                         <th>Entrega Física (Estado)</th>
+                        <th>Ver Gastos</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($result_vehiculos_array)): ?>
                         <?php foreach ($result_vehiculos_array as $vehiculo_): ?>
-                            <tr>
+                            <tr data-idvehiculo="<?= $vehiculo_['idvehiculos'] ?>"
+                                class="<?= ($vehiculo_['idvehiculos'] == $id_highlight) ? 'fila-highlight' : '' ?>">
                                 <td><?= htmlspecialchars($vehiculo_['patente']); ?></td>
                                 <td><?= htmlspecialchars($vehiculo_['anio']); ?></td>
                                 <td><?= htmlspecialchars($vehiculo_['nombre_marca']); ?></td>
@@ -462,6 +470,13 @@ $result_neumatico = $neumatico->traer_neumatico();
                                     <i class="fa-solid fa-clipboard-check"></i>
                                     </a>
                                 </td>
+
+                                <td>
+                                    <a href="index.php?page=listado_gastos&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
+                                    class="btn btn-outline-primary btn-sm">
+                                        <i class="fa-solid fa-wallet"></i>
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -501,10 +516,10 @@ $result_neumatico = $neumatico->traer_neumatico();
                     <li class="page-item <?php if ($pagina_actual == $i) { echo 'active'; } ?>">
                         <a class="page-link" 
                             <?php 
-                                if (isset($_GET['estado']) && $_GET['estado'] == 2) {
-                                    echo 'href="index.php?page=listado_falta_documentacion&estado=2&pagina_actual=' . $i . '"';
-                                } else if (isset($_GET['estado']) && $_GET['estado'] == 3) {
-                                    echo 'href="index.php?page=listado_falta_documentacion&estado=3&pagina_actual=' . $i . '"';
+                                if (isset($_GET['estado']) && $_GET['estado'] == 'falta_documento') {
+                                    echo 'href="index.php?page=listado_falta_documentacion&estado=falta_documento&pagina_actual=' . $i . '"';
+                                } else if (isset($_GET['estado']) && $_GET['estado'] == 'falta_digitalizacion') {
+                                    echo 'href="index.php?page=listado_falta_documentacion&estado=falta_digitalizacion&pagina_actual=' . $i . '"';
                                 } else {
                                     echo 'href="index.php?page=listado_falta_documentacion&pagina_actual=' . $i . '"';
                                 }
@@ -517,10 +532,10 @@ $result_neumatico = $neumatico->traer_neumatico();
                 <li class="page-item <?php if ($pagina_actual >= $total_paginas) { echo 'disabled'; } ?>">
                     <a class="page-link"
                         <?php 
-                            if (isset($_GET['estado']) && $_GET['estado'] == 2) { 
-                                echo 'href="index.php?page=listado_falta_documentacion&estado=2&pagina_actual=' . ($pagina_actual + 1) . '"';
-                            } else if (isset($_GET['estado']) && $_GET['estado'] == 3) {
-                                echo 'href="index.php?page=listado_falta_documentacion&estado=3&pagina_actual=' . ($pagina_actual + 1) . '"';
+                            if (isset($_GET['estado']) && $_GET['estado'] == 'falta_documento') { 
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=falta_documento&pagina_actual=' . ($pagina_actual + 1) . '"';
+                            } else if (isset($_GET['estado']) && $_GET['estado'] == 'falta_digitalizacion') {
+                                echo 'href="index.php?page=listado_falta_documentacion&estado=falta_digitalizacion&pagina_actual=' . ($pagina_actual + 1) . '"';
                             } else {
                                 echo 'href="index.php?page=listado_falta_documentacion&pagina_actual=' . ($pagina_actual + 1) . '"';
                             }
@@ -531,6 +546,53 @@ $result_neumatico = $neumatico->traer_neumatico();
         </nav>
 
     </div>
+
+        <!-- MODAL: Ampliar Imagen -->
+        <div class="modal fade" id="modalAmpliarImagen" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-transparent border-0 shadow-none">
+                    <div class="modal-body p-0 text-center">
+
+                        <img id="imagenAmpliada"
+                            src=""
+                            class="img-fluid rounded shadow-lg"
+                            style="animation: zoomIn 0.25s ease-out; cursor: zoom-out;"
+                            onclick="cerrarAmpliada()">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        @keyframes zoomIn {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        </style>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const id = <?= json_encode($_GET['id_highlight'] ?? null) ?>;
+
+    if (id) {
+        const fila = document.querySelector(`tr[data-idvehiculo='${id}']`);
+
+        if (fila) {
+            fila.classList.add("fila-highlight");
+
+            // Scroll suave
+            fila.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+    }
+});
+</script>
+
 
 <script>
         // Mostrar y ocultar filtros
@@ -611,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🔄 Función para cargar documentación actual
     // -------------------------------------------------------------
     function cargarDocumentacion(idvehiculo) {
-        fetch(`controladores/documentos/cargar_tipo_doc.php?idvehiculo=${idvehiculo}`)
+        fetch(`controladores/documentos/cargar_tipo_doc_fisico.php?idvehiculo=${idvehiculo}`)
             .then(res => res.text())
             .then(html => {
                 document.getElementById('contenedorDocumentacion').innerHTML = html;
@@ -706,6 +768,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+document.addEventListener("change", function(e){
+    if (e.target.classList.contains("switch-doc")) {
+        let container = e.target.closest(".doc-item");
+        let status = container.querySelector(".doc-status");
+
+        if (e.target.checked) {
+            status.textContent = "Completado";
+            status.classList.remove("pending");
+            status.classList.add("ok");
+        } else {
+            status.textContent = "Faltante";
+            status.classList.remove("ok");
+            status.classList.add("pending");
+        }
+    }
+});
 </script>
 
 <script>
@@ -727,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $.ajax({
             url: 'controladores/documentos/obtener_documentos.php',
             method: 'POST',
-            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'imagenes' },
+            data: { vehiculos_idvehiculos: idvehiculo, tipo: 'imagen' },
             dataType: 'json',
             success: function(response) {
                 console.log(response);
@@ -765,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#documentosSubidos').html(response.documentos);
 
                 // Mostrar opciones del select con los tipos faltantes
-                $('#tipo_documentacion_idtipo_documentacion').html(response.tipos);
+                $('#tiposFaltantesContainer').html(response.tipos);
             },
             error: function(xhr, status, error) {
                 console.log(xhr.responseText);
@@ -776,51 +855,123 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+
+// ==========================================================
+// Ampliar imagen
+// ==========================================================
+function ampliarImagen(url) {
+    const img = document.getElementById("imagenAmpliada");
+
+    if (!img) {
+        console.error("❌ Error: No se encontró #imagenAmpliada");
+        return;
+    }
+
+    img.src = url;
+
+    const modal = new bootstrap.Modal(document.getElementById("modalAmpliarImagen"));
+    modal.show();
+}
+
+function cerrarAmpliada() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById("modalAmpliarImagen"));
+    if (modal) modal.hide();
+}
 </script>
 
 
 <script>
-    function eliminarDocumento(id) {
-        Swal.fire({
-            title: '¿Está seguro?',
-            text: 'Esta acción eliminará el documento permanentemente.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: 'controladores/documentos/eliminar_documentos.php',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: { idDocumentacion: id },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                title: 'Eliminado',
-                                text: response.message,
-                                icon: 'success',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                // 🔄 Recargar página después de eliminar
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    },
-                    error: function() {
-                        Swal.fire('Error', 'No se pudo eliminar el documento.', 'error');
+function eliminarDocumento(id, elemento) {
+
+    Swal.fire({
+        title: '¿Eliminar documento?',
+        text: 'Esta acción eliminará el archivo permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            // 🔄 Animación de cargando
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: "controladores/documentos/eliminar_documentos.php",
+                type: "POST",
+                data: { idDocumentacion: id },
+                dataType: "json",
+
+                success: function(res) {
+                    Swal.close();
+
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: 'El documento fue eliminado correctamente.',
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+
+                        // 🔄 Eliminar visualmente la tarjeta del archivo sin recargar modal
+                        let card = $(elemento).closest('[data-id]');
+                        card.fadeOut(300, function () { $(this).remove(); });
+
+                        // Opcional: volver a cargar los tipos faltantes para subir
+                        recargarTiposFaltantes();
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: res.message || 'No se pudo eliminar el archivo.'
+                        });
                     }
-                });
-            }
-        });
-    }
+                },
+
+                error: function(xhr) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error en el servidor',
+                        text: 'Ocurrió un problema al eliminar el documento.'
+                    });
+                }
+            });
+        }
+    });
+}
+
+
+// ==========================================================
+// Recargar tipos faltantes (sin recargar modal completo)
+// ==========================================================
+function recargarTiposFaltantes() {
+    let idvehiculo = $("#doc_idvehiculos").val();
+
+    $.ajax({
+        url: 'controladores/documentos/obtener_documentos.php',
+        method: 'POST',
+        data: { vehiculos_idvehiculos: idvehiculo, tipo: 'documentos' },
+        dataType: 'json',
+        success: function(response) {
+            $('#documentosSubidos').html(response.documentos);
+            $('#tiposFaltantesContainer').html(response.tipos);
+        }
+    });
+}
 </script>
+
 
 
 

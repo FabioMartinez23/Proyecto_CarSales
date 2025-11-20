@@ -69,6 +69,43 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Contabilidad
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <!-- Gestión de Gastos -->
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Gastos</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="index.php?page=registrar_gasto">
+                                        <i class="fa-solid fa-money-bill-wave me-2 text-success"></i>
+                                        Registrar Gasto
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="index.php?page=listado_gastos">
+                                        <i class="fa-solid fa-list me-2 text-primary"></i>
+                                        Listado de Gastos
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Tipos de gasto (CRUD) -->
+                        <li>
+                            <a class="dropdown-item" href="index.php?page=tipo_gasto">
+                                <i class="fa-solid fa-tags me-2 text-warning"></i>
+                                Administrar Tipos de Gasto
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+                
+                <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Caja
                 </a>

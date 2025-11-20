@@ -67,6 +67,21 @@ if (isset($_POST['action'])) {
         case 'traer_balance_diario':
             $caja_controlador->traer_balance_diario();
             break;
+
+            /* ===========================================================
+               GRAFICOS (MENSUAL Y DIARIO)
+               =========================================================== */
+        case 'grafico_diario':
+            $caja_controlador->grafico_diario();
+            break;
+
+        case 'grafico_anual':
+            $caja_controlador->grafico_anual();
+            break;
+
+        case 'grafico_mensual':
+            $caja_controlador->grafico_mensual();
+            break;
     }
 }
 
@@ -295,5 +310,74 @@ class CajaControlador {
 
         echo json_encode($data);
     }
+
+    public function grafico_diario() {
+        $caja = new Caja();
+        $resultado = $caja->grafico_diario();
+
+        $labels = [];
+        $ingresos = [];
+        $egresos = [];
+
+        while ($fila = $resultado->fetch_assoc()) {
+            $labels[] = $fila['dia'];
+            $ingresos[] = (float)$fila['total_ingresos'];
+            $egresos[] = (float)$fila['total_egresos'];
+        }
+
+        echo json_encode([
+            'labels' => $labels,
+            'ingresos' => $ingresos,
+            'egresos' => $egresos
+        ]);
+    }
+
+    public function grafico_anual() {
+        $caja = new Caja();
+        $resultado = $caja->grafico_anual();
+
+        $meses = [];
+        $balances = [];
+
+        while ($fila = $resultado->fetch_assoc()) {
+            $meses[] = $fila['mes_nombre'];
+            $balances[] = (float)$fila['balance'];
+        }
+
+        echo json_encode([
+            'meses' => $meses,
+            'balances' => $balances
+        ]);
+    }
+
+    public function grafico_mensual() {
+        $caja = new Caja();
+        $anio = $_POST['anio'] ?? date('Y');
+        $mes = $_POST['mes'] ?? date('m');
+
+        $resultado = $caja->traer_balance_mensual_grafico($anio, $mes);
+
+        $labels = [];
+        $ingresos = [];
+        $egresos = [];
+        $balance = [];
+
+        while ($fila = $resultado->fetch_assoc()) {
+            $labels[] = $fila['periodo'];
+            $ingresos[] = (float)$fila['total_ingresos'];
+            $egresos[] = (float)$fila['total_egresos'];
+            $balance[] = (float)$fila['balance_mensual'];
+        }
+
+        echo json_encode([
+            'labels' => $labels,
+            'ingresos' => $ingresos,
+            'egresos' => $egresos,
+            'balance' => $balance
+        ]);
+    }
+
+
+
 }
 

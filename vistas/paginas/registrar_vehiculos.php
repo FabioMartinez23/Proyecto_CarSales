@@ -1,211 +1,254 @@
 <?php
-
 ini_set('display_errors', 1);
 
-$total_registros = 0;
+$vehiculoModel = new Vehiculos();
+$colorModel = new Colores();
+$marcaModel = new Marcas();
+$tipoModel = new Tipo_Vehiculos();
 
-$vehiculo = new Vehiculos();
-$todos_vehiculos = $vehiculo->traer_todos_vehiculos();
-
-if(isset($_GET['idvehiculos'])){
-    $vehiculo_editar = $vehiculo->traer_vehiculos_por_id($_GET['idvehiculos']);
+// 🔹 Si viene ID → estamos editando
+$vehiculo_editar = null;
+if (isset($_GET['idvehiculos'])) {
+    $vehiculo_editar = $vehiculoModel->traer_vehiculo_por_id_modificar($_GET['idvehiculos']);
 }
 
-//$vehiculos = new Vehiculos();
-//$result_vehiculos_ = $vehiculos->traer_cantidad_vehiculo();
-//foreach($result_vehiculos_ as $vehiculo_1){
-//    $total_registros = $vehiculo_1['total'];
-//}
-//if (isset($_GET['pagina_actual'])){
-//    $vehiculos->pagina_actual = $_GET['pagina_actual'];
-//}
-//$result_vehiculos = $vehiculos->traer_vehiculos();
-
-$color = new Colores();
-$result_color = $color->traer_color();
-
-$marca = new Marcas();
-$result_marca = $marca->traer_marca();
-
-$tipo_vehiculo = new Tipo_Vehiculos();
-$result_tipo_vehiculo = $tipo_vehiculo->traer_tipo_vehiculo();
+// Listas para selects
+$result_color = $colorModel->traer_color();
+$result_marca = $marcaModel->traer_marca();
+$result_tipo = $tipoModel->traer_tipo_vehiculo();
 
 ?>
 
-
-<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+<nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-glass">
+        
         <li class="breadcrumb-item"><a href="#">Vehículos</a></li>
         <li class="breadcrumb-item"><a href="#">Gestión de Vehículos</a></li>
-        <?php 
-        if(isset($_GET['accion']) && $_GET['accion'] === 'registrar'){
-        ?>
-        <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Vehículos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Registrar Vehículo</li>
-        <?php
-        }else{
-        ?>
-        <li class="breadcrumb-item active" aria-current="page">Registrar Vehículo</li>
-        <?php
-        }
-        ?>
+
+        <?php if ($vehiculo_editar): ?>
+            <!-- Estamos modificando -->
+            <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Listado de Vehículos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modificar Vehículo</li>
+
+        <?php else: ?>
+            <!-- Estamos registrando -->
+            <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Listado de Vehículos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Registrar Vehículo</li>
+        <?php endif; ?>
+
     </ol>
 </nav>
 
+
 <div class="d-flex justify-content-center align-items-center hacer_padding">
-        <div class="col-md-8 col-lg-6">
-            <h1 class="text-center mb-4">Registrar Vehiculo</h1>
-            <form method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
-                <?php if(isset($_GET['idvehiculos'])){ ?>
-                    <input type="hidden" name="action" value="actualizar"/>
-                    <input type="hidden" name="idvehiculos" value="<?= $_GET['idvehiculos'] ?>"/>
-                <?php }else{?>
-                    <input type="hidden" name="action" value="guardar"/>
+    <div class="col-md-8 col-lg-6">
+        <h1 class="text-center mb-4">
+            <?= $vehiculo_editar ? "Modificar Vehículo" : "Registrar Vehículo"; ?>
+        </h1>
 
-                <?php }?>
+        <form method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idvehiculos'])){ foreach($vehiculo_editar as $vehiculo){ echo "value=".$vehiculo['patente'];}} ?> type="text" name="patente" onfocusout="validate_patente(event)" class="form-control" id="id_patente" aria-describedby="emailHelp" placeholder="patente">
-                            <label for="floatingInput">Patente</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idvehiculos'])){ foreach($vehiculo_editar as $vehiculo){ echo "value=".$vehiculo['chasis'];}} ?> type="text" name="chasis" class="form-control" id="id_chasis" aria-describedby="emailHelp" placeholder="chasis">
-                            <label for="floatingInput">Chasis</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <input <?php if(isset($_GET['idvehiculos'])){ foreach($vehiculo_editar as $vehiculo){ echo "value=".$vehiculo['motor'];}} ?> type="text" name="motor" class="form-control" id="id_motor" aria-describedby="emailHelp" placeholder="motor">
-                            <label for="floatingInput">Motor</label>
-                        </div>
+            <!-- Hidden inputs -->
+            <?php if ($vehiculo_editar): ?>
+                <input type="hidden" name="action" value="actualizar">
+                <input type="hidden" name="idvehiculos" value="<?= $vehiculo_editar['idvehiculos'] ?>">
+            <?php else: ?>
+                <input type="hidden" name="action" value="guardar">
+            <?php endif; ?>
+
+            <!-- ===================== -->
+            <!-- DATOS PRINCIPALES -->
+            <!-- ===================== -->
+            <div class="row">
+                <!-- Patente -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <input 
+                            type="text" 
+                            name="patente"
+                            id="id_patente"
+                            class="form-control"
+                            placeholder="patente"
+                            onfocusout="validate_patente(event)"
+                            value="<?= $vehiculo_editar['patente'] ?? '' ?>">
+                        <label for="id_patente">Patente</label>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <input maxlength="4" <?php if(isset($_GET['idvehiculos'])){ foreach($vehiculo_editar as $vehiculo){ echo "value=".$vehiculo['anio'];}} ?> type="text" name="año" class="form-control" id="id_año" aria-describedby="emailHelp" min="1960" max="2024" placeholder="anio">
-                            <label for="floatingInput">Año</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <input oninput="formatearKilometraje(this)" maxlength="10" <?php if(isset($_GET['idvehiculos'])){ foreach($vehiculo_editar as $vehiculo){ echo "value=".$vehiculo['kilometraje'];}} ?> type="text" name="kilometraje" class="form-control" id="id_kilometraje" aria-describedby="emailHelp" placeholder="kilometraje">
-                            <label for="floatingInput">Kilometraje</label>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="colores_idcolores" id="idcolores" class="form-select">
-                                <option value="">Seleccione un Color</option>
-                                <?php
-                                foreach($result_color as $color){
-                                    $selected = '';
-                                    if (isset($_GET['idvehiculos']) && $vehiculo['colores_idcolores'] == $color['idcolores']) {
-                                        $selected = 'selected';
-                                    }
-                                    ?>
-                                    <option value="<?php echo $color['idcolores']?>" <?php echo $selected ?>><?php echo $color['descripcion']?></option>
-                                    <?php
-                                }
-                                ?>
-                            </select>
-                        <label for="floatingInput">Color</label>
-                        </div>
+                <!-- Chasis -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <input 
+                            type="text" 
+                            name="chasis"
+                            id="id_chasis"
+                            class="form-control"
+                            placeholder="chasis"
+                            value="<?= $vehiculo_editar['chasis'] ?? '' ?>">
+                        <label for="id_chasis">Chasis</label>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="idmarcas" id="idmarcas" onchange="validar_marca(this.value)" class="form-select">
-                                <option value="">Seleccione una Marca</option>
-                                <?php
-                                foreach($result_marca as $marca){
-                                    $selected = '';
-                                    if (isset($_GET['idvehiculos']) && $vehiculo['idmarcas'] == $marca['idmarcas']) {
-                                        $selected = 'selected';
-                                    }
-                                    ?>
-                                    <option value="<?php echo $marca['idmarcas']?>" <?php echo $selected ?>><?php echo $marca['nombre']?></option>
-                                    <?php
-                                }
-                                ?>
-                            </select>
-                        <label for="floatingInput">Marca</label>
-                        </div>
+                <!-- Motor -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <input 
+                            type="text" 
+                            name="motor"
+                            id="id_motor"
+                            class="form-control"
+                            placeholder="motor"
+                            value="<?= $vehiculo_editar['motor'] ?? '' ?>">
+                        <label for="id_motor">Motor</label>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="modelos_idmodelos" id="idmodelos" class="form-select">
+                <!-- Año -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <input 
+                            type="number"
+                            min="1960"
+                            max="<?= date('Y') ?>"
+                            name="año"
+                            id="id_año"
+                            class="form-control"
+                            placeholder="año"
+                            value="<?= $vehiculo_editar['anio'] ?? '' ?>">
+                        <label for="id_año">Año</label>
+                    </div>
+                </div>
+
+                <!-- Kilometraje -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <input 
+                            type="text"
+                            name="kilometraje"
+                            id="id_kilometraje"
+                            class="form-control"
+                            maxlength="12"
+                            placeholder="kilometraje"
+                            oninput="formatearKilometraje(this)"
+                            value="<?= $vehiculo_editar['kilometraje'] ?? '' ?>">
+                        <label for="id_kilometraje">Kilometraje</label>
+                    </div>
+                </div>
+
+                <!-- Color -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <select 
+                            name="colores_idcolores" 
+                            id="idcolores"
+                            class="form-select">
+
+                            <option value="">Seleccione un Color</option>
+                            <?php foreach ($result_color as $c): 
+                                $selected = ($vehiculo_editar['colores_idcolores'] ?? null) == $c['idcolores'] ? 'selected' : '';
+                            ?>
+                                <option value="<?= $c['idcolores'] ?>" <?= $selected ?>><?= $c['descripcion'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <label for="idcolores">Color</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== -->
+            <!-- MARCA / MODELO / TIPO -->
+            <!-- ===================== -->
+            <div class="row">
+
+                <!-- Marca -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <select name="idmarcas"
+                                id="idmarcas"
+                                class="form-select"
+                                onchange="validar_marca(this.value)">
+
+
+                            <option value="">Seleccione una Marca</option>
+
+                            <?php foreach ($result_marca as $m):
+                                $selected = ($vehiculo_editar['idmarcas'] ?? null) == $m['idmarcas'] ? 'selected' : '';
+                            ?>
+                                <option value="<?= $m['idmarcas'] ?>" <?= $selected ?>><?= $m['nombre'] ?></option>
+                            <?php endforeach; ?>
+
+                        </select>
+                        <label for="idmarcas">Marca</label>
+                    </div>
+                </div>
+
+                <!-- Modelo -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <select 
+                            name="modelos_idmodelos" 
+                            id="idmodelos"
+                            class="form-select"
+                            data-modelo-actual="<?= $vehiculo_editar['modelos_idmodelos'] ?? '' ?>"
+                        >
+                            <?php if ($vehiculo_editar): ?>
+                                <option value="<?= $vehiculo_editar['modelos_idmodelos'] ?>" selected>
+                                    <?= $vehiculo_editar['nombre_modelo'] ?>
+                                </option>
+                            <?php else: ?>
                                 <option value="">Seleccione un Modelo</option>
-                                <!-- Aquí iría el código AJAX que cargará los modelos de acuerdo a la marca seleccionada -->
-                                <?php
-                                if (isset($_GET['idvehiculos'])) {
-                                    // Aquí debes asegurarte de que el modelo correspondiente al vehículo editado se cargue
-                                    echo "<option value='{$vehiculo['modelos_idmodelos']}' selected>{$vehiculo['modelo_nombre']}</option>";
-                                }
-                                ?>
-                            </select>
-                        <label for="floatingInput">Modelo</label>
-                        </div>
-                    </div>
+                            <?php endif; ?>
+                        </select>
 
-                    <div class="col-md-6">
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="tipo_vehiculos_idtipo_vehiculos" id="idtipo_vehiculos" class="form-select">
-                                <option value="">Seleccione un Tipo</option>
-                                <?php
-                                foreach($result_tipo_vehiculo as $tipo_vehiculo){
-                                    $selected = '';
-                                    if (isset($_GET['idvehiculos']) && $vehiculo['tipo_vehiculos_idtipo_vehiculos'] == $tipo_vehiculo['idtipo_vehiculos']) {
-                                        $selected = 'selected';
-                                    }
-                                    ?>
-                                    <option value="<?php echo $tipo_vehiculo['idtipo_vehiculos']?>" <?php echo $selected ?>><?php echo $tipo_vehiculo['nombre']?></option>
-                                    <?php
-                                }
-                                ?>
-                            </select>
-                        <label for="floatingInput">Tipo</label>
-                        </div>
+                        <label for="idmodelos">Modelo</label>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-center mt-4">
-                <a type="button" class="btn btn-dark me-4" href="index.php?page=listado_vehiculos">Volver</a>
-                    <button type="submit" class="btn btn-action">
-                        Guardar
-                    </button>
+                <!-- Tipo de Vehículo -->
+                <div class="col-md-6">
+                    <div class="form-floating mb-3 mt-3">
+                        <select 
+                            name="tipo_vehiculos_idtipo_vehiculos" 
+                            id="idtipo_vehiculos"
+                            class="form-select">
+
+                            <option value="">Seleccione un Tipo</option>
+
+                            <?php foreach ($result_tipo as $t):
+                                $selected = ($vehiculo_editar['tipo_vehiculos_idtipo_vehiculos'] ?? null) == $t['idtipo_vehiculos'] ? 'selected' : '';
+                            ?>
+                                <option value="<?= $t['idtipo_vehiculos'] ?>" <?= $selected ?>><?= $t['nombre'] ?></option>
+                            <?php endforeach; ?>
+
+                        </select>
+                        <label for="idtipo_vehiculos">Tipo</label>
+                    </div>
                 </div>
 
-            </form>
-        </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-center mt-4">
+                <a href="index.php?page=listado_vehiculos" class="btn btn-dark me-4">Volver</a>
+                <button type="submit" class="btn btn-action">Guardar</button>
+            </div>
+
+        </form>
+    </div>
 </div>
 
+
+<!-- ============
+     SCRIPTS
+=========== -->
 <script>
-        function formatearKilometraje(input) {
-            // Remueve cualquier carácter que no sea número
-            let valor = input.value.replace(/\D/g, '');
-            
-            // Formatea el número con separadores de miles
-            valor = new Intl.NumberFormat('es-ES').format(valor);
-            
-            // Agrega " km" al final
-            input.value = valor + ' km';
-        }
+function formatearKilometraje(input) {
+    let valor = input.value.replace(/\D/g, '');
+    valor = new Intl.NumberFormat('es-AR').format(valor);
+    input.value = valor;
+}
 </script>
 
 <script src="assets/js/imask.js"></script>
 <script src="assets/js/validaciones/patente.js"></script>
 <script src="assets/js/validaciones/validar_marca.ajax.js"></script>
-
-
-
-

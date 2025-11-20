@@ -19,7 +19,7 @@ $inicio = ($pagina_actual - 1) * $filas_por_pagina;
 // Si hay una búsqueda activa
 if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
     $busqueda = $_GET['buscador'];
-    $result_vehiculos = $vehiculos->buscar_vehiculo_precio($busqueda);
+    $result_vehiculos = $vehiculos->buscar_vehiculo_precio_compra($busqueda);
 } else {
     // Si no hay búsqueda, manejar los filtros o traer todos los vehículos
     $filtros = [
@@ -32,7 +32,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
 
     if (array_filter($filtros)) {
         // Si hay filtros aplicados
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_filtrado($filtros, $inicio, $filas_por_pagina);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_compra_filtrado($filtros, $inicio, $filas_por_pagina);
     } else {
         // Si no hay filtros, obtener el total de vehículos
         $result_vehiculos_total = $vehiculos->traer_cantidad_vehiculo();
@@ -40,7 +40,7 @@ if (isset($_GET['buscador']) && !empty($_GET['buscador'])) {
             $total_registros = $vehiculo_1['total'];
         }
         // Traer vehículos con paginación
-        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio($inicio, $filas_por_pagina);
+        $result_vehiculos = $vehiculos->traer_los_vehiculos_con_precio_compra($inicio, $filas_por_pagina);
     }
 }
 
@@ -68,7 +68,7 @@ $result_años = $años->traer_año_vehiculo();
 ?>
                 
     <main class="container mt-4 hacer_padding">
-        <h1 class="text-center mb-4">Vehículos en Venta</h1>
+        <h1 class="text-center mb-4">Vehículos Disponibles</h1>
         <section class="row">
             <aside class="col-md-3">
                 <!-- Botón para mostrar/ocultar filtros -->

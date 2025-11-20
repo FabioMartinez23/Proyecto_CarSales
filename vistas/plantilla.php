@@ -17,10 +17,14 @@ require_once('modelos/modulos.php');
     <link href="assets/css/datatables.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/css/caja.css" rel="stylesheet">
+    <link href="assets/css/gastos.css" rel="stylesheet">
+    <link href="assets/css/detalle_compra_venta.css" rel="stylesheet">
+    <link href="assets/css/costo_vehiculo.css" rel="stylesheet">
+    <link href="assets/css/doc_entrega_fisica.css" rel="stylesheet">
     <link href="assets/css/sweetalert2.min.css" rel="stylesheet">
     <link href="assets/css/font-family-Sans-Montserrat-Roboto.css" rel="stylesheet">
     <!-- Agrega Font Awesome para los íconos de redes sociales -->
-    <link href="assets/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
     
     <script src="assets/js/chart.js"></script>
@@ -33,6 +37,42 @@ require_once('modelos/modulos.php');
     <link rel="shortcut icon" href="assets/img/Logos/Icono_Movil.png" type="image/x-icon">
 
 </head>
+<style>
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(51, 58, 86, 0.85); /* tu color oscuro con transparencia */
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    backdrop-filter: blur(2px);
+}
+
+.loader-spinner {
+    width: 70px;
+    height: 70px;
+    border: 6px solid #ffffff;
+    border-top-color: #52658F; /* tu color principal */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader-text {
+    color: #fff;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
 <body>
 
     <!-- / navbar-start -->
@@ -194,7 +234,11 @@ require_once('modelos/modulos.php');
                 </div>
         </footer>
 
-
+    <!-- Loader Global -->
+    <div id="loader-overlay" class="loader-overlay" style="display:none;">
+        <div class="loader-spinner"></div>
+        <p class="loader-text">Procesando compra, por favor espere...</p>
+    </div>
 
 
 </body>

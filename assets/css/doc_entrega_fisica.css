@@ -1,0 +1,52 @@
+/* ================================================================
+   ESTILO PROFESIONAL PARA DOCUMENTACIÓN FÍSICA
+================================================================ */
+
+.doc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #ffffff;
+    border: 1px solid #e3e6ee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.doc-item:hover {
+    background: #f6f8fc;
+    transform: translateY(-2px);
+}
+
+.doc-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333A56;
+}
+
+.doc-status {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 15px;
+    margin-left: 10px;
+}
+
+.doc-status.ok {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #b1dfbb;
+}
+
+.doc-status.pending {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.switch-doc {
+    transform: scale(1.2);
+    cursor: pointer;
+}

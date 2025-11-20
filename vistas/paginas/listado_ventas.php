@@ -89,6 +89,12 @@ $total_paginas = ceil($total_registros / $filas_por_pagina);
                                     <i class="fa-solid fa-ban"></i>
                                 </a>
                             <?php } ?>
+                            <!-- Botón Costos del Vehículo -->
+                            <a href="index.php?page=costo_vehiculo&idvehiculo=<?= $venta['vehiculos_idvehiculos'] ?>" 
+                            class="btn btn-sm btn-outline-primary me-1"
+                            title="Costos del Vehículo">
+                                <i class="fa-solid fa-coins"></i>
+                            </a>
                             <a href="index.php?page=detalle_ventas&idventa=<?= $venta['idventas']; ?>" class="text-primary" title="Ver Más">
                                 <i class="fas fa-eye"></i>
                             </a>

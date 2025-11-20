@@ -1,277 +1,341 @@
 <?php
 ini_set('display_errors', 1);
+
 require_once('../../modelos/documentaciones.php');
 require_once('../../modelos/conexion.php');
 require_once('../../modelos/tablas_maestras/tipo_documentacion.php');
 require_once('../../modelos/vehiculos.php');
 
+/* ========================================================================== */
+/*                                  RUTEO                                     */
+/* ========================================================================== */
 if (isset($_POST['action'])) {
-    $documentos_controlador = new DocumentosControlador();
+
+    $c = new DocumentosControlador();
 
     switch ($_POST['action']) {
+
         case 'guardar':
-            $documentos_controlador->guardar(); // Guarda imágenes y documentos
-            break;
+            $c->guardar();
+        break;
 
         case 'guardar_imagenes':
-            $documentos_controlador->guardarImagenes(); // Solo imágenes
-            break;
+            $c->guardarImagenes();
+        break;
 
         case 'guardar_documentos':
-            $documentos_controlador->guardarDocumentos(); // Solo documentos
-            break;
+            $c->guardarDocumentos();
+        break;
     }
 }
 
+/* ========================================================================== */
+/*                          CONTROLADOR DOCUMENTOS                             */
+/* ========================================================================== */
 class DocumentosControlador {
 
-    /* -------------------------------------------------------------------------- */
-    /*                               Acción principal                              */
-    /* -------------------------------------------------------------------------- */
+    /* ====================================================================== */
+    /*                     GUARDAR IMÁGENES + DOCUMENTOS                       */
+    /* ====================================================================== */
     public function guardar() {
-        $idvehiculos = $_POST['vehiculos_idvehiculos'];
+
+        $idveh = $_POST['vehiculos_idvehiculos'] ?? null;
+        if (!$idveh) return;
+
         $mensajes = [];
-        $status = 'success';
 
-        // ✅ Obtener los IDs dinámicos de los tipos de documentación
+        // 1) Tipo "imagen"
         $idtipo_imagen = $this->obtenerIdTipoDocumentacion('imagen');
-        $idtipo_doc = $this->obtenerIdTipoDocumentacion('documento');
 
-        // ✅ Procesar ambos tipos (imágenes y documentos)
+        // Procesar imágenes
         $mensajes = array_merge(
-            $this->procesarArchivos($_FILES['imagen_vehiculo'] ?? null, $idvehiculos, 'img', $idtipo_imagen),
-            $this->procesarArchivos($_FILES['documentos_vehiculo'] ?? null, $idvehiculos, 'doc', $idtipo_doc)
+            $this->procesarArchivos($_FILES['imagen_vehiculo'] ?? null, $idveh, 'img', $idtipo_imagen),
+
+            // 2) Procesar documentos PDF por tipo_documentación
+            $this->procesarDocumentosPorTipo($_FILES['documentos_vehiculo_tipo'] ?? null, $idveh)
         );
 
-        if ($this->contieneErrores($mensajes)) $status = 'error';
-
-        $this->redireccionar($mensajes, $status);
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                            Solo guardar imágenes                            */
-    /* -------------------------------------------------------------------------- */
-    public function guardarImagenes() {
-        $idvehiculos = $_POST['vehiculos_idvehiculos'];
-
-        // ✅ Buscar dinámicamente el ID de tipo_documentacion para "imagen"
-        $idtipo_documentacion = $this->obtenerIdTipoDocumentacion('imagen');
-
-        $mensajes = $this->procesarArchivos($_FILES['imagen_vehiculo'] ?? null, $idvehiculos, 'img', $idtipo_documentacion);
         $status = $this->contieneErrores($mensajes) ? 'error' : 'success';
-        $this->redireccionar($mensajes, $status);
+        $this->redireccionar($mensajes, $status, $idveh);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                           Solo guardar documentos                           */
-    /* -------------------------------------------------------------------------- */
-    public function guardarDocumentos() {
-        $idvehiculos = $_POST['vehiculos_idvehiculos'];
-        $idtipo_documentacion = $_POST['tipo_documentacion_idtipo_documentacion'] ?? null;
+    /* ====================================================================== */
+    /*                           SOLO IMÁGENES                                 */
+    /* ====================================================================== */
+    public function guardarImagenes() {
 
-        // ❌ No llamar a $this->obtenerIdTipoDocumentacion('documento')
+        $idveh = $_POST['vehiculos_idvehiculos'] ?? null;
+        if (!$idveh) return;
 
-        if (!$idtipo_documentacion) {
-            return; // o mostrar error si no se envió el tipo
-        }
+        $idtipo_imagen = $this->obtenerIdTipoDocumentacion('imagen');
 
         $mensajes = $this->procesarArchivos(
-            $_FILES['documentos_vehiculo'] ?? null,
-            $idvehiculos,
-            'doc',
-            $idtipo_documentacion
+            $_FILES['imagen_vehiculo'] ?? null,
+            $idveh,
+            'img',
+            $idtipo_imagen
         );
 
         $status = $this->contieneErrores($mensajes) ? 'error' : 'success';
-        $this->redireccionar($mensajes, $status);
+        $this->redireccionar($mensajes, $status, $idveh);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                      🔍 Obtener ID tipo_documentacion                       */
-    /* -------------------------------------------------------------------------- */
-    private function obtenerIdTipoDocumentacion($descripcion) {
-        $conexion = new Conexion();
+    /* ====================================================================== */
+    /*                       SOLO DOCUMENTOS PDF                               */
+    /* ====================================================================== */
+    public function guardarDocumentos() {
 
-        // Buscar si ya existe un tipo con esa descripción
-        $queryTipo = "SELECT idtipo_documentacion FROM tipo_documentacion WHERE descripcion = '$descripcion' LIMIT 1";
-        $resultado = $conexion->consultar($queryTipo);
+        $idveh = $_POST['vehiculos_idvehiculos'] ?? null;
+        if (!$idveh) return;
 
-        if ($resultado && $resultado->num_rows > 0) {
-            $fila = $resultado->fetch_assoc();
-            return $fila['idtipo_documentacion'];
-        } else {
-            // Si no existe, lo creamos automáticamente
-            $queryInsert = "INSERT INTO tipo_documentacion (descripcion) VALUES ('$descripcion')";
-            $conexion->insertar($queryInsert);
+        $mensajes = $this->procesarDocumentosPorTipo(
+            $_FILES['documentos_vehiculo_tipo'] ?? null,
+            $idveh
+        );
 
-            // Volver a consultar para obtener el nuevo ID
-            $nuevo = $conexion->consultar($queryTipo);
-            $filaNuevo = $nuevo->fetch_assoc();
-            return $filaNuevo['idtipo_documentacion'];
-        }
+        $status = $this->contieneErrores($mensajes) ? 'error' : 'success';
+        $this->redireccionar($mensajes, $status, $idveh);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                            Métodos reutilizables                            */
-    /* -------------------------------------------------------------------------- */
+    /* ====================================================================== */
+    /*       Procesar PDF según documentos_vehiculo_tipo[idTipoDoc]           */
+    /* ====================================================================== */
+    private function procesarDocumentosPorTipo($archivos, $idveh) {
 
-    /** Procesa múltiples archivos (imágenes o documentos) */
-    private function procesarArchivos($archivos, $idvehiculos, $tipo, $idtipo_documentacion = null) {
         $mensajes = [];
 
-        if ($archivos && isset($archivos['error'])) {
-            foreach ($archivos['name'] as $i => $nombre) {
-                if ($archivos['error'][$i] === 0) {
-                    $archivo = [
-                        'name' => $nombre,
-                        'tmp_name' => $archivos['tmp_name'][$i],
-                        'error' => $archivos['error'][$i]
-                    ];
-                    $mensajes[] = $this->guardarArchivo($archivo, $idvehiculos, $tipo, $idtipo_documentacion);
-                }
+        if (!$archivos || !isset($archivos['name'])) {
+            return [];
+        }
+
+        foreach ($archivos['name'] as $idTipoDoc => $nombreArchivo) {
+
+            if ($nombreArchivo === '' || $archivos['error'][$idTipoDoc] !== 0) {
+                continue;
             }
+
+            $archivo = [
+                'name'     => $nombreArchivo,
+                'tmp_name' => $archivos['tmp_name'][$idTipoDoc],
+                'error'    => $archivos['error'][$idTipoDoc]
+            ];
+
+            $mensajes[] = $this->guardarArchivo($archivo, $idveh, 'doc', $idTipoDoc);
         }
 
         return $mensajes;
     }
 
-    /** Guarda un archivo individual (imagen o documento) */
-    private function guardarArchivo($archivo, $idvehiculos, $tipo, $idtipo_documentacion) {
-        $documentacion = new Documentacion();
+    /* ====================================================================== */
+    /*      Procesar muchas imágenes (solo tipo imagen)                       */
+    /* ====================================================================== */
+    private function procesarArchivos($archivos, $idveh, $tipo, $idtipo_documentacion) {
+
+        $mensajes = [];
+        if (!$archivos || !isset($archivos['name'])) return [];
+
+        foreach ($archivos['name'] as $i => $nombre) {
+
+            if ($nombre === '' || $archivos['error'][$i] !== 0) continue;
+
+            $archivo = [
+                'name'     => $nombre,
+                'tmp_name' => $archivos['tmp_name'][$i],
+                'error'    => $archivos['error'][$i]
+            ];
+
+            $mensajes[] = $this->guardarArchivo($archivo, $idveh, $tipo, $idtipo_documentacion);
+        }
+
+        return $mensajes;
+    }
+
+    /* ====================================================================== */
+    /*               Obtener id de "imagen" o "documento"                     */
+    /* ====================================================================== */
+    private function obtenerIdTipoDocumentacion($descripcion) {
+
         $conexion = new Conexion();
 
+        $query = "SELECT idtipo_documentacion 
+                  FROM tipo_documentacion 
+                  WHERE descripcion = '$descripcion' LIMIT 1";
+
+        $res = $conexion->consultar($query);
+
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc()['idtipo_documentacion'];
+        }
+
+        // Si no existe → crear
+        $conexion->insertar("INSERT INTO tipo_documentacion (descripcion) VALUES ('$descripcion')");
+
+        return $conexion->consultar($query)->fetch_assoc()['idtipo_documentacion'];
+    }
+
+    /* ====================================================================== */
+    /*      Guardar archivo individual (imagen o PDF)                         */
+    /* ====================================================================== */
+    private function guardarArchivo($archivo, $idveh, $tipo, $idtipo_documentacion) {
+
+        $conexion = new Conexion();
+        $doc      = new Documentacion();
+
+        // Carpeta
         $uploadDir = ($tipo === 'img') ? '../../uploads/img/' : '../../uploads/doc/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-        $fileName = uniqid() . "_" . basename($archivo['name']);
-        $targetFilePath = $uploadDir . $fileName;
-        $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-        $allowedTypes = ['jpg', 'jpeg', 'png', 'pdf'];
+        $fileName   = uniqid() . "_" . basename($archivo['name']);
+        $targetFile = $uploadDir . $fileName;
+        $ext        = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
-        if (!in_array($fileType, $allowedTypes)) {
-            return "Error: Formato de archivo no permitido ($fileType).";
+        $permitidos = ['jpg','jpeg','png','pdf'];
+        if (!in_array($ext, $permitidos)) {
+            return "Error: formato no permitido ($ext).";
         }
 
-        if (!move_uploaded_file($archivo['tmp_name'], $targetFilePath)) {
-            return "Error: No se pudo mover el archivo al servidor.";
+        if (!move_uploaded_file($archivo['tmp_name'], $targetFile)) {
+            return "Error: no se pudo mover archivo.";
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* 🔍 1️⃣ Busco si existe documentación física (estado_doc = 1, sin URL)       */
-        /* -------------------------------------------------------------------------- */
-        $queryFisico = "
-            SELECT idDocumentaciones, URL_descripcion, digitalizado 
-            FROM Documentaciones 
-            WHERE vehiculos_idvehiculos = '$idvehiculos'
+        /* =============================================================== */
+        /*                     IMÁGENES → SIEMPRE INSERTA                  */
+        /* =============================================================== */
+        if ($tipo === 'img') {
+
+            $doc->setURL_descripcion($targetFile);
+            $doc->setVehiculos_idvehiculos($idveh);
+            $doc->setEstado_doc(1);
+            $doc->setDigitalizado(1);
+            $doc->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
+            $doc->agregar_img_doc();
+
+            return "Imagen guardada correctamente.";
+        }
+
+        /* =============================================================== */
+        /*                       PDFs → UNO POR TIPO                       */
+        /* =============================================================== */
+
+        // Buscar si ya existe físico o digital
+        $q = "
+            SELECT idDocumentaciones, URL_descripcion, digitalizado
+            FROM Documentaciones
+            WHERE vehiculos_idvehiculos = '$idveh'
             AND tipo_documentacion_idtipo_documentacion = '$idtipo_documentacion'
-            AND estado_doc = 1
             LIMIT 1
         ";
-        $resultado = $conexion->consultar($queryFisico);
-        $mensaje = '';
+        $res = $conexion->consultar($q);
 
-        if ($resultado && $resultado->num_rows > 0) {
-            $row = $resultado->fetch_assoc();
+        if ($res && $res->num_rows > 0) {
 
-            // ⚙️ Caso A: documento físico encontrado sin URL (digitalizarlo)
-            if (empty($row['URL_descripcion']) && $row['digitalizado'] == 0) {
-                $idDoc = $row['idDocumentaciones'];
+            $row = $res->fetch_assoc();
+            $idDoc = $row['idDocumentaciones'];
 
-                $queryUpdate = "
-                    UPDATE Documentaciones
-                    SET URL_descripcion = '$targetFilePath',
-                        digitalizado = 1
-                    WHERE idDocumentaciones = '$idDoc'
-                ";
-                $ok = $conexion->insertar($queryUpdate);
-
-                $mensaje = ($ok !== false)
-                    ? "Documento físico actualizado correctamente (ahora digitalizado)."
-                    : "Error al actualizar documento físico.";
-            } 
-            // ⚙️ Caso B: ya tiene URL → crear nuevo (solo imágenes o adicionales)
-            else {
-                $documentacion->setURL_descripcion($targetFilePath);
-                $documentacion->setVehiculos_idvehiculos($idvehiculos);
-                $documentacion->setEstado_doc(1);
-                $documentacion->setDigitalizado(1);
-                $documentacion->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
-
-                if ($documentacion->agregar_img_doc()) {
-                    $mensaje = ($tipo === 'img')
-                        ? "Nueva imagen guardada correctamente."
-                        : "Nuevo documento guardado correctamente.";
-                } else {
-                    $mensaje = "Error al insertar nueva documentación.";
-                }
+            // Eliminar PDF anterior si existía
+            if (!empty($row['URL_descripcion']) && file_exists($row['URL_descripcion'])) {
+                @unlink($row['URL_descripcion']);
             }
-        } 
-        else {
-            // ⚙️ Caso C: no existe nada → insertar nuevo registro normal
-            $documentacion->setURL_descripcion($targetFilePath);
-            $documentacion->setVehiculos_idvehiculos($idvehiculos);
-            $documentacion->setEstado_doc(1);
-            $documentacion->setDigitalizado(1);
-            $documentacion->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
 
-            if ($documentacion->agregar_img_doc()) {
-                $mensaje = ($tipo === 'img')
-                    ? "Imagen guardada correctamente."
-                    : "Documento guardado correctamente.";
-            } else {
-                $mensaje = "Error al guardar documentación.";
-            }
+            // Actualizar existente
+            $update = "
+                UPDATE Documentaciones
+                SET URL_descripcion = '$targetFile',
+                    digitalizado = 1,
+                    estado_doc = 1
+                WHERE idDocumentaciones = '$idDoc'
+            ";
+            $conexion->insertar($update);
+
+            $this->verificarYActualizarEstadoVehiculo($idveh);
+            return "Documento actualizado correctamente.";
         }
 
-        // Verifica documentación completa del vehículo
-        $this->verificarYActualizarEstadoVehiculo($idvehiculos);
-        return $mensaje;
+        // NO existe → crear registro nuevo
+        $doc->setURL_descripcion($targetFile);
+        $doc->setVehiculos_idvehiculos($idveh);
+        $doc->setEstado_doc(1);
+        $doc->setDigitalizado(1);
+        $doc->setTipo_documentacion_idtipo_documentacion($idtipo_documentacion);
+        $doc->agregar_img_doc();
+
+        $this->verificarYActualizarEstadoVehiculo($idveh);
+        return "Documento guardado correctamente.";
     }
 
+    /* ====================================================================== */
+    /*  Verificar faltantes y cambiar estado del vehículo                     */
+    /* ====================================================================== */
+    private function verificarYActualizarEstadoVehiculo($idveh) {
 
+        $tipoDoc = new Tipo_Documentacion();
+        $falt = $tipoDoc->mostrar_tipos_faltantes($idveh);
 
-    /** Verifica si hay errores en los mensajes */
+        if ($falt && $falt->num_rows === 0) {
+            $veh = new Vehiculos();
+            $veh->actualizar_disponible($idveh, 'disponible');
+        }
+    }
+
+    /* ====================================================================== */
+    /*                   Detectar errores en mensajes                         */
+    /* ====================================================================== */
     private function contieneErrores($mensajes) {
-        foreach ($mensajes as $msg) {
-            if (stripos($msg, 'error') !== false) {
-                return true;
-            }
+
+        foreach ($mensajes as $m) {
+            if (stripos($m, 'error') !== false) return true;
         }
         return false;
     }
 
-    /** Redirecciona con mensajes y estado */
-    private function redireccionar($mensajes, $status) {
-        $accion = $_POST['action'] ?? '';
+    /* ====================================================================== */
+    /*                           Redirección final                            */
+    /* ====================================================================== */
+    private function redireccionar($mensajes, $status, $idveh)
+    {
+        // -------------------------------------------
+        // MENSAJE FINAL
+        // -------------------------------------------
+        if ($status === 'success') {
+            $mensaje = "Archivos cargados correctamente.";
+        } else {
+            $errores = [];
 
-        switch ($accion) {
-            case 'guardar':
-                $page = 'listado_vehiculos';
-                break;
-            case 'guardar_imagenes':
-            case 'guardar_documentos':
-                $page = 'listado_falta_documentacion';
-                break;
-            default:
-                $page = 'listado_vehiculos';
-                break;
+            foreach ($mensajes as $m) {
+                if (stripos($m, 'error') !== false) {
+                    $errores[] = $m;
+                }
+            }
+
+            $mensaje = empty($errores)
+                ? "Hubo errores al cargar los archivos."
+                : implode(" | ", $errores);
         }
 
-        $mensaje = implode(" | ", $mensajes);
-        header("Location: ../../index.php?page={$page}&mensaje=" . urlencode($mensaje) . "&status={$status}");
+        // -------------------------------------------
+        // ESTADO ACTUAL DEL LISTADO
+        // -------------------------------------------
+        $estado_actual = $_POST['estado_actual'] ?? 'falta_documento';
+
+        // -------------------------------------------
+        // SANEAR TODO ANTES DE ARMAR LA URL
+        // -------------------------------------------
+        $idveh          = intval($idveh);
+        $estado_actual  = urlencode($estado_actual);
+        $mensaje        = urlencode($mensaje);
+        $status         = urlencode($status);
+
+        // -------------------------------------------
+        // REDIRECCIÓN
+        // -------------------------------------------
+        $url = "../../index.php?page=listado_falta_documentacion"
+            . "&estado=$estado_actual"
+            . "&id_highlight=$idveh"
+            . "&mensaje=$mensaje"
+            . "&status=$status";
+
+        header("Location: $url");
         exit();
-    }
-
-    /** Verifica si el vehículo ya tiene todo digitalizado y actualiza su estado */
-    private function verificarYActualizarEstadoVehiculo($idvehiculos) {
-        $tipoDoc = new Tipo_Documentacion();
-        $faltantes = $tipoDoc->mostrar_tipos_faltantes($idvehiculos);
-
-        // ✅ Si no hay documentos faltantes → cambiar estado a “disponible”
-        if ($faltantes->num_rows === 0) {
-            $vehiculo = new Vehiculos();
-            $vehiculo->actualizar_disponible($idvehiculos, 'disponible');
-        }
     }
 }
 ?>

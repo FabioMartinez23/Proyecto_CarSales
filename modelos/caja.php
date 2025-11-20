@@ -472,6 +472,114 @@ class Caja {
         return $conexion->consultar($query);
     }
 
+
+    /* ===========================================================
+    GRAFICO DIARIO DEL MES ACTUAL
+    =========================================================== */
+    public function grafico_diario() {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                DATE(fecha_movimiento) AS dia,
+                SUM(CASE WHEN tipo='ingreso' THEN monto ELSE 0 END) AS total_ingresos,
+                SUM(CASE WHEN tipo='egreso' THEN monto ELSE 0 END) AS total_egresos
+            FROM caja_movimientos
+            WHERE activo_movimiento = 1
+            AND DATE_FORMAT(fecha_movimiento, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            GROUP BY DATE(fecha_movimiento)
+            ORDER BY dia ASC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+    /* ===========================================================
+    GRAFICO ANUAL (12 MESES)
+    =========================================================== */
+    public function grafico_anual() {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                DATE_FORMAT(fecha_movimiento, '%m') AS mes_num,
+                DATE_FORMAT(fecha_movimiento, '%b') AS mes_nombre,
+                SUM(CASE WHEN tipo='ingreso' THEN monto ELSE 0 END) AS ingresos,
+                SUM(CASE WHEN tipo='egreso' THEN monto ELSE 0 END) AS egresos,
+                (SUM(CASE WHEN tipo='ingreso' THEN monto ELSE 0 END) -
+                SUM(CASE WHEN tipo='egreso' THEN monto ELSE 0 END)) AS balance
+            FROM caja_movimientos
+            WHERE activo_movimiento = 1
+            AND YEAR(fecha_movimiento) = YEAR(NOW())
+            GROUP BY mes_num
+            ORDER BY mes_num ASC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+    /* ===========================================================
+    BALANCE MENSUAL (para gráfico mensual)
+    =========================================================== */
+    public function traer_balance_mensual_grafico($anio = null, $mes = null) {
+        $conexion = new Conexion();
+
+        if ($anio !== null && $mes !== null) {
+            $filtro = "$anio-$mes";
+
+            $query = "
+                SELECT 
+                    DATE(fecha_movimiento) AS periodo,
+                    SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS total_ingresos,
+                    SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) AS total_egresos,
+                    (SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) -
+                    SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END)) AS balance_mensual
+                FROM caja_movimientos
+                WHERE activo_movimiento = 1
+                AND DATE_FORMAT(fecha_movimiento, '%Y-%m') = '$filtro'
+                GROUP BY DATE(fecha_movimiento)
+                ORDER BY periodo ASC
+            ";
+
+            return $conexion->consultar($query);
+        }
+
+        // si no pasan año/mes → agrupado por mes (lo dejé como lo tenías)
+        $query = "
+            SELECT 
+                DATE_FORMAT(fecha_movimiento, '%Y-%m') AS periodo,
+                SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS total_ingresos,
+                SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) AS total_egresos,
+                (SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) -
+                SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END)) AS balance_mensual
+            FROM caja_movimientos
+            WHERE activo_movimiento = 1
+            GROUP BY DATE_FORMAT(fecha_movimiento, '%Y-%m')
+            ORDER BY periodo DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function traer_movimiento_por_id($id) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT cm.*, tp.descripcion AS tipo_pago
+            FROM caja_movimientos cm
+            LEFT JOIN tipo_pago tp ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
+            WHERE idcaja_movimientos = '$id'
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) $this->cerrarConexion($con);
+
+        return $res;
+    }
+
     /**
      * Get the value of idcaja
      */ 
