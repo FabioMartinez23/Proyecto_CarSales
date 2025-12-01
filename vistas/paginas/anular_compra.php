@@ -1,68 +1,68 @@
 <?php
-require_once('modelos/vender_vehiculos.php');
-require_once('modelos/vehiculos.php');
+require_once('modelos/comprar_vehiculos.php');
 
-$idventa = $_GET['idventa'] ?? null;
+$idcompra = $_GET['idcompra'] ?? null;
 
-$ventaModelo = new VenderVehiculo();
-$venta = $ventaModelo->traer_venta_por_id($idventa); // USAMOS LA COMPLETA para mostrar datos
-
+$compraModelo = new ComprarVehiculo();
+$compra = $compraModelo->traer_compra_detallada($idcompra);
 ?>
 
-    <!-- Breadcrumb -->
-    <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
-        <ol class="breadcrumb breadcrumb-glass">
-            <li class="breadcrumb-item"><a href="index.php?page=listado_ventas">Ventas</a></li>
-            <li class="breadcrumb-item active">Anular venta</li>
-        </ol>
-    </nav>
-
+<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-glass">
+        <li class="breadcrumb-item"><a href="index.php?page=listado_compras">Compras / Consignaciones</a></li>
+        <li class="breadcrumb-item active">Anular consignación</li>
+    </ol>
+</nav>
 
 <div class="container mt-4 form-anular-container hacer_padding">
 
     <div class="header-anular">
-        <i class="fa-solid fa-ban"></i> Anulación de Venta
+        <i class="fa-solid fa-ban"></i> Anulación de Consignación
     </div>
 
-    <?php if (!$venta): ?>
-        <div class="alert alert-danger">No se encontró la venta.</div>
+    <?php if (!$compra): ?>
+        <div class="alert alert-danger">No se encontró la consignación.</div>
     <?php else: ?>
 
-    <form id="form-anular" method="POST" action="controladores/ventas/anular_venta.controlador.php">
+    <form id="form-anular-compra" method="POST" action="controladores/compras/anular_compra.controlador.php">
 
-        <input type="hidden" name="action" value="anular_venta">
-        <input type="hidden" name="idventa" value="<?= $venta['idventas'] ?>">
+        <input type="hidden" name="action" value="anular_compra">
+        <input type="hidden" name="idcompra" value="<?= $compra['idcompras'] ?>">
         <input type="hidden" name="idusuario" value="<?= $_SESSION['idusuarios'] ?>">
 
         <!-- Vehículo -->
         <div class="mb-3">
             <label class="label-strong">Vehículo</label>
             <div class="readonly-box">
-                <?= $venta['nombre_marca'] . " " . $venta['nombre_modelo'] ?>
-                | Año <?= $venta['anio'] ?>
-                | Patente <?= $venta['patente'] ?>
+                <?= $compra['marca'] . " " . $compra['modelo'] ?>
+                | Año <?= $compra['anio'] ?>
+                | Patente <?= $compra['patente'] ?>
+                | Tipo <?= $compra['tipo_vehiculo'] ?>
             </div>
         </div>
 
-        <!-- Cliente -->
+        <!-- Titular -->
         <div class="mb-3">
-            <label class="label-strong">Cliente</label>
+            <label class="label-strong">Titular / Propietario</label>
             <div class="readonly-box">
-                <?= $venta['nombre'] . " " . $venta['apellido'] ?>
-                <?php if (!empty($venta['valor_documento'])): ?>
-                    — DNI: <?= $venta['valor_documento'] ?>
-                <?php endif; ?>
-                <br>
-                <?php if (!empty($venta['valor_contacto'])): ?>
-                    Tel: <?= $venta['valor_contacto'] ?>
-                <?php endif; ?>
-                <?php if (!empty($venta['email'])): ?>
-                    — Email: <?= $venta['email'] ?>
+                <?= $compra['nombre_persona'] . " " . $compra['apellido_persona'] ?>
+                <?php if (!empty($compra['dni'])): ?>
+                    — DNI: <?= $compra['dni'] ?>
                 <?php endif; ?>
             </div>
         </div>
 
-        <!-- Fecha -->
+        <!-- Datos básicos de la consignación -->
+        <div class="mb-3">
+            <label class="label-strong">Datos de la consignación</label>
+            <div class="readonly-box">
+                Fecha registro: <?= date('d/m/Y', strtotime($compra['fecha_compra'])) ?><br>
+                Tipo de pago: <?= $compra['tipo_pago_idtipo_pago'] ?? 'N/D' ?><br>
+                Observaciones: <?= !empty($compra['descripcion']) ? $compra['descripcion'] : 'Sin observaciones' ?>
+            </div>
+        </div>
+
+        <!-- Fecha de anulación -->
         <div class="mb-3">
             <label class="label-strong">Fecha de anulación</label>
             <input type="date" class="form-control" name="fecha_anulacion" id="fecha_anulacion" required>
@@ -85,11 +85,11 @@ $venta = $ventaModelo->traer_venta_por_id($idventa); // USAMOS LA COMPLETA para 
         </div>
 
         <div class="d-flex justify-content-between mt-4">
-            <a href="index.php?page=listado_ventas" class="btn btn-secondary">
+            <a href="index.php?page=listado_compras" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Volver
             </a>
-            <button type="button" id="btn-anular" class="btn btn-danger">
-                <i class="fa-solid fa-ban"></i> Anular venta
+            <button type="button" id="btn-anular-compra" class="btn btn-danger">
+                <i class="fa-solid fa-ban"></i> Anular consignación
             </button>
         </div>
 
@@ -98,10 +98,6 @@ $venta = $ventaModelo->traer_venta_por_id($idventa); // USAMOS LA COMPLETA para 
     <?php endif; ?>
 
 </div>
-
-
-
-
 
 <script>
 document.getElementById('tipo_anulacion').addEventListener('change', function() {
@@ -113,8 +109,7 @@ document.getElementById('tipo_anulacion').addEventListener('change', function() 
     }
 });
 
-document.getElementById("btn-anular").addEventListener("click", function() {
-    
+document.getElementById("btn-anular-compra").addEventListener("click", function() {
     let fecha = document.getElementById("fecha_anulacion").value;
 
     if (fecha.trim() === "") {
@@ -130,10 +125,9 @@ document.getElementById("btn-anular").addEventListener("click", function() {
     Swal.fire({
         title: "¿Confirmar anulación?",
         html: `
-            Esta acción revertirá:<br>
-            <b>- La venta</b><br>
-            <b>- Los movimientos de caja</b><br>
-            <b>- La comisión del empleado</b><br><br>
+            Esta acción:<br>
+            <b>- Marcará la consignación como ANULADA</b><br>
+            <b>- Pondrá el vehículo en estado de BAJA</b><br><br>
             <span class="text-danger fw-bold">Esto no puede deshacerse.</span>
         `,
         icon: "warning",
@@ -143,16 +137,10 @@ document.getElementById("btn-anular").addEventListener("click", function() {
         confirmButtonText: "Sí, anular",
         cancelButtonText: "Cancelar"
     }).then((result) => {
-
         if (result.isConfirmed) {
-
-            // Mostrar loader global
             document.getElementById("loader-overlay").style.display = "flex";
-
-            // Enviar formulario
-            document.getElementById("form-anular").submit();
+            document.getElementById("form-anular-compra").submit();
         }
     });
-
 });
 </script>

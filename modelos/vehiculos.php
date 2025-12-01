@@ -540,6 +540,28 @@ class Vehiculos extends Paginacion{
         return false;
     }
 
+
+    /* RESTAURAR EL ESTADO DEL VEHICULO VENDIDO */
+
+    public function restaurar_estado_disponible() {
+        $con = $this->getConexion();
+        $id = $this->idvehiculos;
+
+        $query = "
+            UPDATE vehiculos
+            SET estado_vehiculo_idestado_vehiculo = 1
+            WHERE idvehiculos = $id
+        ";
+
+        $ok = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $ok;
+    }
+
     /**
      * Get the value of idvehiculos
      */ 

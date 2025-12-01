@@ -429,6 +429,96 @@ class GastoGeneral {
 
 
     /* ============================================================
+       TRAER GASTO DETALLADO (para anulación / detalle)
+    ============================================================ */
+    public function traer_gasto_detallado($id) {
+        $con = $this->getConexion();
+
+        // Aseguramos que sea entero para evitar problemas
+        $id = (int)$id;
+
+        $query = "
+            SELECT 
+                g.idgastos_generales AS idgasto,
+                g.descripcion,
+                g.monto,
+                g.fecha_gasto,
+                g.origen,
+                g.vehiculos_idvehiculos,
+                g.ventas_idventas,
+                g.empleados_idempleados,
+                g.Usuarios_idusuarios,
+                g.referencia_movimiento,
+
+                tg.descripcion AS tipo_gasto,
+                u.username,
+
+                -- Vehículo asociado al gasto (si aplica)
+                v.patente,
+                mo.nombre AS modelo,
+                ma.nombre AS marca,
+
+                -- Venta asociada al gasto (si aplica)
+                ven.idventas AS venta_numero,
+                vehV.patente AS venta_patente,
+                moV.nombre AS venta_modelo,
+                maV.nombre AS venta_marca,
+
+                -- Empleado asociado al gasto (si aplica)
+                e.idempleados,
+                e.legajo,
+                td.descripcion AS puesto
+
+            FROM gastos_generales g
+
+            LEFT JOIN tipo_gasto tg 
+                ON tg.idtipo_gasto = g.tipo_gasto_idtipo_gasto
+            LEFT JOIN usuarios u 
+                ON u.idusuarios = g.Usuarios_idusuarios
+
+            -- Vehículo directo (origen = vehiculo)
+            LEFT JOIN vehiculos v 
+                ON v.idvehiculos = g.vehiculos_idvehiculos
+            LEFT JOIN modelos mo 
+                ON mo.idmodelos = v.modelos_idmodelos
+            LEFT JOIN marcas ma 
+                ON ma.idmarcas = mo.marcas_idmarcas
+
+            -- Venta asociada (origen = venta)
+            LEFT JOIN ventas ven 
+                ON ven.idventas = g.ventas_idventas
+            LEFT JOIN vehiculos vehV 
+                ON vehV.idvehiculos = ven.vehiculo_idvehiculo
+            LEFT JOIN modelos moV 
+                ON moV.idmodelos = vehV.modelos_idmodelos
+            LEFT JOIN marcas maV 
+                ON maV.idmarcas = moV.marcas_idmarcas
+
+            -- Empleado asociado (origen = empleado)
+            LEFT JOIN empleados e 
+                ON e.idempleados = g.empleados_idempleados
+            LEFT JOIN tipo_de_puestos td 
+                ON td.idtipo_de_puestos = e.tipo_de_puestos_idtipo_de_puestos
+
+            WHERE g.idgastos_generales = $id
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc();
+        }
+
+        return null;
+    }
+
+
+    /* ============================================================
        GETTERS & SETTERS
     ============================================================ */
 

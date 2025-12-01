@@ -6,6 +6,15 @@ $gasto = new GastoGeneral();
 $tipos_gasto = $gasto->traer_tipos_gasto();
 ?>
 
+    <!-- Breadcrumb -->
+<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-glass">
+        <li class="breadcrumb-item"><a href="#">Contabilidad</a></li>
+        <li class="breadcrumb-item"><a href="#">Gastos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Registrar Gasto</li>
+    </ol>
+</nav>
+
 <div class="gastos-container">
 
     <div class="gastos-box">

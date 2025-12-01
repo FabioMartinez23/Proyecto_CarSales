@@ -213,6 +213,90 @@ public function buscar_ventas($buscador){
         return $con->query($query)->fetch_assoc();
     }
 
+
+    /* ANULAR LA VENTA */
+
+    public function anular_venta_estado($idventa) {
+        $con = $this->getConexion();
+
+        $query = "
+            UPDATE ventas 
+            SET estado_venta = 'Anulada',
+                fecha_anulacion = NOW()
+            WHERE idventas = $idventa
+        ";
+
+        $ok = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $ok;
+    }
+
+
+    public function traer_venta_por_vehiculo($idvehiculo) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT *
+            FROM ventas
+            WHERE vehiculo_idvehiculo = '$idvehiculo'
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc();
+        }
+
+        return null;
+    }
+
+    /* ===========================================================
+    REPORTE: VENTAS POR PERÍODO (AGRUPADAS POR MES/AÑO)
+    =========================================================== */
+    public function reporte_ventas_por_periodo($desde = null, $hasta = null) {
+        $con = $this->getConexion();
+
+        $filtro = " WHERE 1=1 ";
+
+        if (!empty($desde)) {
+            $filtro .= " AND DATE(ventas.fecha_venta) >= '$desde'";
+        }
+
+        if (!empty($hasta)) {
+            $filtro .= " AND DATE(ventas.fecha_venta) <= '$hasta'";
+        }
+
+        $query = "
+            SELECT 
+                DATE_FORMAT(ventas.fecha_venta, '%Y-%m')   AS periodo,
+                DATE_FORMAT(ventas.fecha_venta, '%m/%Y')   AS periodo_legible,
+                COUNT(*)                                   AS cantidad_ventas,
+                SUM(precios_vehiculos.precio)              AS total_vendido,
+                AVG(precios_vehiculos.precio)              AS ticket_promedio
+            FROM ventas
+            INNER JOIN precios_vehiculos 
+                ON precios_vehiculos.vehiculos_idvehiculos = ventas.vehiculo_idvehiculo
+            AND DATE(precios_vehiculos.fecha_precio) = DATE(ventas.fecha_venta)
+            $filtro
+            GROUP BY DATE_FORMAT(ventas.fecha_venta, '%Y-%m')
+            ORDER BY DATE_FORMAT(ventas.fecha_venta, '%Y-%m') ASC
+        ";
+
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $res;
+    }
+
+
     /**
      * Get the value of idventas
      */ 

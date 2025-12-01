@@ -29,6 +29,14 @@ $categorias      = $reporte->traer_gastos_por_categoria($desde, $hasta);
 $grafico_mensual = $reporte->traer_costos_mensuales($desde, $hasta);
 ?>
 
+    <!-- Breadcrumb -->
+<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-glass">
+        <li class="breadcrumb-item"><a href="index.php?page=bienvenida">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Costo Totales</li>
+    </ol>
+</nav>
+
 <div class="container my-4 hacer_padding">
 
     <h1 class="mb-4 text-center fw-bold">📊 Reporte de Costos Totales</h1>

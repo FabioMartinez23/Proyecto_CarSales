@@ -410,6 +410,7 @@ $result_neumatico = $neumatico->traer_neumatico();
                         <th>Documentación (Digital)</th>
                         <th>Entrega Física (Estado)</th>
                         <th>Ver Gastos</th>
+                        <th>Costos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -472,9 +473,16 @@ $result_neumatico = $neumatico->traer_neumatico();
                                 </td>
 
                                 <td>
-                                    <a href="index.php?page=listado_gastos&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
+                                    <a href="index.php?page=listado_gastos&e=lfc&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
                                     class="btn btn-outline-primary btn-sm">
                                         <i class="fa-solid fa-wallet"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="index.php?page=costo_vehiculo&e=lfc&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>" 
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Ver Costos Totales del Vehículo">
+                                        <i class="fa-solid fa-coins"></i>
                                     </a>
                                 </td>
                             </tr>

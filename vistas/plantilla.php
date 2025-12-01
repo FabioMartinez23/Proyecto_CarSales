@@ -21,6 +21,14 @@ require_once('modelos/modulos.php');
     <link href="assets/css/detalle_compra_venta.css" rel="stylesheet">
     <link href="assets/css/costo_vehiculo.css" rel="stylesheet">
     <link href="assets/css/doc_entrega_fisica.css" rel="stylesheet">
+    <link href="assets/css/anular_venta.css" rel="stylesheet">
+    <link href="assets/css/inicio.css" rel="stylesheet">
+    <link href="assets/css/contacto_estilos.css" rel="stylesheet">
+    <link href="assets/css/nosotros_estilos.css" rel="stylesheet">
+    <link href="assets/css/comprar_estilos.css" rel="stylesheet">
+    <link href="assets/css/cards_modern.css" rel="stylesheet">
+    <link href="assets/css/form_contacto.css" rel="stylesheet">
+    <link href="assets/css/reportes.css" rel="stylesheet">
     <link href="assets/css/sweetalert2.min.css" rel="stylesheet">
     <link href="assets/css/font-family-Sans-Montserrat-Roboto.css" rel="stylesheet">
     <!-- Agrega Font Awesome para los íconos de redes sociales -->
@@ -237,7 +245,7 @@ require_once('modelos/modulos.php');
     <!-- Loader Global -->
     <div id="loader-overlay" class="loader-overlay" style="display:none;">
         <div class="loader-spinner"></div>
-        <p class="loader-text">Procesando compra, por favor espere...</p>
+        <p class="loader-text">Procesando, por favor espere...</p>
     </div>
 
 

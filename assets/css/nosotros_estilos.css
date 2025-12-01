@@ -1,0 +1,105 @@
+:root {
+    --azul-oscuro: #333A56;
+    --azul-medio: #52658F;
+    --gris-claro: #E8E8E8;
+    --acento: #3F72AF;
+    --blanco: #fff;
+}
+
+/* ===================== HERO ===================== */
+.nosotros-hero {
+    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.nosotros-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    border-color: black 1px;
+}
+
+.nosotros-hero p {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* ===================== SECCIONES ===================== */
+.nosotros-section {
+    margin-top: 50px;
+}
+
+.nosotros-section h2 {
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    margin-bottom: 20px;
+}
+
+/* ===================== MVV GRID ===================== */
+.mvv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.mvv-card {
+    background: var(--gris-claro);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.mvv-card h3 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.mvv-card ul {
+    padding-left: 20px;
+}
+
+.mvv-card ul li {
+    margin-bottom: 5px;
+}
+
+/* ===================== GALERÍA ===================== */
+.galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.galeria img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+}
+
+/* ===================== COMPROMISO ===================== */
+.reglamento {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+.reglamento li {
+    background: var(--gris-claro);
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    font-weight: 500;
+    color: var(--azul-oscuro);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nosotros-hero h1 { font-size: 2.3rem; }
+}

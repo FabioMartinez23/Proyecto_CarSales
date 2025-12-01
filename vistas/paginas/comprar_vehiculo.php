@@ -67,121 +67,138 @@ $result_años = $años->traer_año_vehiculo();
 
 ?>
                 
-    <main class="container mt-4 hacer_padding">
-        <h1 class="text-center mb-4">Vehículos Disponibles</h1>
-        <section class="row">
-            <aside class="col-md-3">
-                <!-- Botón para mostrar/ocultar filtros -->
-                <div class="d-grid gap-2">
-                    <button class="btn btn-info mb-3" type="button" id="toggleFiltros" onclick="toggleFiltros()">Mostrar Filtros&nbsp;&nbsp;<i class="fa-solid fa-chevron-down"></i></button>
-                </div>
 
-                <!-- Filtros ocultables -->
-                <div id="filtros" style="display: none;">
-                    <form method="GET" action="index.php">
-                        <input type="hidden" name="page" value="comprar_vehiculo">
-                        
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="marca" class="form-select form-select-sm" id="marca">
-                                <option value="">Seleccionar Marca</option>
-                                <?php foreach ($result_marca as $marca) { ?>
-                                    <option value="<?= $marca['nombre'] ?>"><?= $marca['nombre'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            <label for="marca" class="form-label">Marca</label>
-                        </div>
+<main class="catalogo-wrapper container hacer_padding">
 
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="modelo" class="form-select form-select-sm" id="modelos">
-                                <option value="">Seleccionar Modelo</option>
-                                <?php foreach ($result_modelo as $modelo) { ?>
-                                    <option value="<?= $modelo['nombre'] ?>"><?= $modelo['nombre'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            <label for="modelo" class="form-label">Modelo</label>
-                        </div>
+    <h1 class="catalogo-title">Vehículos Disponibles</h1>
 
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="color" class="form-select form-select-sm" id="color">
-                                <option value="">Seleccionar Color</option>
-                                <?php foreach ($result_color as $color) { ?>
-                                    <option value="<?= $color['descripcion'] ?>"><?= $color['descripcion'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            <label for="color" class="form-label">Color</label>
-                        </div>
+    <div class="catalogo-grid">
 
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="anio" class="form-select form-select-sm" id="anio">
-                                <option value="">Seleccionar Año</option>
-                                <?php foreach ($result_años as $año) { ?>
-                                    <option value="<?= $año['anio'] ?>"><?= $año['anio'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            <label for="anio" class="form-label">Año</label>
-                        </div>
+        <!-- ===================================================== -->
+        <!-- SIDEBAR FILTROS                                       -->
+        <!-- ===================================================== -->
+        <aside class="sidebar-filtros">
 
-                        <div class="form-floating mb-3 mt-3">
-                            <select name="tipo" class="form-select form-select-sm" id="tipo">
-                                <option value="">Seleccionar Tipo</option>
-                                <?php foreach ($result_tipo_vehiculo as $tipo) { ?>
-                                    <option value="<?= $tipo['nombre'] ?>"><?= $tipo['nombre'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            <label for="tipo" class="form-label">Tipo de Vehículo</label>
-                        </div>
+            <button class="btn-filtros" onclick="toggleFiltros()">
+                <i class="fa-solid fa-filter"></i> Filtros
+            </button>
 
-                        <button class="btn btn-primary btn-sm" type="submit">Aplicar Filtros</button>
-                    </form>
-                </div>
-                
-            </aside>
+            <div id="filtros" class="filtros-box" style="display:none;">
 
-            <section class="col-md-8">
-                
-                <div class="form-floating mb-3 mt-3">
-                    <select id="sort" name="sort" class="form-select">
-                        <option value="">Seleccionar una Opción</option>
-                        <option value="precio_asc">Mayor Precio</option>
-                        <option value="precio_desc">Menor Precio</option>
-                        <option value="año_asc">Mayor Año</option>
-                        <option value="año_desc">Menor Año</option>
-                    </select>
-                    <label for="sort" class="form-label">Ordenar por:</label>
-                </div>
-                <div class="row mt-3">
-                <?php
-                    foreach ($result_vehiculos as $key => $auto) {
+                <form method="GET" action="index.php">
+                    <input type="hidden" name="page" value="comprar_vehiculo">
 
-                        include('cards.php');
-                    }
-                ?>
-                </div>
-            </section>
-        </section>
+                    <!-- MARCA -->
+                    <div class="filtro-item">
+                        <label>Marca</label>
+                        <select name="marca" class="form-select form-select-sm">
+                            <option value="">Seleccionar Marca</option>
+                            <?php foreach ($result_marca as $marca) { ?>
+                                <option value="<?= $marca['nombre'] ?>"><?= $marca['nombre'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
 
-        <!-- Paginación centrada -->
-        <nav aria-label="..." class="d-flex justify-content-center">
-            <ul class="pagination">
-                <!-- Botón "Anterior" -->
-                <li class="page-item <?php if ($pagina_actual <= 1) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $pagina_actual - 1 ?>" aria-disabled="true">Previo</a>
-                </li>
+                    <!-- MODELO -->
+                    <div class="filtro-item">
+                        <label>Modelo</label>
+                        <select name="modelo" class="form-select form-select-sm">
+                            <option value="">Seleccionar Modelo</option>
+                            <?php foreach ($result_modelo as $modelo) { ?>
+                                <option value="<?= $modelo['nombre'] ?>"><?= $modelo['nombre'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
 
-                <!-- Botones de número de página -->
-                <?php for ($i = 1; $i <= $total_paginas; $i++) { ?>
-                    <li class="page-item <?php if ($pagina_actual == $i) { echo 'active'; } ?>">
-                        <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $i ?>"><?= $i ?></a>
+                    <!-- COLOR -->
+                    <div class="filtro-item">
+                        <label>Color</label>
+                        <select name="color" class="form-select form-select-sm">
+                            <option value="">Seleccionar Color</option>
+                            <?php foreach ($result_color as $color) { ?>
+                                <option value="<?= $color['descripcion'] ?>"><?= $color['descripcion'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <!-- AÑO -->
+                    <div class="filtro-item">
+                        <label>Año</label>
+                        <select name="anio" class="form-select form-select-sm">
+                            <option value="">Seleccionar Año</option>
+                            <?php foreach ($result_años as $año) { ?>
+                                <option value="<?= $año['anio'] ?>"><?= $año['anio'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <!-- TIPO -->
+                    <div class="filtro-item">
+                        <label>Tipo de Vehículo</label>
+                        <select name="tipo" class="form-select form-select-sm">
+                            <option value="">Seleccionar Tipo</option>
+                            <?php foreach ($result_tipo_vehiculo as $tipo) { ?>
+                                <option value="<?= $tipo['nombre'] ?>"><?= $tipo['nombre'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <button class="btn-aplicar">Aplicar Filtros</button>
+                </form>
+            </div>
+
+        </aside>
+
+        <!-- ===================================================== -->
+        <!-- CONTENIDO PRINCIPAL                                   -->
+        <!-- ===================================================== -->
+        <section class="catalogo-contenido">
+
+            <!-- SORT -->
+            <div class="sort-box">
+                <label>Ordenar por:</label>
+                <select id="sort" name="sort" class="form-select">
+                    <option value="">Seleccionar una Opción</option>
+                    <option value="precio_asc">Mayor Precio</option>
+                    <option value="precio_desc">Menor Precio</option>
+                    <option value="año_asc">Mayor Año</option>
+                    <option value="año_desc">Menor Año</option>
+                </select>
+            </div>
+
+            <!-- TARJETAS -->
+            <div class="cards-grid">
+                <?php foreach ($result_vehiculos as $auto) { include('cards.php'); } ?>
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <nav class="pagination-box">
+                <ul class="pagination">
+
+                    <!-- Anterior -->
+                    <li class="page-item <?= ($pagina_actual<=1?'disabled':'') ?>">
+                        <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $pagina_actual-1 ?>">Anterior</a>
                     </li>
-                <?php } ?>
 
-                <!-- Botón "Siguiente" -->
-                <li class="page-item <?php if ($pagina_actual >= $total_paginas) { echo 'disabled'; } ?>">
-                    <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $pagina_actual + 1 ?>">Siguiente</a>
-                </li>
-            </ul>
-        </nav>
-    </main>
+                    <!-- Números -->
+                    <?php for ($i=1; $i <= $total_paginas; $i++) { ?>
+                        <li class="page-item <?= ($pagina_actual==$i?'active':'') ?>">
+                            <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php } ?>
+
+                    <!-- Siguiente -->
+                    <li class="page-item <?= ($pagina_actual>=$total_paginas?'disabled':'') ?>">
+                        <a class="page-link" href="index.php?page=comprar_vehiculo&pagina_actual=<?= $pagina_actual+1 ?>">Siguiente</a>
+                    </li>
+
+                </ul>
+            </nav>
+
+        </section>
+    </div>
+</main>
+
 
     <script src="assets/js/validaciones/validar_marca_filtro.ajax.js"></script>
 

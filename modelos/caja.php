@@ -187,6 +187,11 @@ class Caja {
         $con = $this->getConexion();
         $fecha = date('Y-m-d H:i:s');
 
+        // CORRECCIÓN ★ → Evitar vacío o null en tipo_pago
+        if ($tipo_pago === null || $tipo_pago === '' || $tipo_pago === false) {
+            $tipo_pago = 4; // Reverso / Ajuste
+        }
+
         // Bloquear fila de caja
         $con->query("SELECT idcaja FROM caja WHERE idcaja='$idcaja' FOR UPDATE");
 
@@ -199,44 +204,93 @@ class Caja {
             ('$tipo', '$monto', '$descripcion', '$referencia_tabla', '$referencia_id',
             '$fecha', 1, '$idcaja', '$tipo_movimiento', '$tipo_pago', '$Usuarios_idusuarios')
         ";
+
         $ok = $con->query($query);
 
         if ($ok) {
-            if ($tipo == 'ingreso')
+            if ($tipo == 'ingreso') {
                 $con->query("UPDATE caja SET saldo_actual = saldo_actual + $monto WHERE idcaja='$idcaja'");
-            else
+            } else {
                 $con->query("UPDATE caja SET saldo_actual = saldo_actual - $monto WHERE idcaja='$idcaja'");
+            }
         }
 
         if (!$this->conexion_externa) $this->cerrarConexion($con);
         return $ok;
     }
 
+
     // ================================================
     // 🔹 Traer movimientos (usa conexión compartida)
     // ================================================
-    public function traer_movimientos($desde='', $hasta='', $tipo='') {
+    public function traer_movimientos($desde = '', $hasta = '', $tipo = '', $limit = null, $offset = null) {
         $con = $this->getConexion();
 
         $filtro = "WHERE 1=1";
         if ($desde != '') $filtro .= " AND DATE(cm.fecha_movimiento) >= '$desde'";
         if ($hasta != '') $filtro .= " AND DATE(cm.fecha_movimiento) <= '$hasta'";
-        if ($tipo != '')   $filtro .= " AND cm.tipo = '$tipo'";
+        if ($tipo  != '') $filtro .= " AND cm.tipo = '$tipo'";
+
+        // LIMIT/OFFSET opcional
+        $limite = "";
+        if ($limit !== null && $offset !== null) {
+            $limite = " LIMIT $limit OFFSET $offset";
+        }
 
         $query = "
-            SELECT cm.*, tm.descripcion AS tipo_movimiento, tp.descripcion AS tipo_pago, u.username
+            SELECT 
+                cm.*, 
+                tm.descripcion AS tipo_movimiento, 
+                tp.descripcion AS tipo_pago, 
+                u.username,
+                c.idcaja,
+                c.fecha_apertura,
+                c.saldo_inicial,
+                c.saldo_actual
             FROM caja_movimientos cm
-            INNER JOIN tipo_movimiento tm ON tm.idtipo_movimiento = cm.tipo_movimiento_idtipo_movimiento
-            LEFT JOIN tipo_pago tp ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
-            LEFT JOIN usuarios u ON u.idusuarios = cm.Usuarios_idusuarios
+            INNER JOIN tipo_movimiento tm 
+                ON tm.idtipo_movimiento = cm.tipo_movimiento_idtipo_movimiento
+            LEFT JOIN tipo_pago tp 
+                ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
+            LEFT JOIN usuarios u 
+                ON u.idusuarios = cm.Usuarios_idusuarios
+            LEFT JOIN caja c
+                ON c.idcaja = cm.caja_idcaja
             $filtro
             ORDER BY cm.fecha_movimiento DESC
+            $limite
         ";
 
         $res = $con->query($query);
 
         if (!$this->conexion_externa) $this->cerrarConexion($con);
         return $res;
+    }
+
+    public function contar_movimientos($desde = '', $hasta = '', $tipo = '') {
+        $con = $this->getConexion();
+
+        $filtro = "WHERE 1=1";
+        if ($desde != '') $filtro .= " AND DATE(fecha_movimiento) >= '$desde'";
+        if ($hasta != '') $filtro .= " AND DATE(fecha_movimiento) <= '$hasta'";
+        if ($tipo  != '') $filtro .= " AND tipo = '$tipo'";
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM caja_movimientos
+            $filtro
+        ";
+
+        $res = $con->query($query);
+        $total = 0;
+
+        if ($res && $res->num_rows > 0) {
+            $fila = $res->fetch_assoc();
+            $total = $fila['total'] ?? 0;
+        }
+
+        if (!$this->conexion_externa) $this->cerrarConexion($con);
+        return $total;
     }
 
     public function obtener_id_tipo_movimiento($descripcion) {
@@ -566,10 +620,24 @@ class Caja {
         $con = $this->getConexion();
 
         $query = "
-            SELECT cm.*, tp.descripcion AS tipo_pago
+            SELECT 
+                cm.*, 
+                tm.descripcion AS tipo_movimiento,
+                tp.descripcion AS tipo_pago,
+                u.username,
+                c.fecha_apertura,
+                c.saldo_inicial,
+                c.saldo_actual
             FROM caja_movimientos cm
-            LEFT JOIN tipo_pago tp ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
-            WHERE idcaja_movimientos = '$id'
+            LEFT JOIN tipo_movimiento tm 
+                ON tm.idtipo_movimiento = cm.tipo_movimiento_idtipo_movimiento
+            LEFT JOIN tipo_pago tp 
+                ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
+            LEFT JOIN usuarios u 
+                ON u.idusuarios = cm.Usuarios_idusuarios
+            LEFT JOIN caja c
+                ON c.idcaja = cm.caja_idcaja
+            WHERE cm.idcaja_movimientos = '$id'
             LIMIT 1
         ";
 
@@ -577,8 +645,13 @@ class Caja {
 
         if (!$this->conexion_externa) $this->cerrarConexion($con);
 
-        return $res;
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc(); // devolvemos directamente el array
+        }
+
+        return null;
     }
+
 
     /**
      * Get the value of idcaja

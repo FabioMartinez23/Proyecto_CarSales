@@ -1,0 +1,29 @@
+.form-anular-container {
+    max-width: 600px;
+    margin: 0 auto; /* centra */
+}
+
+.header-anular {
+    background: #333A56;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.label-strong {
+    font-weight: 600;
+    color: #333A56;
+}
+
+.readonly-box {
+    background: #e6e9ef;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: .95rem;
+}

@@ -597,13 +597,13 @@ $result_intereses = $intereses->traer_interes();
                             <!-- Gastos y Eliminar (solo para Administrador) -->
                             <?php if(isset($_SESSION['descripcion']) && $_SESSION['descripcion'] == 'Administrador'): ?>
                             <td>
-                                <a href="index.php?page=listado_gastos&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
+                                <a href="index.php?page=listado_gastos&e=lv&origen=vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>"
                                 class="btn btn-outline-primary btn-sm">
                                     <i class="fa-solid fa-wallet"></i>
                                 </a>
                             </td>
                             <td>
-                                <a href="index.php?page=costo_vehiculo&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>" 
+                                <a href="index.php?page=costo_vehiculo&e=lv&idvehiculo=<?= $vehiculo_['idvehiculos'] ?>" 
                                 class="btn btn-sm btn-outline-primary"
                                 title="Ver Costos Totales del Vehículo">
                                     <i class="fa-solid fa-coins"></i>

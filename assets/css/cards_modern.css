@@ -1,0 +1,39 @@
+/* ======================
+   MODAL PREMIUM
+====================== */
+
+.modal-modern {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 30px rgba(0,0,0,.25);
+}
+
+.modal-modern-header {
+    background: #333A56;
+    color: white;
+    border-bottom: none;
+}
+
+.modal-modern-body {
+    padding: 25px;
+}
+
+.modal-img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.2);
+}
+
+.modal-list li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #333;
+}
+
+.modal-modern-footer {
+    border-top: none;
+    padding: 20px;
+}
+

@@ -1,0 +1,122 @@
+:root {
+    --azul-oscuro: #333A56;
+    --azul-medio: #52658F;
+    --gris-claro: #E8E8E8;
+    --acento: #3F72AF;
+    --blanco: #fff;
+
+    --radius: 14px;
+    --shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+/* CONTENEDOR GENERAL */
+.catalogo-wrapper {
+    margin-top: 50px;
+    margin-bottom: 60px;
+}
+
+/* TÍTULO */
+.catalogo-title {
+    text-align: center;
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: var(--azul-oscuro);
+    margin-bottom: 40px;
+}
+
+/* GRID PRINCIPAL */
+.catalogo-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 35px;
+}
+
+/* --------------------------------------------- */
+/* SIDEBAR                                       */
+/* --------------------------------------------- */
+.sidebar-filtros {
+    background: var(--gris-claro);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.btn-filtros {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: var(--acento);
+    color: white;
+    border-radius: var(--radius);
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.filtros-box {
+    margin-top: 10px;
+}
+
+.filtro-item {
+    margin-bottom: 15px;
+}
+
+.filtro-item label {
+    font-weight: 600;
+}
+
+.btn-aplicar {
+    width: 100%;
+    background: var(--azul-oscuro);
+    padding: 10px;
+    border-radius: var(--radius);
+    border: none;
+    color: white;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* --------------------------------------------- */
+/* CONTENIDO                                     */
+/* --------------------------------------------- */
+.catalogo-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* SORT */
+.sort-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gris-claro);
+    padding: 15px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* TARJETAS DE VEHÍCULOS */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    gap: 25px;
+}
+
+/* PAGINACIÓN */
+.pagination-box {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--acento);
+    border-color: var(--acento);
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .catalogo-grid {
+        grid-template-columns: 1fr;
+    }
+}

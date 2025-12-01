@@ -7,6 +7,10 @@ if (isset($_POST['action'])) {
         $ficha_tecnica_controlador = new Ficha_TecnicaControlador();
         $ficha_tecnica_controlador->guardar();
     }
+        if ($_POST['action'] == 'actualizar') {
+        $ficha_tecnica_controlador = new Ficha_TecnicaControlador();
+        $ficha_tecnica_controlador->guardar();
+    }
 }
 
 class Ficha_TecnicaControlador {

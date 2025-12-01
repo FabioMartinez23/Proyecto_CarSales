@@ -154,19 +154,6 @@ h2, h3 {
     }
 }
 
-/* Testimonios */
-#testimonios div {
-    height: 400px;
-    align-items: center;
-    margin: auto;
-}
-#testimonios blockquote {
-    font-style: italic;
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-left: 5px solid #007bff;
-}
-
 /* Header Styles */
 .dashboard-header {
     background-color: #003366;

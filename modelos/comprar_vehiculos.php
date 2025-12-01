@@ -180,6 +180,84 @@ class ComprarVehiculo {
         return $res;
     }
 
+
+    /* ===========================================================
+   🔎 TRAER COMPRA POR ID
+   Devuelve datos básicos de la consignación
+    =========================================================== */
+    public function traer_compra_por_id_devolver($idcompra) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT *
+            FROM compras
+            WHERE idcompras = '$idcompra'
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+        if ($res && $res->num_rows > 0) {
+            return $res->fetch_assoc();
+        }
+        return null;
+    }
+
+    /* ===========================================================
+    ❌ ANULAR ESTADO DE COMPRA
+    Solo cambia el estado, NO borra registro
+    =========================================================== */
+    public function anular_compra_estado($idcompra) {
+        $con = $this->getConexion();
+
+        $fecha = date('Y-m-d H:i:s');
+
+        $query = "
+            UPDATE compras
+            SET estado_compra = 'Anulada',
+                fecha_anulacion = '$fecha'
+            WHERE idcompras = '$idcompra'
+        ";
+
+        return $con->query($query);
+    }
+
+    /* ===========================================================
+    🔎 OPCIONAL: TRAER COMPRA DETALLADA
+    Para usar en el formulario de anulación
+    =========================================================== */
+    public function traer_compra_detallada($idcompra) {
+
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT 
+                c.*,
+                v.patente,
+                v.motor,
+                v.chasis,
+                v.anio,
+                m.nombre AS marca,
+                mo.nombre AS modelo,
+                tv.nombre AS tipo_vehiculo,
+                p.nombre AS nombre_persona,
+                p.apellido AS apellido_persona,
+                d.valor AS dni
+            FROM compras c
+            INNER JOIN vehiculos v ON v.idvehiculos = c.vehiculo_idvehiculo
+            INNER JOIN modelos mo ON mo.idmodelos = v.modelos_idmodelos
+            INNER JOIN marcas m ON m.idmarcas = mo.marcas_idmarcas
+            INNER JOIN tipo_vehiculos tv ON tv.idtipo_vehiculos = v.tipo_vehiculos_idtipo_vehiculos
+            INNER JOIN titular_vehiculo t ON t.idtitular_vehiculo = c.titular_vehiculo_idtitular_vehiculo
+            INNER JOIN personas p ON p.idpersonas = t.Personas_idpersonas
+            INNER JOIN documentos d ON d.Personas_idPersonas = p.idpersonas AND d.Tipo_documento_idTipo_documento = 1
+            WHERE c.idcompras = '$idcompra'
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+        return ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+    }
+
     /**
      * Get the value of idcompras
      */ 

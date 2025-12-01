@@ -242,6 +242,48 @@ class Comisiones_Ventas {
     }
 
 
+    /* FUNCIONES PARA ANULAR LA COMISION DE LA VENTA */
+
+    public function traer_comision_por_venta($idventa) {
+        $con = $this->getConexion();
+
+        $query = "
+            SELECT *
+            FROM comisiones_ventas
+            WHERE ventas_idventas = $idventa
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+        $fila = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $fila;
+    }
+
+
+    public function anular_comision_por_venta($idventa) {
+        $con = $this->getConexion();
+
+        $query = "
+            UPDATE comisiones_ventas
+            SET estado_comision = 'anulada'
+            WHERE ventas_idventas = $idventa
+        ";
+
+        $ok = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $ok;
+    }
+
+
     // ===========================================================
     // GETTERS & SETTERS
     // ===========================================================

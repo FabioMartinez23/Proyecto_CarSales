@@ -1,0 +1,334 @@
+/* ========================= */
+/*     VARIABLES GLOBALES    */
+/* ========================= */
+:root {
+    --azul-oscuro: #333A56;
+    --azul-medio: #52658F;
+    --gris-claro: #E8E8E8;
+    --blanco: #fff;
+    --acento: #3F72AF;
+
+    --radius: 14px;
+    --shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* ========================= */
+/* HERO PRINCIPAL            */
+/* ========================= */
+
+/* ====================================================== */
+/* HERO MODERNO - FIXES                                    */
+/* ====================================================== */
+
+.hero-modern {
+    position: relative;
+    height: 88vh; /* MÁS ALTO para que NO SE VEA la siguiente sección */
+    padding-top: 60px; /* SEPARA del navbar */
+    padding-bottom: 60px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #333A56, #52658F);
+    overflow: hidden;
+}
+
+/* Patrón geométrico */
+.hero-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 38px 38px;
+    opacity: .25;
+}
+
+.hero-inner {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+}
+
+/* TEXTO */
+.hero-left {
+    max-width: 540px;
+    padding: 10px;
+}
+
+.h-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: black;
+}
+
+.h-sub {
+    margin-top: 15px;
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+    color: black;
+}
+
+.h-btn {
+    background: #3F72AF;
+    padding: 12px 32px;
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: .3s;
+}
+
+.h-btn:hover {
+    background: #E8E8E8;
+    color: #333A56;
+}
+
+/* CAJA DE AUTO */
+.hero-right {
+    display: flex;
+    justify-content: center;
+}
+
+.hero-icon-box {
+    width: 310px;
+    height: 310px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: floatIcon 5s ease-in-out infinite;
+}
+
+/* Imagen del auto */
+.hero-auto-img {
+    width: 160px;
+    opacity: .95;
+}
+
+@keyframes floatIcon {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+    100% { transform: translateY(0); }
+}
+
+/* RESPONSIVE FIX */
+@media (max-width: 991px) {
+    .hero-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-icon-box {
+        margin-top: 25px;
+        width: 240px;
+        height: 240px;
+    }
+
+    .hero-auto-img {
+        width: 130px;
+    }
+}
+
+
+/* ====================================================== */
+/*                 ÍCONO / BOX DERECHA                     */
+/* ====================================================== */
+
+.hero-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-icon-box {
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2);
+    animation: floatIcon 4s ease-in-out infinite;
+}
+
+.hero-icon-box i {
+    font-size: 7rem;
+    color: #ffffff;
+    opacity: .95;
+}
+
+/* Animación flotante */
+@keyframes floatIcon {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+    100% { transform: translateY(0); }
+}
+
+/* Responsivo */
+@media (max-width: 992px) {
+    .hero-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-icon-box {
+        width: 230px;
+        height: 230px;
+        margin-top: 25px;
+    }
+
+    .h-title {
+        font-size: 2.5rem;
+    }
+}
+
+
+/* ========================= */
+/* SECCIÓN POR QUÉ ELEGIRNOS */
+/* ========================= */
+.elegirnos-section {
+    padding: 60px 20px;
+}
+
+.elegirnos-section h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--azul-oscuro);
+    font-weight: 700;
+}
+
+.elegirnos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    gap: 25px;
+}
+
+.e-item {
+    text-align: center;
+    padding: 25px 15px;
+    border-radius: var(--radius);
+    background: var(--gris-claro);
+    transition: .3s;
+}
+
+.e-item i {
+    font-size: 2.2rem;
+    color: var(--azul-oscuro);
+    margin-bottom: 15px;
+}
+
+.e-item:hover {
+    transform: translateY(-8px);
+    background: var(--azul-medio);
+    color: var(--blanco);
+}
+
+/* ========================= */
+/* SEPARADOR                 */
+/* ========================= */
+.separador {
+    height: 60px;
+    background: var(--gris-claro);
+}
+
+/* ========================= */
+/* VEHÍCULOS DESTACADOS      */
+/* ========================= */
+.destacados-section {
+    padding: 55px 20px;
+}
+
+.destacados-section h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--azul-oscuro);
+}
+
+.destacados-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+    gap: 25px;
+}
+
+.veh-card {
+    background: var(--blanco);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: .3s;
+}
+
+.veh-img {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+
+.veh-body {
+    padding: 18px;
+    text-align: center;
+}
+
+.precio {
+    display: block;
+    margin: 10px 0 15px;
+    font-weight: 700;
+    color: var(--acento);
+}
+
+.btn-detalle {
+    padding: 8px 18px;
+    text-decoration: none;
+    color: var(--blanco);
+    background: var(--azul-oscuro);
+    border-radius: var(--radius);
+    transition: .3s;
+}
+
+.btn-detalle:hover {
+    background: var(--acento);
+}
+
+.veh-card:hover {
+    transform: translateY(-10px);
+}
+
+/* ========================= */
+/* TESTIMONIOS               */
+/* ========================= */
+.testimonios-section {
+    padding: 60px 20px;
+    background: var(--gris-claro);
+}
+
+.testimonios-section h2 {
+    text-align: center;
+    margin-bottom: 35px;
+    color: var(--azul-oscuro);
+}
+
+.testimonios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    gap: 20px;
+}
+
+.test-card {
+    background: var(--blanco);
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font-style: italic;
+}
+
+.test-card h5 {
+    margin-top: 15px;
+    text-align: right;
+    color: var(--azul-medio);
+}
+

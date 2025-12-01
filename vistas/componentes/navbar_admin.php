@@ -102,6 +102,24 @@
                             </a>
                         </li>
 
+                        <!-- 🔹 SOLO ADMIN: Auditoría de anulaciones -->
+                        <?php if (isset($_SESSION['descripcion']) && $_SESSION['descripcion'] === 'Administrador'): ?>
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle" href="#">
+                                    <i class="fa-solid fa-file-circle-exclamation me-2 text-danger"></i>
+                                    Auditoría
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="index.php?page=listado_anulaciones">
+                                            <i class="fa-solid fa-ban me-2 text-danger"></i>
+                                            Anulaciones de operaciones
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+
                     </ul>
                 </li>
                 
@@ -110,6 +128,9 @@
                     Caja
                 </a>
                 <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="index.php?page=listado_movimientos_caja">
+                        <i class="fa-solid fa-cash-register me-2 text-primary"></i> Movimientos de Caja
+                    </a></li>
                     <li><a class="dropdown-item" href="index.php?page=caja/cierres_caja">
                         <i class="fa-solid fa-cash-register me-2 text-primary"></i> Cierre de Caja
                     </a></li>

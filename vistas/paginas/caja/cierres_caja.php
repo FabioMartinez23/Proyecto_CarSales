@@ -8,6 +8,14 @@ if (!isset($_SESSION['idusuarios'])) {
 }
 ?>
 
+    <!-- Breadcrumb -->
+<nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-glass">
+        <li class="breadcrumb-item"><a href="#">Caja</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cierre de Caja</li>
+    </ol>
+</nav>
+
 <div class="hacer_padding">
   <div class="caja-container">
     <h1 class="caja-titulo">

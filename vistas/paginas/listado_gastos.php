@@ -50,6 +50,25 @@ $gastos = $gasto->traer_gastos($desde, $hasta, $filas_por_pagina, $offset);
 ================================ -->
 <link rel="stylesheet" href="assets/css/gastos.css">
 
+    <!-- Breadcrumb -->
+    <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-glass">
+            <li class="breadcrumb-item"><a href="#">Contabilidad</a></li>
+
+            <?php 
+            if ($_GET['e'] == 'lv') {
+                echo '<li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Listado Vehiculos</a></li>';
+            } elseif ($_GET['e'] == 'lfc') {
+                echo '<li class="breadcrumb-item"><a href="index.php?page=listado_falta_documentacion">Listado Falta Documentacion</a></li>';
+            } else {
+                echo '<li class="breadcrumb-item"><a href="#">Gastos</a></li>';
+            }
+            ?>
+
+            <li class="breadcrumb-item active" aria-current="page">Listado de Gastos</li>
+        </ol>
+    </nav>
+
 <div class="gastos-container">
 
     <div class="gastos-box">
@@ -146,7 +165,8 @@ $gastos = $gasto->traer_gastos($desde, $hasta, $filas_por_pagina, $offset);
                         <th>Tipo</th>
                         <th>Origen</th>
                         <th>Relacionado con</th>
-                        <th></th>
+                        <th>Estado</th>   <!-- NUEVO -->
+                        <th></th>         <!-- Acciones -->
                     </tr>
                 </thead>
 
@@ -185,7 +205,6 @@ $gastos = $gasto->traer_gastos($desde, $hasta, $filas_por_pagina, $offset);
                         <td>
                             <?= $row['descripcion'] ?>
                             <br>
-
                             <?php if (str_starts_with(trim($row['descripcion']), "[Automático]")) { ?>
                                 <span class="badge bg-primary">Automático</span>
                             <?php } else { ?>
@@ -214,10 +233,35 @@ $gastos = $gasto->traer_gastos($desde, $hasta, $filas_por_pagina, $offset);
                             ?>
                         </td>
 
+                        <!-- ESTADO DEL GASTO -->
                         <td>
-                            <button class="btn btn-sm btn-primary">
+                            <?php
+                            $estado = $row['estado_gasto'] ?? 'Registrado';
+                            if ($estado === 'Registrado') {
+                                echo '<span class="badge bg-success-subtle text-success">Registrado</span>';
+                            } else {
+                                echo '<span class="badge bg-danger-subtle text-danger">Anulado</span>';
+                            }
+                            ?>
+                        </td>
+
+                        <!-- ACCIONES -->
+                        <td>
+                            <!-- Ver detalle (a futuro) -->
+                            <button class="btn btn-sm btn-primary" title="Ver detalle">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
+
+                            <?php
+                            // Solo permitir anular si está registrado y el usuario es admin
+                            $esAdmin = isset($_SESSION['descripcion']) && $_SESSION['descripcion'] === "Administrador";
+                            if ($estado === 'Registrado' && $esAdmin): ?>
+                                <a href="index.php?page=anular_gasto&idgasto=<?= $row['idgastos_generales']; ?>"
+                                class="btn btn-sm btn-outline-danger ms-1"
+                                title="Anular gasto">
+                                    <i class="fa-solid fa-ban"></i>
+                                </a>
+                            <?php endif; ?>
                         </td>
                     </tr>
 

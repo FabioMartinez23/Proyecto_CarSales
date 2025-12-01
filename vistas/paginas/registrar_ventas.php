@@ -164,65 +164,6 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                             </div>
                         </div>
 
-                        <!-- Agrupamos los checkboxes en dos columnas -->
-                        <h6>Estado de Documentación</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch08" name="switch_08" disabled>
-                                    <label class="form-check-label" for="switch08">Formulario 08</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch12" name="switch_12" disabled>
-                                    <label class="form-check-label" for="switch12">Formulario 12</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchTitulo" name="switch_titulo" disabled>
-                                    <label class="form-check-label" for="switchTitulo">Título Automotor</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchCedula" name="switch_cedula" disabled>
-                                    <label class="form-check-label" for="switchCedula">Cédula del Vehículo</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchSeguro" name="switch_seguro" disabled>
-                                    <label class="form-check-label" for="switchSeguro">Seguro Automotor</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchMunicipalidad" name="switch_municipalidad" disabled>
-                                    <label class="form-check-label" for="switchMunicipalidad">Municipalidad - Deudas</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchDominio" name="switch_dominio" disabled>
-                                    <label class="form-check-label" for="switchDominio">Informe de Dominio</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchMultas" name="switch_multas" disabled>
-                                    <label class="form-check-label" for="switchMultas">Formulario 13i - Infracciones/Multas</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switchPrenda" name="switch_prenda" disabled>
-                                    <label class="form-check-label" for="switchPrenda">Prenda</label>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Agrupamos los select en dos columnas -->
                         <h6>Estado Carrocería</h6>
                         <div class="row">

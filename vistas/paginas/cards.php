@@ -50,36 +50,48 @@
     </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="miModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="nombre_auto"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="miModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content modal-modern">
+
+      <div class="modal-header modal-modern-header">
+        <h5 class="modal-title" id="nombre_auto"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body modal-modern-body">
+
+        <div class="row">
+            <div class="col-md-6">
+                <img id="imagen_modal" class="modal-img" src="" alt="Vehículo">
             </div>
-            <div class="modal-body">
-                <div class="container hacer_padding">
-                    <!-- Imagen del vehículo -->
-                    <img id="imagen_modal" src="" class="d-block w-100 mb-3" alt="Imagen del vehículo" class="img-fluid" width="90">
-                    <ul>
-                        <li><strong>Precio:</strong> $ <span id="precio_actual"></span></li>
-                        <li><strong>Marca:</strong> <span id="nombre_marca"></span></li>
-                        <li><strong>Modelo:</strong> <span id="nombre_modelo"></span></li>
-                        <li><strong>Tipo de Vehiculo:</strong> <span id="tipo_vehiculo"></span></li>
-                        <li><strong>Kilometraje:</strong> <span id="kilometrajes"></span></li>
-                        <li><strong>Año:</strong> <span id="anios"></span></li>
-                        <li><strong>Color:</strong> <span id="nombre_color"></span></li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <a type="button" href="#" id="btn-simulacion" onclick="redireccionarSimulacion(this)" class="btn btn-success mt-2 mb-2">Crear Simulación</a>
-                </div>
+
+            <div class="col-md-6">
+                <ul class="modal-list">
+                    <li><strong>Precio:</strong> $<span id="precio_actual"></span></li>
+                    <li><strong>Marca:</strong> <span id="nombre_marca"></span></li>
+                    <li><strong>Modelo:</strong> <span id="nombre_modelo"></span></li>
+                    <li><strong>Tipo:</strong> <span id="tipo_vehiculo"></span></li>
+                    <li><strong>Kilometraje:</strong> <span id="kilometrajes"></span></li>
+                    <li><strong>Año:</strong> <span id="anios"></span></li>
+                    <li><strong>Color:</strong> <span id="nombre_color"></span></li>
+                </ul>
             </div>
         </div>
+
+      </div>
+
+      <div class="modal-footer modal-modern-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <a href="#" id="btn-simulacion" onclick="redireccionarSimulacion(this)" class="btn btn-success">
+            Crear Simulación
+        </a>
+      </div>
+
     </div>
+  </div>
 </div>
+
 
 <script>
     function registrarClick(idvehiculo) {

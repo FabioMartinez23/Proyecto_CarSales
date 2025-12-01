@@ -22,13 +22,23 @@ $esVendido = $datos_costos['tiene_venta'];
 $det = $datos_costos['detalle_venta'] ?? null;
 ?>
 
-<nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
-    <ol class="breadcrumb breadcrumb-glass">
-        <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Vehículos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Costos del Vehículo</li>
-    </ol>
-</nav>
+    <nav style="--bs-breadcrumb-divider: ;" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-glass">
+            <li class="breadcrumb-item"><a href="index.php?page=bienvenida">Dashboard</a></li>
+
+            <?php 
+            if ($_GET['e'] == 'lv') {
+                echo '<li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Listado Vehiculos</a></li>';
+            } elseif ($_GET['e'] == 'lfc') {
+                echo '<li class="breadcrumb-item"><a href="index.php?page=listado_falta_documentacion">Listado Falta Documentacion</a></li>';
+            } else {
+                echo '<li class="breadcrumb-item"><a href="#">Costos</a></li>';
+            }
+            ?>
+
+            <li class="breadcrumb-item active" aria-current="page">Costo de Vehiculo</li>
+        </ol>
+    </nav>
 
 <div class="costos-container">
 
