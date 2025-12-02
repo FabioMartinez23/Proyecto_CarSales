@@ -259,6 +259,24 @@ public function obtener_id_por_username($username) {
         return $fila;
     }
 
+    public function traerDatosUsuario($idusuario) {
+        $con = new Conexion();
+
+        $query = "
+                SELECT 
+                personas.nombre,
+                personas.apellido,
+                perfiles.descripcion AS perfil
+                FROM usuarios
+                INNER JOIN personas ON personas.idpersonas = usuarios.Personas_idPersonas
+                INNER JOIN perfiles ON perfiles.idperfiles = usuarios.perfiles_idperfiles
+                WHERE usuarios.idusuarios = $idusuario
+                LIMIT 1
+        ";
+
+        return $con->consultar($query);
+        }
+
 
 /**
  * Get the value of id

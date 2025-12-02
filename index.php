@@ -16,6 +16,7 @@ require_once('modelos/precios_vehiculos.php');
 require_once('modelos/vender_vehiculos.php');
 require_once('modelos/comprar_vehiculos.php');
 require_once('modelos/reportes_costos.php');
+require_once('modelos/auditoria_edicion.php');
 require_once('modelos/ventas_forma_pagos.php');
 require_once('modelos/anular_operaciones.php');
 require_once('modelos/tablas_maestras/modelo_vehiculo.php');

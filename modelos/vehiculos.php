@@ -562,6 +562,118 @@ class Vehiculos extends Paginacion{
         return $ok;
     }
 
+    public function reporte_stock_envejecido($edad_minima = 0)
+    {
+        $conexion = new Conexion();
+
+        // Nos aseguramos de que sea número
+        $edad_minima = (int)$edad_minima;
+
+        // Usamos fecha_alta como fecha de ingreso al stock
+        $query = "
+            SELECT 
+                v.idvehiculos,
+                v.patente,
+                v.anio,
+                m.nombre  AS marca,
+                mo.nombre AS modelo,
+                v.fecha_alta AS fecha_ingreso,
+                DATEDIFF(CURDATE(), v.fecha_alta) AS dias_en_stock
+            FROM vehiculos v
+            INNER JOIN modelos mo 
+                ON mo.idmodelos = v.modelos_idmodelos
+            INNER JOIN marcas m 
+                ON m.idmarcas = mo.marcas_idmarcas
+            LEFT JOIN estado_vehiculo ev
+                ON ev.idestado_vehiculo = v.estado_vehiculo_idestado_vehiculo
+            WHERE 
+                v.activo_vehiculo = 1
+                -- si querés solo disponibles, descomentá esta línea:
+                -- AND ev.estado_vehiculo = 'disponible'
+            HAVING dias_en_stock >= $edad_minima
+            ORDER BY dias_en_stock DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function reporte_vehiculos_por_estado($solo_activos = true)
+    {
+        $conexion = new Conexion();
+
+        // Filtro base
+        $where = "WHERE 1=1";
+
+        // Si querés solo activos, filtramos por activo_vehiculo
+        if ($solo_activos) {
+            $where .= " AND v.activo_vehiculo = 1";
+        }
+
+        $query = "
+            SELECT 
+                COALESCE(e.estado_vehiculo, 'Sin estado') AS estado,
+                COUNT(*) AS cantidad,
+                AVG(DATEDIFF(CURDATE(), v.fecha_alta)) AS dias_promedio
+            FROM vehiculos v
+            LEFT JOIN estado_vehiculo e 
+                ON v.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+            $where
+            GROUP BY estado
+            ORDER BY cantidad DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function reporte_stock_estado()
+    {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT
+                COALESCE(e.estado_vehiculo, 'Sin estado') AS estado,
+                COUNT(*) AS cantidad
+            FROM vehiculos v
+            LEFT JOIN estado_vehiculo e
+                ON v.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+            WHERE v.activo_vehiculo = 1
+            AND (
+                    e.estado_vehiculo IN (
+                        'disponible',
+                        'falta_documento',
+                        'falta_digitalizacion',
+                        'taller'
+                    )
+                    OR e.estado_vehiculo IS NULL
+            )
+            GROUP BY estado
+            ORDER BY cantidad DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    // AUDITORIA //
+
+    public function traer_por_id($idvehiculos)
+    {
+        $idvehiculos = intval($idvehiculos);
+
+        $conexion = new Conexion();
+        $query = "SELECT * FROM vehiculos WHERE idvehiculos = $idvehiculos LIMIT 1";
+
+        $resultado = $conexion->consultar($query);
+
+        if ($resultado && $resultado->num_rows > 0) {
+            return $resultado->fetch_assoc(); // array asociativo con v.*
+        }
+
+        return null;
+    }
+
     /**
      * Get the value of idvehiculos
      */ 

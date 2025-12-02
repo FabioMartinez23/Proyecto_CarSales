@@ -297,6 +297,164 @@ public function buscar_ventas($buscador){
     }
 
 
+    public function reporte_ventas_por_vendedor($desde, $hasta)
+    {
+        // Usamos la misma conexión que el resto de la clase
+        $con = $this->getConexion();
+
+        // Sanitizar mínimamente
+        $desde = $con->real_escape_string($desde);
+        $hasta = $con->real_escape_string($hasta);
+
+        $query = "
+            SELECT 
+                e.idempleados,
+                CONCAT(p.apellido, ' ', p.nombre) AS vendedor,
+                COUNT(v.idventas) AS cantidad_ventas,
+                SUM(v.precio_venta) AS total_vendido,
+                AVG(v.precio_venta) AS ticket_promedio
+            FROM ventas v
+            INNER JOIN empleados e 
+                ON e.idempleados = v.empleados_idempleados
+            INNER JOIN usuarios u
+                ON u.idusuarios = e.Usuarios_idusuarios
+            INNER JOIN personas p
+                ON p.idpersonas = u.personas_idpersonas
+            WHERE DATE(v.fecha_venta) BETWEEN '$desde' AND '$hasta'
+            AND v.estado_venta = 'Realizada'
+            GROUP BY e.idempleados, p.apellido, p.nombre
+            ORDER BY total_vendido DESC
+        ";
+
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $res;
+    }
+
+    
+    public function reporte_ventas_anuladas_detalle($desde, $hasta)
+    {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                v.idventas,
+                v.fecha_venta,
+                v.fecha_anulacion,
+                v.precio_venta,
+                v.descripcion AS observacion,
+
+                -- Datos del vendedor
+                ev.idempleados,
+                CONCAT(pv.apellido, ' ', pv.nombre) AS vendedor,
+
+                -- Datos del cliente
+                CONCAT(pc.apellido, ' ', pc.nombre) AS cliente,
+
+                -- Datos del vehículo
+                ve.patente,
+                mo.nombre AS modelo,
+                m.nombre  AS marca
+
+            FROM ventas v
+            INNER JOIN empleados ev 
+                ON ev.idempleados = v.empleados_idempleados
+            INNER JOIN Usuarios uv
+                ON uv.idUsuarios = ev.Usuarios_idUsuarios
+            INNER JOIN personas pv
+                ON pv.idpersonas = uv.personas_idpersonas
+
+            INNER JOIN registro_clientes rc
+                ON rc.idregistro_clientes = v.registro_clientes_idregistro_clientes
+            INNER JOIN Usuarios uc
+                ON uc.idUsuarios = rc.Usuarios_idusuarios
+            INNER JOIN personas pc
+                ON pc.idpersonas = uc.personas_idpersonas
+
+            INNER JOIN vehiculos ve 
+                ON ve.idvehiculos = v.vehiculo_idvehiculo
+            INNER JOIN modelos mo
+                ON mo.idmodelos = ve.modelos_idmodelos
+            INNER JOIN marcas m
+                ON m.idmarcas = mo.marcas_idmarcas
+
+            WHERE v.estado_venta = 'Anulada'
+            AND DATE(v.fecha_anulacion) BETWEEN '$desde' AND '$hasta'
+            ORDER BY v.fecha_anulacion ASC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function reporte_clientes_frecuentes($desde, $hasta)
+    {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                rc.idregistro_clientes,
+                CONCAT(p.apellido, ' ', p.nombre) AS cliente,
+                COUNT(v.idventas) AS cantidad_ventas,
+                SUM(v.precio_venta) AS total_vendido,
+                AVG(v.precio_venta) AS ticket_promedio
+            FROM ventas v
+            INNER JOIN registro_clientes rc 
+                ON rc.idregistro_clientes = v.registro_clientes_idregistro_clientes
+            INNER JOIN usuarios u
+                ON u.idusuarios = rc.Usuarios_idusuarios
+            INNER JOIN personas p
+                ON p.idpersonas = u.personas_idpersonas
+            WHERE DATE(v.fecha_venta) BETWEEN '$desde' AND '$hasta'
+            AND v.estado_venta = 'Realizada'
+            GROUP BY rc.idregistro_clientes, p.apellido, p.nombre
+            HAVING cantidad_ventas > 0
+            ORDER BY cantidad_ventas DESC, total_vendido DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
+    public function reporte_ventas_por_metodo_pago($desde, $hasta)
+    {
+        $conexion = new Conexion();
+
+        // Armamos filtro por fecha
+        $filtro = " WHERE 1=1 ";
+
+        if (!empty($desde)) {
+            $filtro .= " AND DATE(v.fecha_venta) >= '$desde'";
+        }
+
+        if (!empty($hasta)) {
+            $filtro .= " AND DATE(v.fecha_venta) <= '$hasta'";
+        }
+
+        $query = "
+            SELECT 
+                tp.idtipo_pago,
+                tp.descripcion AS metodo_pago,
+                COUNT(v.idventas)        AS cantidad_ventas,
+                SUM(v.precio_venta)      AS total_vendido,
+                AVG(v.precio_venta)      AS ticket_promedio
+            FROM ventas v
+            INNER JOIN tipo_pago tp 
+                ON tp.idtipo_pago = v.tipo_pago_idtipo_pago
+            $filtro
+            AND v.estado_venta = 'Realizada'
+            GROUP BY tp.idtipo_pago, tp.descripcion
+            ORDER BY total_vendido DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
     /**
      * Get the value of idventas
      */ 

@@ -1,0 +1,143 @@
+/* =========================================================
+   CONTENEDOR GENERAL DE AUDITORÍA
+   ========================================================= */
+
+.auditoria-container {
+    background: var(--cs-bg-soft);
+    border-radius: 1rem;
+    padding: 1.5rem 1.5rem 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+/* =========================================================
+   BLOQUE DE FILTROS (sin card)
+   ========================================================= */
+
+.auditoria-filtros {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--cs-border-soft);
+    border-radius: 1rem;
+    padding: 1.3rem 1.4rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.auditoria-filtros .form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--cs-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.auditoria-filtros .form-select-sm,
+.auditoria-filtros .form-control-sm {
+    font-size: 0.85rem;
+}
+
+.auditoria-filtros button.btn-primary {
+    background: var(--cs-primary);
+    border-color: var(--cs-primary);
+}
+
+.auditoria-filtros button.btn-primary:hover {
+    background: #3e4f73;
+}
+
+.auditoria-filtros .btn-outline-secondary {
+    border-radius: 999px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .auditoria-filtros .col-md-3,
+    .auditoria-filtros .col-md-2,
+    .auditoria-filtros .col-md-6 {
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* =========================================================
+   TABLA AUDITORÍA
+   ========================================================= */
+
+.auditoria-tabla.table {
+    background: #ffffff;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--cs-border-soft);
+}
+
+.auditoria-tabla thead th {
+    background: var(--cs-primary);
+    color: #fff;
+}
+
+.auditoria-tabla tbody tr:hover {
+    background: rgba(82, 101, 143, 0.06);
+}
+
+/* Celdas largas */
+.auditoria-descripcion {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   BADGES DE ENTIDAD Y ACCIÓN
+   ========================================================= */
+
+.badge-entidad {
+    background: rgba(108,117,125,0.12);
+    color: var(--cs-secondary);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+
+.badge-accion-insert {
+    background: rgba(40,167,69,0.12);
+    color: var(--cs-success);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+.badge-accion-update {
+    background: rgba(255,193,7,0.16);
+    color: var(--cs-warning);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+.badge-accion-delete {
+    background: rgba(220,53,69,0.12);
+    color: var(--cs-danger);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+
+/* =========================================================
+   MODAL DETALLE AUDITORÍA
+   ========================================================= */
+
+.auditoria-modal pre {
+    background: #f8f9fb;
+    border: 1px solid var(--cs-border-soft);
+    padding: 0.8rem;
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    max-height: 260px;
+    overflow: auto;
+}
+
+/* =========================================================
+   PAGINACIÓN
+   ========================================================= */
+
+.auditoria-pagination .page-link {
+    border-radius: 999px;
+}

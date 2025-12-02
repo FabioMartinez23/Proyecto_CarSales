@@ -258,6 +258,56 @@ class ComprarVehiculo {
         return ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
     }
 
+    public function reporte_ingresos_por_periodo($desde = null, $hasta = null)
+    {
+        $con = $this->getConexion();
+
+        // Filtro por fecha
+        $filtro = " WHERE 1=1 ";
+
+        if (!empty($desde)) {
+            $desde = $con->real_escape_string($desde);
+            $filtro .= " AND DATE(c.fecha_compra) >= '$desde'";
+        }
+
+        if (!empty($hasta)) {
+            $hasta = $con->real_escape_string($hasta);
+            $filtro .= " AND DATE(c.fecha_compra) <= '$hasta'";
+        }
+
+        $query = "
+            SELECT 
+                DATE_FORMAT(c.fecha_compra, '%Y-%m') AS periodo,
+                DATE_FORMAT(c.fecha_compra, '%m/%Y') AS periodo_legible,
+                COUNT(*) AS cantidad_ingresos,
+                SUM(pv.precio) AS total_tomado,
+                AVG(pv.precio) AS valor_promedio
+            FROM compras c
+            INNER JOIN vehiculos v 
+                ON v.idvehiculos = c.vehiculo_idvehiculo
+            INNER JOIN precios_vehiculos pv 
+                ON pv.vehiculos_idvehiculos = v.idvehiculos
+            AND pv.activo_precio = 1
+            INNER JOIN tipo_precios tp
+                ON tp.idtipo_precios = pv.tipo_precios_idtipo_precios
+            AND tp.descripcion = 'tomado'
+            $filtro
+            AND c.estado_compra = 'Realizada'
+            GROUP BY DATE_FORMAT(c.fecha_compra, '%Y-%m')
+            ORDER BY DATE_FORMAT(c.fecha_compra, '%Y-%m') ASC
+        ";
+
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $res;
+    }
+
+
+
     /**
      * Get the value of idcompras
      */ 

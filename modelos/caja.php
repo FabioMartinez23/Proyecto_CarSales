@@ -653,6 +653,48 @@ class Caja {
     }
 
 
+    public function reporte_movimientos($desde, $hasta, $tipo_mov)
+    {
+        $con = $this->getConexion();
+
+        // Sanitizar fechas mínimamente
+        $desde = $con->real_escape_string($desde);
+        $hasta = $con->real_escape_string($hasta);
+
+        // Base del query: usamos SIEMPRE c.tipo como tipo_movimiento
+        $query = "
+            SELECT
+                c.idcaja_movimientos,
+                c.fecha_movimiento,
+                c.descripcion,
+                c.monto,
+                c.tipo AS tipo_movimiento
+            FROM caja_movimientos c
+            WHERE DATE(c.fecha_movimiento) BETWEEN '$desde' AND '$hasta'
+        ";
+
+        // Filtro por tipo_mov (ingresos / egresos / todos)
+        if ($tipo_mov === 'ingresos') {
+            $query .= " AND c.tipo = 'ingreso'";
+        } elseif ($tipo_mov === 'egresos') {
+            $query .= " AND c.tipo = 'egreso'";
+        }
+
+        // Ordenar por fecha ascendente
+        $query .= " ORDER BY c.fecha_movimiento ASC";
+
+        // Ejecutar
+        $res = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $res;
+    }
+
+
+
     /**
      * Get the value of idcaja
      */ 

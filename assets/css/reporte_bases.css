@@ -1,0 +1,356 @@
+/* =========================================================
+   ESTILOS BASE PARA TODOS LOS REPORTES
+   Archivo: assets/css/reporte_base.css
+   ========================================================= */
+
+/* ------------------------------
+   COLORES BASE DEL SISTEMA
+   ------------------------------ */
+
+:root {
+    --cs-primary:   #52658F;
+    --cs-primary-soft: #B4CCEE;
+    --cs-bg-soft:   #F5F7FB;
+    --cs-border-soft: #E0E4EC;
+    --cs-success:   #28a745;
+    --cs-danger:    #dc3545;
+    --cs-warning:   #ffc107;
+    --cs-info:      #17a2b8;
+    --cs-secondary: #6c757d;
+    --cs-text-muted:#6c757d;
+}
+
+/* ------------------------------
+   BREADCRUMB VIDRIO / GLASS
+   ------------------------------ */
+
+.breadcrumb-glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(6px);
+    border-radius: 0.75rem;
+    padding: 0.55rem 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-glass .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: var(--cs-primary);
+    font-weight: 600;
+}
+
+.breadcrumb-glass a {
+    text-decoration: none;
+    color: var(--cs-primary);
+}
+
+.breadcrumb-glass .breadcrumb-item.active {
+    color: #343a40;
+}
+
+/* ------------------------------
+   CONTENEDORES PRINCIPALES
+   ------------------------------ */
+
+.reportes-container,
+.reporte-ventas-container {
+    background: var(--cs-bg-soft);
+    border-radius: 1rem;
+    padding: 1.5rem 1.5rem 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+/* Ajuste suave para pantallas chicas */
+@media (max-width: 768px) {
+    .reportes-container,
+    .reporte-ventas-container {
+        padding: 1rem;
+    }
+}
+
+/* ------------------------------
+   CABECERAS DE BLOQUES
+   ------------------------------ */
+
+.reportes-header,
+.reporte-ventas-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reportes-header h1,
+.reporte-ventas-header h2 {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.reportes-header p,
+.reporte-ventas-header p {
+    margin: 0;
+    color: var(--cs-text-muted);
+}
+
+/* Badge principal de info */
+.reportes-badge,
+.reporte-ventas-badge {
+    display: flex;
+    align-items: center;
+}
+
+/* Badge color principal */
+.bg-report-main {
+    background: var(--cs-primary);
+    color: #fff;
+}
+
+/* ------------------------------
+   SECCIONES DE REPORTES (reportes.php)
+   ------------------------------ */
+
+.report-section {
+    border-radius: 1rem;
+    background: #ffffff;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.03);
+}
+
+.report-section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #343a40;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Badges suaves (soft) tipo bootstrap custom */
+
+.bg-soft-primary {
+    background: rgba(82, 101, 143, 0.12);
+    color: var(--cs-primary);
+}
+
+.bg-soft-success {
+    background: rgba(40, 167, 69, 0.12);
+    color: var(--cs-success);
+}
+
+.bg-soft-danger {
+    background: rgba(220, 53, 69, 0.12);
+    color: var(--cs-danger);
+}
+
+.bg-soft-warning {
+    background: rgba(255, 193, 7, 0.16);
+    color: var(--cs-warning);
+}
+
+.bg-soft-info {
+    background: rgba(23, 162, 184, 0.12);
+    color: var(--cs-info);
+}
+
+.bg-soft-secondary {
+    background: rgba(108, 117, 125, 0.14);
+    color: var(--cs-secondary);
+}
+
+/* ------------------------------
+   TARJETAS DE ENLACE A REPORTES
+   (reportes.php)
+   ------------------------------ */
+
+.report-block {
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--cs-border-soft);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease-in-out;
+    height: 100%;
+}
+
+.report-block:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border-color: var(--cs-primary-soft);
+}
+
+.report-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.report-body h5 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: #343a40;
+}
+
+.report-body p {
+    font-size: 0.9rem;
+    color: var(--cs-text-muted);
+    margin-bottom: 0.8rem;
+}
+
+/* Botón “Ver reporte” */
+.report-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: var(--cs-primary);
+    color: #fff;
+    border: 1px solid transparent;
+    transition: all 0.15s ease-in-out;
+}
+
+.report-btn:hover {
+    background: #3e4f73;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ------------------------------
+   BLOQUE DE FILTROS EN REPORTES
+   (ventas, caja, gastos, etc.)
+   ------------------------------ */
+
+.reporte-filtros {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--cs-border-soft);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+/* Botón de aplicar filtros reutiliza .report-btn, pero puede usarse otra clase */
+.report-btn,
+.report-filters-btn,
+.report-apply-btn,
+.report-pdf-btn {
+    cursor: pointer;
+}
+
+/* ------------------------------
+   TARJETAS KPI (CANTIDAD, TOTAL, TICKET, ETC.)
+   ------------------------------ */
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--cs-border-soft);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.kpi-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cs-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #343a40;
+}
+
+/* Variantes por tipo de KPI (colores de borde o fondo suave) */
+.kpi-ventas {
+    border-left: 4px solid var(--cs-primary);
+}
+
+.kpi-importe {
+    border-left: 4px solid var(--cs-success);
+}
+
+.kpi-ticket {
+    border-left: 4px solid var(--cs-info);
+}
+
+/* ------------------------------
+   GRÁFICO
+   ------------------------------ */
+
+.reporte-grafico {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    padding: 0.8rem 1rem 1rem;
+    border: 1px solid var(--cs-border-soft);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    min-height: 220px;
+}
+
+/* Para que el canvas no se pegue tanto */
+.reporte-grafico canvas {
+    max-height: 260px;
+}
+
+/* ------------------------------
+   TABLA DE REPORTES
+   ------------------------------ */
+
+.reporte-tabla.table {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    overflow: hidden;
+    border: 1px solid var(--cs-border-soft);
+}
+
+.reporte-tabla thead.table-dark th {
+    background: var(--cs-primary);
+    border-color: var(--cs-primary);
+}
+
+.reporte-tabla tbody tr:hover {
+    background: rgba(82, 101, 143, 0.06);
+}
+
+/* Celda numerica */
+.reporte-tabla td.text-end,
+.reporte-tabla th.text-end {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------
+   UTILITARIOS EXTRA
+   ------------------------------ */
+
+/* Texto suave / muted */
+.text-muted-soft {
+    color: var(--cs-text-muted);
+    font-size: 0.9rem;
+}
+
+/* Contenedor aligerado (por si lo querés usar en otros lados) */
+.box-soft {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    padding: 1rem;
+    border: 1px solid var(--cs-border-soft);
+}
+
+/* Botón exportar PDF especial (si querés distinguirlo) */
+.btn-export-pdf {
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 0.45rem 0.9rem;
+}

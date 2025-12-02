@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -16,19 +20,30 @@ $primer_dia_anio = date('Y-01-01');
 $desde = $_GET['desde'] ?? $primer_dia_anio;
 $hasta = $_GET['hasta'] ?? $hoy;
 
-// Traer resumen de ventas agrupadas por mes/año
-$result = $ventas->reporte_ventas_por_periodo($desde, $hasta);
+// Traer resumen de ventas agrupadas por vendedor
+$result = $ventas->reporte_ventas_por_vendedor($desde, $hasta);
 
-// Pasar el result a un array para reusar
+// Pasar a array para reusar
 $filas = [];
-$total_ventas_global = 0;
+$total_ventas_global  = 0;
 $total_importe_global = 0;
+$mejor_vendedor       = null;
+$mejor_vendedor_monto = 0;
 
 if ($result && $result->num_rows > 0) {
     while ($r = $result->fetch_assoc()) {
         $filas[] = $r;
-        $total_ventas_global  += (int)$r['cantidad_ventas'];
-        $total_importe_global += (float)$r['total_vendido'];
+
+        $cant  = (int)$r['cantidad_ventas'];
+        $total = (float)$r['total_vendido'];
+
+        $total_ventas_global  += $cant;
+        $total_importe_global += $total;
+
+        if ($total > $mejor_vendedor_monto) {
+            $mejor_vendedor_monto = $total;
+            $mejor_vendedor       = $r['vendedor'];
+        }
     }
 }
 
@@ -37,18 +52,18 @@ $ticket_promedio_global = $total_ventas_global > 0
     : 0;
 
 // Datos para el gráfico
-$labels = [];
-$data_totales = [];
+$labels          = [];
+$data_totales    = [];
 $data_cantidades = [];
 
 foreach ($filas as $f) {
-    $labels[]        = $f['periodo_legible'];
-    $data_totales[]  = round($f['total_vendido'], 2);
+    $labels[]          = $f['vendedor'];
+    $data_totales[]    = round($f['total_vendido'], 2);
     $data_cantidades[] = (int)$f['cantidad_ventas'];
 }
 ?>
 
-<link rel="stylesheet" href="assets/css/reporte_ventas_periodo.css">
+<link rel="stylesheet" href="assets/css/reporte_base.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Breadcrumb -->
@@ -56,20 +71,20 @@ foreach ($filas as $f) {
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="index.php?page=bienvenida">Inicio</a></li>
         <li class="breadcrumb-item"><a href="index.php?page=reportes">Reportes</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ventas por período</li>
+        <li class="breadcrumb-item active" aria-current="page">Ventas por vendedor</li>
     </ol>
 </nav>
 
 <div class="container mt-4 hacer_padding reporte-ventas-container">
 
     <!-- Título + resumen -->
-    <div class="reporte-ventas-header mb-4">
+    <div class="reporte-ventas-header mb-4 d-flex justify-content-between align-items-center">
         <div>
             <h2 class="mb-1">
-                <i class="fa-solid fa-calendar-alt me-2"></i> Ventas por período (Mes / Año)
+                <i class="fa-solid fa-user-tie me-2"></i> Ventas por vendedor
             </h2>
             <p class="text-muted mb-0">
-                Analiza el comportamiento de las <strong>ventas concretadas</strong> agrupadas por mes y año.
+                Analiza el desempeño de cada <strong>vendedor</strong> según cantidad de operaciones y total vendido.
             </p>
         </div>
         <div class="reporte-ventas-badge">
@@ -82,26 +97,19 @@ foreach ($filas as $f) {
     <!-- Filtros -->
     <div class="reporte-filtros mb-4">
         <form method="GET" action="index.php" class="row g-3 align-items-end">
-            <input type="hidden" name="page" value="reporte_ventas_periodo">
+            <input type="hidden" name="page" value="reporte_ventas_vendedor">
 
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label">Desde</label>
                 <input type="date" name="desde" class="form-control" value="<?= htmlspecialchars($desde); ?>">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label">Hasta</label>
                 <input type="date" name="hasta" class="form-control" value="<?= htmlspecialchars($hasta); ?>">
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label">Agrupación</label>
-                <select class="form-select" disabled>
-                    <option>Mensual (Mes/Año)</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 text-md-end">
+            <div class="col-md-4 text-md-end">
                 <button type="submit" class="report-btn w-100 mt-2 mt-md-0">
                     <i class="fa-solid fa-filter me-2"></i> Aplicar filtros
                 </button>
@@ -110,8 +118,8 @@ foreach ($filas as $f) {
 
         <!-- BOTÓN EXPORTAR PDF (form aparte) -->
         <form id="form-exportar-pdf"
-            action="controladores/reportes/reporte_ventas_periodo_pdf.controlador.php"
-            method="POST" target="_blank">
+              action="controladores/reportes/reporte_ventas_vendedor_pdf.controlador.php"
+              method="POST" target="_blank" class="mt-3">
 
             <!-- Envío los mismos filtros que se están usando -->
             <input type="hidden" name="desde" value="<?= htmlspecialchars($desde) ?>">
@@ -120,7 +128,7 @@ foreach ($filas as $f) {
             <!-- Acá voy a guardar la imagen del gráfico en base64 -->
             <input type="hidden" name="chart_img" id="chart_img">
 
-            <button type="button" id="btn-exportar-pdf" class="btn btn-danger mt-3">
+            <button type="button" id="btn-exportar-pdf" class="btn btn-danger">
                 <i class="fa fa-file-pdf me-1"></i> Exportar a PDF
             </button>
         </form>
@@ -128,22 +136,34 @@ foreach ($filas as $f) {
 
     <!-- KPIs -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-ventas">
-                <div class="kpi-label">Cantidad de ventas</div>
+                <div class="kpi-label">Total de ventas</div>
                 <div class="kpi-value"><?= $total_ventas_global; ?></div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-importe">
                 <div class="kpi-label">Total vendido</div>
-                <div class="kpi-value">$<?= number_format($total_importe_global, 2, ',', '.'); ?></div>
+                <div class="kpi-value">
+                    $<?= number_format($total_importe_global, 2, ',', '.'); ?>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-ticket">
                 <div class="kpi-label">Ticket promedio</div>
-                <div class="kpi-value">$<?= number_format($ticket_promedio_global, 2, ',', '.'); ?></div>
+                <div class="kpi-value">
+                    $<?= number_format($ticket_promedio_global, 2, ',', '.'); ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card kpi-importe">
+                <div class="kpi-label">Mejor vendedor</div>
+                <div class="kpi-value" style="font-size:1rem;">
+                    <?= $mejor_vendedor ? htmlspecialchars($mejor_vendedor) : '—'; ?>
+                </div>
             </div>
         </div>
     </div>
@@ -151,7 +171,7 @@ foreach ($filas as $f) {
     <!-- Gráfico -->
     <div class="reporte-grafico mb-4">
         <?php if (count($filas) > 0): ?>
-            <canvas id="ventasPeriodoChart" height="110"></canvas>
+            <canvas id="ventasVendedorChart" height="110"></canvas>
         <?php else: ?>
             <div class="alert alert-light border text-center">
                 No se encontraron ventas en el período seleccionado.
@@ -159,12 +179,12 @@ foreach ($filas as $f) {
         <?php endif; ?>
     </div>
 
-    <!-- Tabla detalle por mes/año -->
+    <!-- Tabla detalle por vendedor -->
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle reporte-tabla">
             <thead class="table-dark">
                 <tr>
-                    <th>Período (Mes/Año)</th>
+                    <th>Vendedor</th>
                     <th class="text-center">Cantidad de ventas</th>
                     <th class="text-end">Total vendido</th>
                     <th class="text-end">Ticket promedio</th>
@@ -174,7 +194,7 @@ foreach ($filas as $f) {
                 <?php if (count($filas) > 0): ?>
                     <?php foreach ($filas as $f): ?>
                         <tr>
-                            <td><?= htmlspecialchars($f['periodo_legible']); ?></td>
+                            <td><?= htmlspecialchars($f['vendedor']); ?></td>
                             <td class="text-center"><?= (int)$f['cantidad_ventas']; ?></td>
                             <td class="text-end">
                                 $<?= number_format($f['total_vendido'], 2, ',', '.'); ?>
@@ -192,20 +212,6 @@ foreach ($filas as $f) {
                     </tr>
                 <?php endif; ?>
             </tbody>
-            <?php if (count($filas) > 0): ?>
-            <tfoot>
-                <tr>
-                    <th>Total período</th>
-                    <th class="text-center"><?= $total_ventas_global; ?></th>
-                    <th class="text-end">
-                        $<?= number_format($total_importe_global, 2, ',', '.'); ?>
-                    </th>
-                    <th class="text-end">
-                        $<?= number_format($ticket_promedio_global, 2, ',', '.'); ?>
-                    </th>
-                </tr>
-            </tfoot>
-            <?php endif; ?>
         </table>
     </div>
 </div>
@@ -213,14 +219,14 @@ foreach ($filas as $f) {
 <?php if (count($filas) > 0): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('ventasPeriodoChart').getContext('2d');
+    const ctx = document.getElementById('ventasVendedorChart').getContext('2d');
 
-    const labels = <?= json_encode($labels); ?>;
-    const dataTotales = <?= json_encode($data_totales); ?>;
+    const labels        = <?= json_encode($labels); ?>;
+    const dataTotales   = <?= json_encode($data_totales); ?>;
     const dataCantidades = <?= json_encode($data_cantidades); ?>;
 
-    // Guardo la instancia en window para poder usarla después
-    window.ventasPeriodoChart = new Chart(ctx, {
+    // Instancia global para luego usarla al generar el PDF
+    window.ventasVendedorChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
@@ -270,18 +276,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ==== LÓGICA DEL BOTÓN EXPORTAR PDF ====
-    const btnPdf = document.getElementById('btn-exportar-pdf');
-    const formPdf = document.getElementById('form-exportar-pdf');
+    const btnPdf        = document.getElementById('btn-exportar-pdf');
+    const formPdf       = document.getElementById('form-exportar-pdf');
     const inputChartImg = document.getElementById('chart_img');
 
     if (btnPdf && formPdf && inputChartImg) {
         btnPdf.addEventListener('click', function () {
-            if (window.ventasPeriodoChart) {
-                // Genero la imagen del gráfico en base64
-                const imgBase64 = window.ventasPeriodoChart.toBase64Image(); // data:image/png;base64,...
+            if (window.ventasVendedorChart) {
+                const imgBase64 = window.ventasVendedorChart.toBase64Image();
                 inputChartImg.value = imgBase64;
             }
-            // Envío el formulario al controlador PDF
             formPdf.submit();
         });
     }

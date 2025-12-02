@@ -16,17 +16,20 @@ $primer_dia_anio = date('Y-01-01');
 $desde = $_GET['desde'] ?? $primer_dia_anio;
 $hasta = $_GET['hasta'] ?? $hoy;
 
-// Traer resumen de ventas agrupadas por mes/año
-$result = $ventas->reporte_ventas_por_periodo($desde, $hasta);
+// Traer resumen por cliente
+$result = $ventas->reporte_clientes_frecuentes($desde, $hasta);
 
 // Pasar el result a un array para reusar
-$filas = [];
+$clientes = [];
+$total_clientes = 0;
 $total_ventas_global = 0;
 $total_importe_global = 0;
 
 if ($result && $result->num_rows > 0) {
     while ($r = $result->fetch_assoc()) {
-        $filas[] = $r;
+        $clientes[] = $r;
+        $total_clientes++;
+
         $total_ventas_global  += (int)$r['cantidad_ventas'];
         $total_importe_global += (float)$r['total_vendido'];
     }
@@ -38,13 +41,13 @@ $ticket_promedio_global = $total_ventas_global > 0
 
 // Datos para el gráfico
 $labels = [];
-$data_totales = [];
 $data_cantidades = [];
+$data_totales = [];
 
-foreach ($filas as $f) {
-    $labels[]        = $f['periodo_legible'];
-    $data_totales[]  = round($f['total_vendido'], 2);
-    $data_cantidades[] = (int)$f['cantidad_ventas'];
+foreach ($clientes as $c) {
+    $labels[]          = $c['cliente'];
+    $data_cantidades[] = (int)$c['cantidad_ventas'];
+    $data_totales[]    = round((float)$c['total_vendido'], 2);
 }
 ?>
 
@@ -56,25 +59,25 @@ foreach ($filas as $f) {
     <ol class="breadcrumb breadcrumb-glass">
         <li class="breadcrumb-item"><a href="index.php?page=bienvenida">Inicio</a></li>
         <li class="breadcrumb-item"><a href="index.php?page=reportes">Reportes</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ventas por período</li>
+        <li class="breadcrumb-item active" aria-current="page">Clientes más frecuentes</li>
     </ol>
 </nav>
 
 <div class="container mt-4 hacer_padding reporte-ventas-container">
 
     <!-- Título + resumen -->
-    <div class="reporte-ventas-header mb-4">
+    <div class="reporte-ventas-header mb-4 d-flex justify-content-between align-items-center">
         <div>
             <h2 class="mb-1">
-                <i class="fa-solid fa-calendar-alt me-2"></i> Ventas por período (Mes / Año)
+                <i class="fa-solid fa-user-check me-2"></i> Clientes más frecuentes
             </h2>
             <p class="text-muted mb-0">
-                Analiza el comportamiento de las <strong>ventas concretadas</strong> agrupadas por mes y año.
+                Ranking de <strong>clientes</strong> según la cantidad de ventas realizadas en el período seleccionado.
             </p>
         </div>
         <div class="reporte-ventas-badge">
             <span class="badge rounded-pill bg-report-main">
-                Período actual: <?= date('d/m/Y', strtotime($desde)); ?> al <?= date('d/m/Y', strtotime($hasta)); ?>
+                Período: <?= date('d/m/Y', strtotime($desde)); ?> al <?= date('d/m/Y', strtotime($hasta)); ?>
             </span>
         </div>
     </div>
@@ -82,7 +85,7 @@ foreach ($filas as $f) {
     <!-- Filtros -->
     <div class="reporte-filtros mb-4">
         <form method="GET" action="index.php" class="row g-3 align-items-end">
-            <input type="hidden" name="page" value="reporte_ventas_periodo">
+            <input type="hidden" name="page" value="reporte_clientes_frecuentes">
 
             <div class="col-md-3">
                 <label class="form-label">Desde</label>
@@ -94,11 +97,8 @@ foreach ($filas as $f) {
                 <input type="date" name="hasta" class="form-control" value="<?= htmlspecialchars($hasta); ?>">
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label">Agrupación</label>
-                <select class="form-select" disabled>
-                    <option>Mensual (Mes/Año)</option>
-                </select>
+            <div class="col-md-3 d-none d-md-block">
+                <!-- espacio para algún filtro futuro (mín. ventas, etc.) -->
             </div>
 
             <div class="col-md-3 text-md-end">
@@ -110,8 +110,8 @@ foreach ($filas as $f) {
 
         <!-- BOTÓN EXPORTAR PDF (form aparte) -->
         <form id="form-exportar-pdf"
-            action="controladores/reportes/reporte_ventas_periodo_pdf.controlador.php"
-            method="POST" target="_blank">
+              action="controladores/reportes/reporte_clientes_frecuentes_pdf.controlador.php"
+              method="POST" target="_blank" class="mt-3">
 
             <!-- Envío los mismos filtros que se están usando -->
             <input type="hidden" name="desde" value="<?= htmlspecialchars($desde) ?>">
@@ -120,7 +120,7 @@ foreach ($filas as $f) {
             <!-- Acá voy a guardar la imagen del gráfico en base64 -->
             <input type="hidden" name="chart_img" id="chart_img">
 
-            <button type="button" id="btn-exportar-pdf" class="btn btn-danger mt-3">
+            <button type="button" id="btn-exportar-pdf" class="btn btn-danger">
                 <i class="fa fa-file-pdf me-1"></i> Exportar a PDF
             </button>
         </form>
@@ -128,30 +128,40 @@ foreach ($filas as $f) {
 
     <!-- KPIs -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-ventas">
-                <div class="kpi-label">Cantidad de ventas</div>
+                <div class="kpi-label">Cantidad de clientes</div>
+                <div class="kpi-value"><?= $total_clientes; ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card kpi-ventas">
+                <div class="kpi-label">Total de ventas</div>
                 <div class="kpi-value"><?= $total_ventas_global; ?></div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-importe">
-                <div class="kpi-label">Total vendido</div>
-                <div class="kpi-value">$<?= number_format($total_importe_global, 2, ',', '.'); ?></div>
+                <div class="kpi-label">Total facturado</div>
+                <div class="kpi-value">
+                    $<?= number_format($total_importe_global, 2, ',', '.'); ?>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="kpi-card kpi-ticket">
-                <div class="kpi-label">Ticket promedio</div>
-                <div class="kpi-value">$<?= number_format($ticket_promedio_global, 2, ',', '.'); ?></div>
+                <div class="kpi-label">Ticket promedio global</div>
+                <div class="kpi-value">
+                    $<?= number_format($ticket_promedio_global, 2, ',', '.'); ?>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Gráfico -->
     <div class="reporte-grafico mb-4">
-        <?php if (count($filas) > 0): ?>
-            <canvas id="ventasPeriodoChart" height="110"></canvas>
+        <?php if (count($clientes) > 0): ?>
+            <canvas id="clientesFrecuentesChart" height="110"></canvas>
         <?php else: ?>
             <div class="alert alert-light border text-center">
                 No se encontraron ventas en el período seleccionado.
@@ -159,28 +169,33 @@ foreach ($filas as $f) {
         <?php endif; ?>
     </div>
 
-    <!-- Tabla detalle por mes/año -->
+    <!-- Tabla detalle -->
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle reporte-tabla">
             <thead class="table-dark">
                 <tr>
-                    <th>Período (Mes/Año)</th>
+                    <th>Cliente</th>
                     <th class="text-center">Cantidad de ventas</th>
                     <th class="text-end">Total vendido</th>
                     <th class="text-end">Ticket promedio</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (count($filas) > 0): ?>
-                    <?php foreach ($filas as $f): ?>
+                <?php if (count($clientes) > 0): ?>
+                    <?php foreach ($clientes as $c): ?>
+                        <?php
+                            $cant   = (int)$c['cantidad_ventas'];
+                            $total  = (float)$c['total_vendido'];
+                            $ticket = (float)$c['ticket_promedio'];
+                        ?>
                         <tr>
-                            <td><?= htmlspecialchars($f['periodo_legible']); ?></td>
-                            <td class="text-center"><?= (int)$f['cantidad_ventas']; ?></td>
+                            <td><?= htmlspecialchars($c['cliente']); ?></td>
+                            <td class="text-center"><?= $cant; ?></td>
                             <td class="text-end">
-                                $<?= number_format($f['total_vendido'], 2, ',', '.'); ?>
+                                $<?= number_format($total, 2, ',', '.'); ?>
                             </td>
                             <td class="text-end">
-                                $<?= number_format($f['ticket_promedio'], 2, ',', '.'); ?>
+                                $<?= number_format($ticket, 2, ',', '.'); ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -192,7 +207,7 @@ foreach ($filas as $f) {
                     </tr>
                 <?php endif; ?>
             </tbody>
-            <?php if (count($filas) > 0): ?>
+            <?php if (count($clientes) > 0): ?>
             <tfoot>
                 <tr>
                     <th>Total período</th>
@@ -210,31 +225,31 @@ foreach ($filas as $f) {
     </div>
 </div>
 
-<?php if (count($filas) > 0): ?>
+<?php if (count($clientes) > 0): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('ventasPeriodoChart').getContext('2d');
+    const ctx = document.getElementById('clientesFrecuentesChart').getContext('2d');
 
-    const labels = <?= json_encode($labels); ?>;
-    const dataTotales = <?= json_encode($data_totales); ?>;
+    const labels        = <?= json_encode($labels); ?>;
     const dataCantidades = <?= json_encode($data_cantidades); ?>;
+    const dataTotales    = <?= json_encode($data_totales); ?>;
 
-    // Guardo la instancia en window para poder usarla después
-    window.ventasPeriodoChart = new Chart(ctx, {
+    // Instancia global para luego usarla al generar el PDF
+    window.clientesFrecuentesChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [
                 {
                     type: 'bar',
-                    label: 'Total vendido ($)',
-                    data: dataTotales,
+                    label: 'Cantidad de ventas',
+                    data: dataCantidades,
                     yAxisID: 'y1'
                 },
                 {
                     type: 'line',
-                    label: 'Cantidad de ventas',
-                    data: dataCantidades,
+                    label: 'Total vendido ($)',
+                    data: dataTotales,
                     yAxisID: 'y2',
                     tension: 0.3
                 }
@@ -270,18 +285,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ==== LÓGICA DEL BOTÓN EXPORTAR PDF ====
-    const btnPdf = document.getElementById('btn-exportar-pdf');
-    const formPdf = document.getElementById('form-exportar-pdf');
+    const btnPdf        = document.getElementById('btn-exportar-pdf');
+    const formPdf       = document.getElementById('form-exportar-pdf');
     const inputChartImg = document.getElementById('chart_img');
 
     if (btnPdf && formPdf && inputChartImg) {
         btnPdf.addEventListener('click', function () {
-            if (window.ventasPeriodoChart) {
-                // Genero la imagen del gráfico en base64
-                const imgBase64 = window.ventasPeriodoChart.toBase64Image(); // data:image/png;base64,...
+            if (window.clientesFrecuentesChart) {
+                const imgBase64 = window.clientesFrecuentesChart.toBase64Image();
                 inputChartImg.value = imgBase64;
             }
-            // Envío el formulario al controlador PDF
             formPdf.submit();
         });
     }

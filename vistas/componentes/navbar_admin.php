@@ -111,6 +111,12 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li>
+                                        <a class="dropdown-item" href="index.php?page=listado_auditoria">
+                                            <i class="fa-solid fa-file-circle-exclamation me-2 text-danger"></i>
+                                            Otras Auditorías
+                                        </a>
+                                    </li>
+                                                                        <li>
                                         <a class="dropdown-item" href="index.php?page=listado_anulaciones">
                                             <i class="fa-solid fa-ban me-2 text-danger"></i>
                                             Anulaciones de operaciones
@@ -138,9 +144,6 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="index.php?page=reportes">Reportes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="index.php?page=graficos">Estadísticas</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="index.php?page=form_mis_datos">Mis Datos</a>

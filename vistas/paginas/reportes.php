@@ -264,7 +264,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <i class="fa-solid fa-cash-register"></i>
                     </div>
                     <div class="report-body">
-                        <h5>Balance de caja</h5>
+                        <h5>Movimientos de caja</h5>
                         <p>
                             Visualiza ingresos, egresos y balance de caja en un mes determinado.
                         </p>
