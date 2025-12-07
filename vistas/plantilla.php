@@ -31,6 +31,8 @@ require_once('modelos/modulos.php');
     <link href="assets/css/reportes.css" rel="stylesheet">
     <link href="assets/css/reporte_bases.css" rel="stylesheet">
     <link href="assets/css/reporte_auditoria.css" rel="stylesheet">
+    <link href="assets/css/bienvenida_cliente.css" rel="stylesheet">
+    <link href="assets/css/dashboard.css" rel="stylesheet">
     <link href="assets/css/sweetalert2.min.css" rel="stylesheet">
     <link href="assets/css/font-family-Sans-Montserrat-Roboto.css" rel="stylesheet">
     <!-- Agrega Font Awesome para los íconos de redes sociales -->

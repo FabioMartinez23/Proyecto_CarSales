@@ -296,39 +296,124 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 </div>
             </div>
 
-            <div id="confirmacion" class="paso">
-                <h5>Confirmación</h5>
-                <p>Revise sus datos antes de enviar:</p>
-                <ul>
-                    <li><strong>Nombre:</strong> <span id="confirmNombre">Marcelo</span></li>
-                    <li><strong>Apellido:</strong> <span id="confirmApellido">Zunino</span></li>
-                    <li><strong>Fecha de Nacimiento:</strong> <span id="confirmFechaNacimiento"></span></li>
-                    <li><strong>Sexo:</strong> <span id="confirmTipoSexo"></span></li>
+            <div id="confirmacion" class="paso resumen-confirmacion">
+                <div class="resumen-header">
+                    <div>
+                        <div class="resumen-etapa">Paso 4 de 4</div>
+                        <h5 class="resumen-titulo">Revisá y confirmá los datos del cliente</h5>
+                        <p class="resumen-subtitulo">
+                            Verificá que toda la información sea correcta antes de guardar. 
+                            Si algo no coincide, podés volver a los pasos anteriores.
+                        </p>
+                    </div>
+                    <div class="resumen-chip">
+                        <?php if(isset($_GET['idusuarios'])) {
+                            echo "Editar Cliente";
+                        } else {
+                            echo "Nuevo Cliente";
+                        }
+                        ?>
+                    </div>
+                </div>
 
-                    <li><strong>Documento:</strong> <span id="confirmDocumento"></span></li>
-                    <li><strong>Tipo de Documento:</strong> <span id="confirmTipoDocumento"></span></li>
-                    <li><strong>Domicilio:</strong> <span id="confirmDomicilio"></span></li>
-                    <li><strong>Tipo de Domicilio:</strong> <span id="confirmTipoDomicilio"></span></li>
+                <div class="resumen-grid">
+                    <!-- DATOS PERSONALES -->
+                    <section class="resumen-bloque">
+                        <h6 class="resumen-bloque-titulo">Datos personales</h6>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Nombre</span>
+                            <span class="resumen-value" id="confirmNombre"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Apellido</span>
+                            <span class="resumen-value" id="confirmApellido"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Fecha de nacimiento</span>
+                            <span class="resumen-value" id="confirmFechaNacimiento"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Sexo</span>
+                            <span class="resumen-value" id="confirmTipoSexo"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Documento</span>
+                            <span class="resumen-value" id="confirmDocumento"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Tipo de documento</span>
+                            <span class="resumen-value" id="confirmTipoDocumento"></span>
+                        </div>
+                    </section>
 
-                    <li><strong>Barrio:</strong> <span id="confirmBarrio"></span></li>
-                    <li><strong>Localidad:</strong> <span id="confirmLocalidad"></span></li>
-                    <li><strong>Provincia:</strong> <span id="confirmProvincia"></span></li>
-                    <li><strong>Pais:</strong> <span id="confirmPais"></span></li>
+                    <!-- DOMICILIO -->
+                    <section class="resumen-bloque">
+                        <h6 class="resumen-bloque-titulo">Domicilio</h6>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Domicilio</span>
+                            <span class="resumen-value" id="confirmDomicilio"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Tipo de domicilio</span>
+                            <span class="resumen-value" id="confirmTipoDomicilio"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Barrio</span>
+                            <span class="resumen-value" id="confirmBarrio"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Localidad</span>
+                            <span class="resumen-value" id="confirmLocalidad"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Provincia</span>
+                            <span class="resumen-value" id="confirmProvincia"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">País</span>
+                            <span class="resumen-value" id="confirmPais"></span>
+                        </div>
+                    </section>
 
-                    <li><strong>Contacto:</strong> <span id="confirmContacto"></span></li>
-                    <li><strong>Tipo de Contacto:</strong> <span id="confirmTipoContacto"></span></li>
-                    <li><strong>Nombre de Usuario:</strong> <span id="confirmUsername"></span></li>
-                    <li><strong>Email:</strong> <span id="confirmEmail"></span></li>
-                </ul>
+                    <!-- CONTACTO -->
+                    <section class="resumen-bloque">
+                        <h6 class="resumen-bloque-titulo">Contacto</h6>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Contacto</span>
+                            <span class="resumen-value" id="confirmContacto"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Tipo de contacto</span>
+                            <span class="resumen-value" id="confirmTipoContacto"></span>
+                        </div>
+                    </section>
+
+                    <!-- USUARIO -->
+                    <section class="resumen-bloque">
+                        <h6 class="resumen-bloque-titulo">Usuario del sistema</h6>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Nombre de usuario</span>
+                            <span class="resumen-value" id="confirmUsername"></span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-label">Email</span>
+                            <span class="resumen-value" id="confirmEmail"></span>
+                        </div>
+                    </section>
+                </div>
 
                 <input type="hidden" name="perfiles_idperfiles" value="3">
 
-                <div class="d-flex justify-content-center mt-4">
-                    <!-- <a type="button" class="btn btn-dark me-4" href="index.php?page=listado_clientes">Volver</a> -->
-                    <button type="button" class="btn btn-secondary me-4" id="back3" onclick="atras3()">Atrás</button>
-                    <button type="submit" class="btn btn-action" onclick="return validarFormulario()">Guardar</button>
+                <div class="resumen-footer">
+                    <button type="button" class="btn btn-secondary" id="back3" onclick="atras3()">
+                        Atrás
+                    </button>
+                    <button type="submit" class="btn btn-action" onclick="return validarFormulario()">
+                        Guardar cliente
+                    </button>
                 </div>
             </div>
+
         </form>
     </div>
 </div>

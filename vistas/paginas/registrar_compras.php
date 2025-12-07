@@ -410,7 +410,7 @@ $result_tipo_doc = $tipo_doc->mostrar_tipo_doc();
 
                                 <div class="col-md-4">
                                     <label for="id_año" class="form-label">Año</label>
-                                    <input type="number" name="año" class="form-control" id="id_año" min="1960" max="2024">
+                                    <input type="number" name="año" class="form-control" id="id_año" min="1960" max="2025">
                                 </div>
 
                                 <div class="col-md-4">

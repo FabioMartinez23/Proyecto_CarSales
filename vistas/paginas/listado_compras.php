@@ -104,7 +104,7 @@ $total_paginas = $total_registros > 0 ? ceil($total_registros / $filas_por_pagin
 
                             <!-- SOLO mostrar el botón de anular si está Realizada -->
                             <?php if ($esRealizada): ?>
-                                <a href="index.php?page=anular_compras&idcompra=<?= $compra['idcompras']; ?>"
+                                <a href="index.php?page=anular_compra&idcompra=<?= $compra['idcompras']; ?>"
                                    class="text-danger" title="Anular consignación">
                                     <i class="fa-solid fa-ban"></i>
                                 </a>

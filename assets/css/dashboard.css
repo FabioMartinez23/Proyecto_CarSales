@@ -1,0 +1,373 @@
+/* =========================================
+   PALETA GENERAL (podés ajustar a tu gusto)
+========================================= */
+:root {
+    --cs-bg: #0f172a;
+    --cs-surface: #111827;
+    --cs-surface-soft: #111827;
+    --cs-border-soft: rgba(148, 163, 184, 0.35);
+    --cs-primary: #2563eb;
+    --cs-primary-soft: rgba(37, 99, 235, 0.12);
+    --cs-success: #22c55e;
+    --cs-danger: #ef4444;
+    --cs-text-main: #e5e7eb;
+    --cs-text-soft: #9ca3af;
+}
+
+/* =========================================
+   LAYOUT GENERAL
+========================================= */
+.dashboard-main {
+    font-size: 0.95rem;
+}
+
+/* ENCABEZADO */
+/* ENCABEZADO PANEL DE CONTROL */
+.dashboard-header {
+    background: #003b73;               /* tu azul de cabecera */
+    border-radius: 0.9rem;             /* mismo radio que las stat-item */
+    padding: 1rem 1.3rem;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(15, 23, 42, 0.5);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* opcional: ajustar textos para que contrasten mejor */
+.dashboard-header .dashboard-title {
+    color: #f9fafb;
+}
+
+.dashboard-header .dashboard-subtitle {
+    color: #e5e7eb;
+}
+
+.dashboard-header .dashboard-tag {
+    background: rgba(15, 23, 42, 0.4);
+    color: #e5e7eb;
+    border-radius: 999px;
+}
+
+.dashboard-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--cs-text-main);
+}
+
+.dashboard-subtitle {
+    font-size: 0.9rem;
+    color: var(--cs-text-soft);
+}
+
+.dashboard-meta .dashboard-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--cs-primary-soft);
+    color: #dbeafe;
+    font-size: 0.8rem;
+}
+
+/* =========================================
+   TARJETAS RESUMEN
+========================================= */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    border-radius: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: var(--cs-surface);
+    border: 1px solid var(--cs-border-soft);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.stat-item--clickable {
+    cursor: pointer;
+}
+
+.stat-item--clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.75);
+    border-color: rgba(59, 130, 246, 0.7);
+}
+
+.stat-item--accent {
+    background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.2), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.2), transparent 60%),
+                var(--cs-surface);
+    border-color: rgba(59, 130, 246, 0.7);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--cs-text-soft);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--cs-text-main);
+    line-height: 1.2;
+}
+
+.stat-value--money {
+    font-size: 1.4rem;
+}
+
+.stat-icon-only {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 1.3rem;
+}
+
+/* =========================================
+   ESTADO DE CAJA (BARRA / NAVEGADOR)
+========================================= */
+.cashbox-status {
+    margin-top: 1.75rem;
+}
+
+.cashbox-nav {
+    border-radius: 999px;
+    padding: 0.7rem 1.25rem;
+    background: var(--cs-surface-soft);
+    border: 1px solid var(--cs-border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.7);
+}
+
+.cashbox-nav--open {
+    border-color: rgba(34, 197, 94, 0.7);
+    box-shadow: 0 18px 50px rgba(22, 163, 74, 0.35);
+}
+
+.cashbox-nav--closed {
+    border-color: rgba(239, 68, 68, 0.7);
+    box-shadow: 0 18px 50px rgba(220, 38, 38, 0.35);
+}
+
+.cashbox-nav--empty {
+    border-style: dashed;
+    opacity: 0.9;
+}
+
+.cashbox-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cashbox-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--cs-text-main);
+    display: flex;
+    align-items: center;
+}
+
+.cashbox-meta {
+    font-size: 0.85rem;
+    color: var(--cs-text-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cashbox-badge strong {
+    color: #f9fafb;
+}
+
+.cashbox-nav--open .cashbox-badge strong {
+    color: var(--cs-success);
+}
+
+.cashbox-nav--closed .cashbox-badge strong {
+    color: var(--cs-danger);
+}
+
+.cashbox-separator {
+    opacity: 0.6;
+}
+
+.cashbox-detail strong {
+    color: #e5e7eb;
+}
+
+.cashbox-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Botón estilo link/pastilla */
+.cashbox-btn {
+    border: none;
+    outline: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
+    background: var(--cs-primary-soft);
+    color: #dbeafe;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cashbox-btn:hover {
+    background: rgba(37, 99, 235, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.7);
+}
+
+.cashbox-btn--danger {
+    background: rgba(239, 68, 68, 0.17);
+    color: #fee2e2;
+}
+
+.cashbox-btn--danger:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+/* Responsive cajita */
+@media (max-width: 768px) {
+    .cashbox-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        border-radius: 1.2rem;
+    }
+    .cashbox-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+/* =========================================
+   GRÁFICOS
+========================================= */
+.charts-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* cada fila de gráficos */
+.charts-row {
+    display: flex;
+    gap: 1rem;
+}
+
+/* fila completa (un solo gráfico) */
+.charts-row--full {
+    flex-direction: column;
+}
+
+/* fila con dos gráficos lado a lado */
+.charts-row--two {
+    flex-direction: row;
+}
+
+/* tarjeta de gráfico */
+.chart-wrapper {
+    background: var(--cs-surface);
+    border-radius: 0.9rem;
+    padding: 0.9rem 1rem 1.1rem;
+    border: 1px solid var(--cs-border-soft);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.75);
+    flex: 1;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--cs-text-main);
+}
+
+/* responsive: en pantallas chicas, todo en columna */
+@media (max-width: 768px) {
+    .charts-row--two {
+        flex-direction: column;
+    }
+}
+
+/* =========================================
+   ACCESOS RÁPIDOS
+========================================= */
+.quick-actions {
+    padding-bottom: 1rem;
+}
+
+.quick-actions-title {
+    color: var(--cs-text-main);
+    font-weight: 600;
+}
+
+/* fila flexible, se acomodan en 2 o 4 columnas según ancho */
+.quick-actions-row {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+/* pastillas */
+.btn-quick {
+    border-radius: 999px;
+    border: 1px solid var(--cs-border-soft);
+    background: var(--cs-surface);
+    color: var(--cs-text-main);
+    padding: 0.65rem 1.3rem;
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                transform 0.15s ease, box-shadow 0.15s ease;
+    /* ancho mínimo para que no se estiren de más */
+    min-width: 190px;
+    justify-content: center;
+}
+
+.btn-quick:hover {
+    background: radial-gradient(circle at top left,
+                rgba(37, 99, 235, 0.18), transparent 55%),
+                var(--cs-surface);
+    border-color: rgba(59, 130, 246, 0.75);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+}
+
+.btn-quick--dark {
+    background: linear-gradient(135deg, #020617, #0f172a);
+}

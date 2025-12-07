@@ -674,6 +674,66 @@ class Vehiculos extends Paginacion{
         return null;
     }
 
+
+    public function traer_vehiculos_disponibles_publico()
+    {
+        $conexion = new Conexion();
+
+        $query = "
+            SELECT 
+                v.idvehiculos,
+                v.patente,
+                v.anio,
+                m.nombre  AS marca,
+                mo.nombre AS modelo,
+                c.descripcion AS color,
+                tv.nombre AS tipo_vehiculo,
+
+                -- Precio público (último)
+                precios_publico.precio       AS precio_publico,
+                precios_publico.fecha_precio AS fecha_publico
+
+            FROM vehiculos v
+            INNER JOIN modelos mo 
+                ON v.modelos_idmodelos = mo.idmodelos
+            INNER JOIN marcas m 
+                ON mo.marcas_idmarcas = m.idmarcas
+            INNER JOIN colores c 
+                ON v.colores_idcolores = c.idcolores
+            INNER JOIN tipo_vehiculos tv 
+                ON v.tipo_vehiculos_idtipo_vehiculos = tv.idtipo_vehiculos
+            LEFT JOIN estado_vehiculo e
+                ON v.estado_vehiculo_idestado_vehiculo = e.idestado_vehiculo
+
+            -- JOIN para precio PÚBLICO (último)
+            LEFT JOIN precios_vehiculos AS precios_publico 
+                ON precios_publico.vehiculos_idvehiculos = v.idvehiculos
+                AND precios_publico.tipo_precios_idtipo_precios = (
+                    SELECT idtipo_precios 
+                    FROM tipo_precios 
+                    WHERE descripcion = 'publico' 
+                    LIMIT 1
+                )
+                AND precios_publico.fecha_precio = (
+                    SELECT MAX(p2.fecha_precio)
+                    FROM precios_vehiculos p2
+                    INNER JOIN tipo_precios tp2 
+                        ON p2.tipo_precios_idtipo_precios = tp2.idtipo_precios
+                    WHERE p2.vehiculos_idvehiculos = v.idvehiculos
+                    AND tp2.descripcion = 'publico'
+                )
+
+            WHERE 
+                v.activo_vehiculo = 1
+                AND (e.estado_vehiculo = 'disponible' OR e.estado_vehiculo IS NULL)
+
+            ORDER BY m.nombre, mo.nombre, v.anio DESC
+        ";
+
+        return $conexion->consultar($query);
+    }
+
+
     /**
      * Get the value of idvehiculos
      */ 

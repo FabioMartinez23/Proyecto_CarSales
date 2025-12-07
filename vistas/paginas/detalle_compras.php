@@ -61,8 +61,8 @@ $resultado_compra = $compra->traer_compra_por_id($_GET['idcompra']);
     <!-- BOTONES -->
     <div class="detalle-buttons">
         <a href="index.php?page=listado_compras" class="btn-volver">Volver</a>
-        <a href="reportes_pdf/detalle_compra.php?idcompra=<?= $_GET['idcompra']; ?>" target="_blank" class="btn-descargar">
-            Descargar Boleto Compra/Venta
+        <a href="reportes_pdf/acuse_ingreso_consignacion.php?idcompra=<?= $_GET['idcompra']; ?>" target="_blank" class="btn-descargar">
+            Descargar Constancia de Ingreso en Consignación
         </a>
     </div>
 

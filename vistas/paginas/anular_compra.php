@@ -69,7 +69,7 @@ $compra = $compraModelo->traer_compra_detallada($idcompra);
         </div>
 
         <!-- Motivo -->
-        <select class="form-select" name="tipo_anulacion" required>
+        <select class="form-select" name="tipo_anulacion" id="tipo_anulacion" required>
             <option value="">Seleccione motivo</option>
             <option value="1">Desistimiento del cliente</option>   <!-- DESISTIMIENTO -->
             <option value="2">Reemplazo por otra operación</option><!-- REEMPLAZO -->
@@ -100,47 +100,63 @@ $compra = $compraModelo->traer_compra_detallada($idcompra);
 </div>
 
 <script>
-document.getElementById('tipo_anulacion').addEventListener('change', function() {
-    const detalle = document.getElementById('motivo_detalle_group');
-    if (this.value === '5') {
-        detalle.style.display = 'block';
-    } else {
-        detalle.style.display = 'none';
-    }
-});
+document.addEventListener('DOMContentLoaded', function () {
+    const selectTipo   = document.getElementById('tipo_anulacion');
+    const detalleGroup = document.getElementById('motivo_detalle_group');
+    const btnAnular    = document.getElementById('btn-anular-compra');
+    const inputFecha   = document.getElementById('fecha_anulacion');
+    const loader       = document.getElementById("loader-overlay");
 
-document.getElementById("btn-anular-compra").addEventListener("click", function() {
-    let fecha = document.getElementById("fecha_anulacion").value;
-
-    if (fecha.trim() === "") {
-        Swal.fire({
-            icon: "warning",
-            title: "Falta la fecha",
-            text: "Debe ingresar una fecha de anulación.",
-            confirmButtonColor: "#333A56"
-        });
+    // Si no hay form (por ejemplo, no se encontró la consignación), no hacemos nada
+    if (!selectTipo || !detalleGroup || !btnAnular || !inputFecha) {
         return;
     }
 
-    Swal.fire({
-        title: "¿Confirmar anulación?",
-        html: `
-            Esta acción:<br>
-            <b>- Marcará la consignación como ANULADA</b><br>
-            <b>- Pondrá el vehículo en estado de BAJA</b><br><br>
-            <span class="text-danger fw-bold">Esto no puede deshacerse.</span>
-        `,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#B33030",
-        cancelButtonColor: "#52658F",
-        confirmButtonText: "Sí, anular",
-        cancelButtonText: "Cancelar"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById("loader-overlay").style.display = "flex";
-            document.getElementById("form-anular-compra").submit();
+    // Mostrar/ocultar detalle según motivo
+    selectTipo.addEventListener('change', function() {
+        if (this.value === '5') {
+            detalleGroup.style.display = 'block';
+        } else {
+            detalleGroup.style.display = 'none';
         }
+    });
+
+    // Confirmación de anulación
+    btnAnular.addEventListener("click", function() {
+        let fecha = inputFecha.value;
+
+        if (fecha.trim() === "") {
+            Swal.fire({
+                icon: "warning",
+                title: "Falta la fecha",
+                text: "Debe ingresar una fecha de anulación.",
+                confirmButtonColor: "#333A56"
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: "¿Confirmar anulación?",
+            html: `
+                Esta acción:<br>
+                <b>- Marcará la consignación como ANULADA</b><br>
+                <b>- Pondrá el vehículo en estado de BAJA</b><br><br>
+                <span class="text-danger fw-bold">Esto no puede deshacerse.</span>
+            `,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#B33030",
+            cancelButtonColor: "#52658F",
+            confirmButtonText: "Sí, anular",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (loader) {
+                    loader.style.display = "flex";
+                }
+                document.getElementById("form-anular-compra").submit();
+            }
+        });
     });
 });
 </script>

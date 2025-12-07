@@ -21,7 +21,7 @@
 
         <div class="hero-right">
             <div class="hero-icon-box">
-                <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="auto" class="hero-auto-img">
+                <img src="assets/img/auto1.jpg" alt="auto" class="hero-auto-img">
             </div>
         </div>
 

@@ -307,6 +307,165 @@ class ComprarVehiculo {
     }
 
 
+    public function traer_compra_para_acuse($idcompra)
+    {
+        $con = $this->getConexion();
+        $idcompra = (int)$idcompra;
+
+        $query = "
+            SELECT 
+                c.idcompras,
+                c.descripcion              AS observacion,
+                c.fecha_compra,
+                c.estado_compra,
+
+                -- Vehículo
+                v.idvehiculos,
+                v.patente,
+                v.chasis,
+                v.motor,
+                v.kilometraje,
+                v.anio,
+                col.descripcion            AS nombre_descripcion,
+                tv.nombre                  AS nombre_tipo,
+                mo.nombre                  AS nombre_modelo,
+                ma.nombre                  AS nombre_marca,
+
+                -- Precio tomado
+                pv.precio,
+                tp.descripcion             AS nombre_pago,
+
+                -- Titular / Persona
+                per.nombre                 AS nombre,
+                per.apellido               AS apellido,
+
+                -- DNI (documentos, solo tipo 1 activo)
+                doc.valor                  AS valor_documento,
+
+                -- Contacto (teléfono, suponemos tipo_contacto = 1)
+                cont.valor                 AS valor_contacto,
+
+                -- Domicilio
+                dom.descripcion            AS nombre_domicilio,
+                b.descripcion              AS nombre_barrio,
+                loc.descripcion            AS nombre_localidad,
+                prov.descripcion           AS nombre_provincia,
+
+                -- Ficha técnica
+                ft.vencimiento_bateria,
+                ft.vencimiento_service,
+                ft.vencimiento_RTO,
+                carr.descripcion_carroceria,
+                cris.descripcion_cristales,
+                neu.descripcion_neumaticos
+
+            FROM compras c
+            INNER JOIN vehiculos v 
+                ON v.idvehiculos = c.vehiculo_idvehiculo
+            INNER JOIN modelos mo 
+                ON mo.idmodelos = v.modelos_idmodelos
+            INNER JOIN marcas ma 
+                ON ma.idmarcas = mo.marcas_idmarcas
+            INNER JOIN colores col
+                ON col.idcolores = v.colores_idcolores
+            INNER JOIN tipo_vehiculos tv
+                ON tv.idtipo_vehiculos = v.tipo_vehiculos_idtipo_vehiculos
+
+            -- Precio tomado activo
+            INNER JOIN precios_vehiculos pv
+                ON pv.vehiculos_idvehiculos = v.idvehiculos
+            AND pv.activo_precio = 1
+            INNER JOIN tipo_precios tpr
+                ON tpr.idtipo_precios = pv.tipo_precios_idtipo_precios
+            AND tpr.descripcion = 'tomado'
+
+            -- Forma de pago
+            INNER JOIN tipo_pago tp
+                ON tp.idtipo_pago = c.tipo_pago_idtipo_pago
+
+            -- Titular y persona
+            INNER JOIN titular_vehiculo tvh
+                ON tvh.idtitular_vehiculo = c.titular_vehiculo_idtitular_vehiculo
+            INNER JOIN personas per
+                ON per.idpersonas = tvh.Personas_idpersonas
+
+            -- Documento (DNI) - ajustá el id de tipo_documento si hace falta
+            LEFT JOIN documentos doc
+                ON doc.Personas_idPersonas = per.idpersonas
+            AND doc.activo_documento = 1
+            AND doc.Tipo_documento_idTipo_documento = 1
+
+            -- Contacto (teléfono) - ajustá el id de tipo_contacto si hace falta
+            LEFT JOIN contactos cont
+                ON cont.Personas_idPersonas = per.idpersonas
+            AND cont.tipo_contactos_idtipo_contactos = 1
+
+            -- Domicilio
+            LEFT JOIN domicilios dom
+                ON dom.Personas_idPersonas = per.idpersonas
+            LEFT JOIN barrios b
+                ON b.idbarrios = dom.barrios_idbarrios
+            LEFT JOIN localidades loc
+                ON loc.idlocalidades = b.localidades_idlocalidades
+            LEFT JOIN provincias prov
+                ON prov.idprovincias = loc.provincias_idprovincias
+
+            -- Ficha técnica
+            LEFT JOIN ficha_tecnica ft
+                ON ft.vehiculos_idvehiculos = v.idvehiculos
+            LEFT JOIN carroceria carr
+                ON carr.idcarroceria = ft.carroceria_idcarroceria
+            LEFT JOIN cristales cris
+                ON cris.idcristales = ft.cristales_idcristales
+            LEFT JOIN neumaticos neu
+                ON neu.idneumaticos = ft.neumaticos_idneumaticos
+
+            WHERE c.idcompras = $idcompra
+            LIMIT 1
+        ";
+
+        $res = $con->query($query);
+        $fila = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $fila;
+    }
+
+
+    public function traer_documentaciones_por_vehiculo($idvehiculo)
+    {
+        $con = $this->getConexion();
+        $idvehiculo = (int)$idvehiculo;
+
+        $query = "
+            SELECT 
+                d.idDocumentaciones,
+                td.descripcion       AS tipo_documento,
+                d.estado_doc,
+                d.digitalizado,
+                d.fecha_registro
+            FROM documentaciones d
+            INNER JOIN tipo_documentacion td
+                ON td.idtipo_documentacion = d.tipo_documentacion_idtipo_documentacion
+            WHERE d.vehiculos_idvehiculos = $idvehiculo
+            ORDER BY td.descripcion ASC
+        ";
+
+        $res = $con->query($query);
+
+        // NO cierro conexión aquí si la clase está en transacción,
+        // pero como normalmente no lo está, cerramos si corresponde:
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $res;
+    }
+
+
 
     /**
      * Get the value of idcompras

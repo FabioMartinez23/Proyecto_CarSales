@@ -1,30 +1,56 @@
-<main class="my-4">
+<main class="dashboard-main my-4">
 
-<section class="stats d-flex justify-content-between flex-wrap">
-    <div class="card text-center p-3">
-        <h2><?= $total_vehiculos_count ?></h2>
-        <p>Vehículos Disponibles</p>
-    </div>
-    <div class="card text-center p-3">
-        <h2><?= $ventas_empleado ?></h2>
-        <p>Mis Ventas Concretadas</p>
-    </div>
-    <div class="card text-center p-3">
-        <h2><?= $ventas_anuladas_empleado ?></h2>
-        <p>Mis Ventas Anuladas</p>
-    </div>
-    <div class="card text-center p-3">
-        <h2>$<?= number_format($mis_ganancias_mes,2,',','.') ?></h2>
-        <p>Mis Comisiones Mensuales</p>
-    </div>
-</section>
+    <!-- ENCABEZADO -->
+    <header class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="dashboard-title mb-1">Panel del Vendedor</h2>
+            <p class="dashboard-subtitle mb-0">
+                Resumen de mis vehículos, ventas y comisiones.
+            </p>
+        </div>
+        <div class="dashboard-meta text-end">
+            <span class="dashboard-tag">Empleado</span>
+        </div>
+    </header>
 
-<section class="charts row mt-4">
-    <div class="col-md-12">
-        <h5 class="text-center fw-bold">Mis Ventas del Mes</h5>
-        <canvas id="chartEmpleado" height="100"></canvas>
-    </div>
-</section>
+    <!-- TARJETAS RESUMEN -->
+    <section class="stat-grid">
+
+        <article class="stat-item">
+            <div class="stat-label">Vehículos Disponibles</div>
+            <div class="stat-value"><?= $total_vehiculos_count ?></div>
+        </article>
+
+        <article class="stat-item">
+            <div class="stat-label">Mis Ventas Concretadas</div>
+            <div class="stat-value"><?= $ventas_empleado ?></div>
+        </article>
+
+        <article class="stat-item">
+            <div class="stat-label">Mis Ventas Anuladas</div>
+            <div class="stat-value"><?= $ventas_anuladas_empleado ?></div>
+        </article>
+
+        <article class="stat-item">
+            <div class="stat-label">Mis Comisiones Mensuales</div>
+            <div class="stat-value stat-value--money">
+                $<?= number_format($mis_ganancias_mes, 2, ',', '.') ?>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- GRÁFICO DE VENTAS DEL MES -->
+    <section class="charts-layout mt-4">
+        <div class="charts-row charts-row--full">
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">Mis Ventas del Mes</h5>
+                </div>
+                <canvas id="chartEmpleado" height="110"></canvas>
+            </div>
+        </div>
+    </section>
 
 </main>
 
@@ -40,7 +66,6 @@ fetch("controladores/ventas/ventas.empleado.controlador.php", {
 .then(texto => {
     console.log("RESPUESTA RAW:", texto);
 
-    // Convertir texto a JSON
     const data = JSON.parse(texto);
 
     new Chart(document.getElementById('chartEmpleado'), {
@@ -63,6 +88,4 @@ fetch("controladores/ventas/ventas.empleado.controlador.php", {
         }
     });
 });
-
 </script>
-

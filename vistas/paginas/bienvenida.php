@@ -123,6 +123,37 @@ if ($_SESSION['descripcion'] === 'Empleado') {
     $mis_ganancias_mes = isset($rowCom['total']) ? floatval($rowCom['total']) : 0.00;
 }
 
+
+// ===============================
+// VALORES ESPECÍFICOS PARA CLIENTE
+// ===============================
+$mis_compras_count      = 0;
+$vehiculos_sugeridos    = 0;
+$vehiculos_disponibles  = [];
+
+if ($_SESSION['descripcion'] === 'Cliente') {
+
+    $idusuario = $_SESSION['idusuarios'];
+
+    // 1) Mis compras (usando el método nuevo de VenderVehiculo)
+    $ventasModel  = new VenderVehiculo();
+    $mis_compras  = $ventasModel->traer_ventas_por_usuario($idusuario);
+    $mis_compras_count = $mis_compras ? $mis_compras->num_rows : 0;
+
+    // 2) Vehículos disponibles con precio público
+    $vehiculosModel = new Vehiculos();
+    $resVeh = $vehiculosModel->traer_vehiculos_disponibles_publico();
+
+    if ($resVeh) {
+        while ($fila = $resVeh->fetch_assoc()) {
+            $vehiculos_disponibles[] = $fila;
+        }
+    }
+
+    // Por ahora sugeridos = todos los disponibles
+    $vehiculos_sugeridos = count($vehiculos_disponibles);
+}
+
 ?>
 
 <div class="hacer_padding">

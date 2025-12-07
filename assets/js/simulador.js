@@ -1,92 +1,144 @@
-// Función para formatear un número con puntos cada tres dígitos
-function formatearNumero(valor) {
-    // Remover todos los caracteres que no sean números
-    valor = valor.replace(/[^0-9]/g, '');
+// ================================
+// HELPERS DE FORMATEO (mismos que bienvenida_cliente)
+// ================================
+function formatearEnteroConPuntos(valor) {
+    const soloNumeros = (valor || '').toString().replace(/\D/g, '');
+    if (!soloNumeros) return '';
+    return soloNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
 
-    // Convertir a un número entero para evitar problemas de formato
-    const numero = parseInt(valor, 10);
+function obtenerEnteroDesdeInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const soloNumeros = (el.value || '').toString().replace(/\D/g, '');
+    if (!soloNumeros) return 0;
+    return parseInt(soloNumeros, 10);
+}
 
-    // Si el número es NaN, retornar una cadena vacía
-    if (isNaN(numero)) {
-        return '';
+function formatoPesosEntero(valor) {
+    if (isNaN(valor)) return '$0';
+    const numero = Math.round(Number(valor));
+    return '$' + numero.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+}
+
+// ================================
+// INICIALIZACIÓN DE CAMPOS
+// ================================
+document.addEventListener('DOMContentLoaded', function () {
+    // Formatear precio de contado una sola vez
+    const precioContadoInput = document.getElementById('precioContado');
+    if (precioContadoInput) {
+        precioContadoInput.value = formatearEnteroConPuntos(precioContadoInput.value);
+        precioContadoInput.readOnly = true;
     }
 
-    // Convertir el número a una cadena con puntos cada tres dígitos
-    return numero.toLocaleString('de-DE');
-}
+    // Inputs que deben mostrar puntos mientras el usuario escribe
+    const inputsConPuntos = ['anticipo', 'cuotas'];
 
-// Evento de escucha para formatear los números ingresados
-function agregarEventosFormato() {
-    // Agregar eventos de escucha a los campos de entrada
-    document.getElementById('precioContado').addEventListener('keyup', function () {
-        this.value = formatearNumero(this.value);
-        precioContadoInput.maxleng = '12';
+    inputsConPuntos.forEach(function (id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        input.addEventListener('input', function () {
+            const posAntes = input.selectionStart;
+            const valorAntes = input.value;
+
+            input.value = formatearEnteroConPuntos(input.value);
+
+            // Intento mantener el cursor lo más cerca posible del final
+            const diff = valorAntes.length - input.value.length;
+            const nuevaPos = (posAntes - diff >= 0) ? posAntes - diff : input.value.length;
+            input.selectionStart = input.selectionEnd = nuevaPos;
+        });
+
+        // límite razonable de dígitos
+        input.maxLength = 12;
     });
+});
 
-    document.getElementById('anticipo').addEventListener('keyup', function () {
-        this.value = formatearNumero(this.value);
-    });
-
-    document.getElementById('cuotas').addEventListener('keyup', function () {
-        this.value = formatearNumero(this.value);
-    });
-}
-
-// Llamar a la función para agregar eventos de formato de números
-agregarEventosFormato();
-
+// ================================
+// MANEJO DE VEHÍCULO EN PARTE DE PAGO
+// ================================
 function manejarVehiculoEntrega() {
-    const vehiculoEntrega = document.getElementById("vehiculoEntrega").value;
-    const opcionVenta = document.getElementById("opcionVenta");
-    const simulacionContainer = document.querySelector(".simulacion-container");
-    const anticipoInput = document.getElementById("anticipo");
-    anticipoInput.maxleng = '12';
-    const cuotasInput = document.getElementById("cuotas");
-    cuotasInput.maxleng = '12';
-    const resultadoSimulacion = document.getElementById("resultadoSimulacion");
-    
-    if (vehiculoEntrega === "si") {
-        // Mostrar mensaje de advertencia y ocultar campos de entrada
-        opcionVenta.style.display = "block";
-        anticipoInput.style.display = "none";
-        cuotasInput.style.display = "none";
-        resultadoSimulacion.style.display = "none"; // Oculta el resultado de la simulación
+    const selectEntrega    = document.getElementById('vehiculoEntrega');
+    const opcionVenta      = document.getElementById('opcionVenta');
+    const camposSimulacion = document.getElementById('camposSimulacion');
+    const resultadoDiv     = document.getElementById('resultadoSimulacion');
+
+    if (!selectEntrega || !opcionVenta || !camposSimulacion || !resultadoDiv) return;
+
+    if (selectEntrega.value === 'si') {
+        // Mostrar info y ocultar simulación
+        opcionVenta.style.display = 'flex';
+        camposSimulacion.style.display = 'none';
+        resultadoDiv.innerHTML = '';
     } else {
-        // Ocultar mensaje de advertencia y mostrar campos de entrada
-        opcionVenta.style.display = "none";
-        anticipoInput.style.display = "block";
-        cuotasInput.style.display = "block";
-        resultadoSimulacion.style.display = "block"; // Muestra el resultado de la simulación
+        // Ocultar info y habilitar simulación
+        opcionVenta.style.display = 'none';
+        camposSimulacion.style.display = '';
+        resultadoDiv.style.display = '';
     }
 }
 
+// ================================
+// SIMULADOR POR VEHÍCULO
+// ================================
 function calcularSimulacion() {
-    // Convierte los valores ingresados a números reemplazando los puntos por nada (para evitar problemas con decimales)
-    const precioContado = parseFloat(document.getElementById("precioContado").value.replace(/\./g, ''));
-    const anticipo = parseFloat(document.getElementById("anticipo").value.replace(/\./g, ''));
-    const cuotas = parseInt(document.getElementById("cuotas").value, 10);
+    const resultadoDiv = document.getElementById('resultadoSimulacion');
+    if (!resultadoDiv) return;
 
-    // Verifica si los campos están vacíos o contienen valores no válidos
-    if (isNaN(precioContado) || isNaN(anticipo) || isNaN(cuotas)) {
-        document.getElementById("resultadoSimulacion").innerHTML = '<p style="color: red;">Por favor, ingrese valores válidos en todos los campos.</p>';
-        return; // Salir de la función si hay un error
+    const precioContado = obtenerEnteroDesdeInput('precioContado');
+    const anticipo      = obtenerEnteroDesdeInput('anticipo');
+    const cuotas        = obtenerEnteroDesdeInput('cuotas');
+
+    // Validaciones básicas
+    if (!precioContado || precioContado <= 0) {
+        resultadoDiv.innerHTML = '<span class="text-danger-custom">No se pudo obtener el precio del vehículo.</span>';
+        return;
     }
 
-    // Ajusta la tasa de interés según tus necesidades
-    const tasaInteres = 0.05; // Por ejemplo, 5%
+    if (anticipo < 0) {
+        resultadoDiv.innerHTML = '<span class="text-danger-custom">El anticipo no puede ser negativo.</span>';
+        return;
+    }
 
-    // Calcula el saldo, el interés, el total y el pago mensual
-    const saldo = precioContado - anticipo;
-    const interes = saldo * tasaInteres;
-    const total = saldo + interes;
-    const pagoMensual = total / cuotas;
+    if (anticipo >= precioContado) {
+        resultadoDiv.innerHTML = '<span class="text-danger-custom">El anticipo no puede ser mayor o igual al precio de contado.</span>';
+        return;
+    }
 
-    // Muestra el resultado de la simulación en el div resultadoSimulacion
-    document.getElementById("resultadoSimulacion").innerHTML = `
-        <p>Saldo: $${saldo.toFixed(2)}</p>
-        <p>Interés: $${interes.toFixed(2)}</p>
-        <p>Total a pagar: $${total.toFixed(2)}</p>
-        <p>Cuota mensual: $${pagoMensual.toFixed(2)}</p>
+    if (!cuotas || cuotas <= 0) {
+        resultadoDiv.innerHTML = '<span class="text-danger-custom">Ingresá una cantidad de cuotas válida.</span>';
+        return;
+    }
+
+    const montoFinanciar = precioContado - anticipo;
+
+    // Tasa fija de ejemplo (podés ajustarla o hacerla configurable)
+    const tasaAnual  = 60; // 60% anual aprox
+    const tasaMensual = (tasaAnual / 12) / 100;
+
+    let cuota = 0;
+
+    if (tasaMensual > 0) {
+        // Sistema francés
+        cuota = montoFinanciar * (tasaMensual / (1 - Math.pow(1 + tasaMensual, -cuotas)));
+    } else {
+        cuota = montoFinanciar / cuotas;
+    }
+
+    const totalEstimado = cuota * cuotas;
+
+    resultadoDiv.innerHTML = `
+        <span>Monto a financiar: 
+            <span class="monto-principal">${formatoPesosEntero(montoFinanciar)}</span>
+        </span><br>
+        <span>Cuota estimada en ${cuotas} pagos: 
+            <span class="monto-cuota">${formatoPesosEntero(cuota)}</span>
+        </span><br>
+        <small>
+            Cálculo estimativo con tasa anual aproximada del ${tasaAnual}%. 
+            Los valores pueden variar según la entidad financiera y la evaluación crediticia.
+        </small>
     `;
 }
-

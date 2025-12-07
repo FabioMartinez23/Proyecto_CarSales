@@ -455,6 +455,91 @@ public function buscar_ventas($buscador){
     }
 
 
+    public function existeVentaActivaPorVehiculo($idvehiculo)
+    {
+        $con = $this->getConexion();
+
+        // Por las dudas casteamos a int para evitar inyección
+        $idvehiculo = (int)$idvehiculo;
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM ventas
+            WHERE vehiculo_idvehiculo = $idvehiculo
+            AND estado_venta = 'Realizada'
+        ";
+
+        $res = $con->query($query);
+        $total = 0;
+
+        if ($res && $row = $res->fetch_assoc()) {
+            $total = (int)$row['total'];
+        }
+
+        // Si NO usamos conexión externa, la cierro acá
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $total > 0; // true si hay al menos una venta activa
+    }
+
+
+    public function traer_ventas_por_usuario($idusuario)
+    {
+        $con = $this->getConexion();
+
+        // Por seguridad lo casteamos a int
+        $idusuario = (int)$idusuario;
+
+        $query = "
+            SELECT 
+                v.*,
+                v.descripcion AS observacion,
+                tp.descripcion AS nombre_pago,
+                
+                ve.patente,
+                ve.anio,
+                mo.nombre AS nombre_modelo,
+                ma.nombre AS nombre_marca,
+
+                -- Precio público actual (si querés mostrarlo)
+                pv.precio AS precio_publico
+
+            FROM ventas v
+            INNER JOIN registro_clientes rc
+                ON rc.idregistro_clientes = v.registro_clientes_idregistro_clientes
+            INNER JOIN usuarios u
+                ON u.idusuarios = rc.Usuarios_idusuarios
+
+            INNER JOIN vehiculos ve
+                ON ve.idvehiculos = v.vehiculo_idvehiculo
+            INNER JOIN modelos mo
+                ON mo.idmodelos = ve.modelos_idmodelos
+            INNER JOIN marcas ma
+                ON ma.idmarcas = mo.marcas_idmarcas
+
+            LEFT JOIN precios_vehiculos pv
+                ON pv.vehiculos_idvehiculos = ve.idvehiculos
+            AND pv.activo_precio = 1
+
+            LEFT JOIN tipo_pago tp
+                ON tp.idtipo_pago = v.tipo_pago_idtipo_pago
+
+            WHERE u.idusuarios = $idusuario
+            AND v.estado_venta = 'Realizada'
+            ORDER BY v.fecha_venta DESC
+        ";
+
+        $res = $con->query($query);
+
+        // NO cierro conexión porque el caller va a recorrer el result
+        // (igual que en traer_ventas())
+
+        return $res;
+    }
+
+
     /**
      * Get the value of idventas
      */ 

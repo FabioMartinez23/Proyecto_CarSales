@@ -1,5 +1,7 @@
 <?php
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 require '../../vendor/autoload.php';
 
 // Verificar método
@@ -14,30 +16,32 @@ function limpiar($texto) {
 }
 
 // Capturar y limpiar datos
-$nombre = limpiar($_POST['nombre'] ?? '');
-$email = limpiar($_POST['email'] ?? '');
-$telefono = limpiar($_POST['telefono'] ?? '');
+$nombre        = limpiar($_POST['nombre'] ?? '');
+$email         = limpiar($_POST['email'] ?? '');
+$telefono      = limpiar($_POST['telefono'] ?? '');
 $observaciones = limpiar($_POST['observaciones'] ?? '');
 
 // ===============================================================
 // VALIDACIONES
 // ===============================================================
 
-// Validación nombre
+// Nombre
 if (strlen($nombre) < 3 || !preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $nombre)) {
     header('location: ../../index.php?page=form_contacto&mensaje=Nombre inválido.&status=error');
     exit;
 }
 
-// Validación email
+// Email
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     header('location: ../../index.php?page=form_contacto&mensaje=Email inválido.&status=error');
     exit;
 }
 
-// Validación dominios permitidos (opcional pero recomendado)
-$dominios_validos = ['gmail.com', 'gmail.com.ar', 'hotmail.com', 'hotmail.com.ar', 'outlook.com', 'outlook.com.ar', 'yahoo.com', 'yahoo.com.ar'];
-
+// Dominio válido
+$dominios_validos = [
+    'gmail.com','hotmail.com','outlook.com','yahoo.com',
+    'gmail.com.ar','hotmail.com.ar','outlook.com.ar','yahoo.com.ar'
+];
 $dominio_email = substr(strrchr($email, "@"), 1);
 
 if (!in_array(strtolower($dominio_email), $dominios_validos)) {
@@ -45,115 +49,128 @@ if (!in_array(strtolower($dominio_email), $dominios_validos)) {
     exit;
 }
 
-// Validación teléfono (mínimo 8 a 15 números)
+// Teléfono
 if (!preg_match("/^[0-9\+\s-]{8,20}$/", $telefono)) {
     header('location: ../../index.php?page=form_contacto&mensaje=Teléfono inválido.&status=error');
     exit;
 }
 
-// Validación observaciones
+// Observaciones
 if (strlen($observaciones) < 5) {
     header('location: ../../index.php?page=form_contacto&mensaje=Observaciones insuficientes.&status=error');
     exit;
 }
 
-
 // ===============================================================
-// ENVÍO DE EMAIL CON PHPMailer
+// ENVÍO DE EMAIL CON BREVO
 // ===============================================================
-
 $mail = new PHPMailer(true);
 
 try {
-    // Configurar SMTP
-    $mail->SMTPDebug = 2;
+    // SMTP Brevo (MISMA CONFIG QUE EN OLVIDÉ CONTRASEÑA)
     $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 'famartinez2611994@gmail.com';
-    $mail->Password = 'axsr vtnf hguy jwtq';  
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port = 465;
+    $mail->Host       = 'smtp-relay.brevo.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = '9d6f3f001@smtp-brevo.com';
+    $mail->Password   = 'mqA4CSBVnGxgDZLO';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+    $mail->CharSet    = 'UTF-8';
+    $mail->Encoding   = 'base64';
 
+    // 👇 Esto es lo que te faltaba y que SÍ está en el otro script
     $mail->SMTPOptions = [
         'ssl' => [
-            'verify_peer' => false,
-            'verify_peer_name' => false,
+            'verify_peer'       => false,
+            'verify_peer_name'  => false,
             'allow_self_signed' => true
         ]
     ];
 
-    // Remitente y receptor
-    $mail->setFrom('famartinez2611994@gmail.com', 'Fabio Martinez');
-    $mail->addAddress('famartinez_13@hotmail.com', 'Martinez Fabio'); 
+    // Remitente (usamos el mismo que en recuperar contraseña, que ya sabés que funciona)
+    $mail->setFrom('famartinez2611994@gmail.com', 'CarSales - Contacto');
 
-    // Mensaje
+    // Destino principal: vos
+    $mail->addAddress('famartinez2611994@gmail.com', 'CarSales - Soporte');
+
+    // Que al responder, vaya al cliente
+    $mail->addReplyTo($email, $nombre);
+
+    $mail->Subject = '📝 Nueva consulta recibida - CarSales';
+
+    // ================================
+    // CUERPO HTML PROFESIONAL
+    // ================================
     $mail->isHTML(true);
-    $mail->Subject = 'Nuevo contacto desde CarSales';
+
     $mail->Body = "
-        <div style='
-            background:#F5F5F5;
-            padding:20px;
-            font-family: Arial, sans-serif;
-            color:#333;
-        '>
+    <div style='background:#f4f4f8;padding:20px;font-family:Arial,sans-serif;color:#333;'>
+
+        <div style='max-width:650px;margin:0 auto;background:#ffffff;border-radius:10px;
+                    box-shadow:0 4px 15px rgba(0,0,0,0.1);overflow:hidden;'>
 
             <!-- ENCABEZADO -->
-            <div style='
-                background:#333A56;
-                padding:20px;
-                text-align:center;
-                border-radius:8px 8px 0 0;
-            '>
-                <h2 style='color:white; margin:0;'>Nuevo contacto desde CarSales</h2>
+            <div style='background:#333A56;padding:20px;text-align:center;'>
+                <h2 style='color:#ffffff;margin:0;font-size:22px;'>
+                    Nuevo mensaje desde el formulario de contacto
+                </h2>
             </div>
 
-            <!-- CUERPO DEL MENSAJE -->
-            <div style='
-                background:white;
-                padding:25px;
-                border-radius:0 0 8px 8px;
-                box-shadow:0 4px 15px rgba(0,0,0,.15);
-            '>
-                <p style='font-size:16px;'>Has recibido una nueva consulta desde el formulario de contacto.</p>
+            <!-- CUERPO -->
+            <div style='padding:25px;'>
+                <p style='font-size:15px;'>
+                    Se ha recibido una nueva consulta desde el sitio web de <strong>CarSales</strong>.
+                </p>
 
-                <table style='width:100%; border-collapse:collapse; margin-top:20px;'>
+                <table style='width:100%;border-collapse:collapse;margin-top:20px;font-size:14px;'>
                     <tr>
-                        <td style='padding:10px; font-weight:bold; width:30%; border-bottom:1px solid #ddd;'>Nombre</td>
-                        <td style='padding:10px; border-bottom:1px solid #ddd;'>$nombre</td>
+                        <td style='padding:10px;font-weight:bold;background:#F1F1F1;width:30%;'>Nombre</td>
+                        <td style='padding:10px;'>$nombre</td>
                     </tr>
                     <tr>
-                        <td style='padding:10px; font-weight:bold; border-bottom:1px solid #ddd;'>Correo</td>
-                        <td style='padding:10px; border-bottom:1px solid #ddd;'>$email</td>
+                        <td style='padding:10px;font-weight:bold;background:#F1F1F1;'>Correo</td>
+                        <td style='padding:10px;'>$email</td>
                     </tr>
                     <tr>
-                        <td style='padding:10px; font-weight:bold; border-bottom:1px solid #ddd;'>Teléfono</td>
-                        <td style='padding:10px; border-bottom:1px solid #ddd;'>$telefono</td>
+                        <td style='padding:10px;font-weight:bold;background:#F1F1F1;'>Teléfono</td>
+                        <td style='padding:10px;'>$telefono</td>
                     </tr>
                     <tr>
-                        <td style='padding:10px; font-weight:bold; vertical-align:top;'>Observaciones</td>
+                        <td style='padding:10px;font-weight:bold;background:#F1F1F1;vertical-align:top;'>Mensaje</td>
                         <td style='padding:10px;'>$observaciones</td>
                     </tr>
                 </table>
 
-                <p style='text-align:center; margin-top:25px; font-size:14px; color:#555;'>
-                    Este mensaje ha sido generado automáticamente por el sistema CarSales.
+                <p style='margin-top:25px;font-size:13px;color:#555;text-align:center;'>
+                    Este mensaje fue enviado automáticamente desde el formulario de contacto de CarSales.
                 </p>
             </div>
 
             <!-- FOOTER -->
-            <div style='text-align:center; margin-top:15px; font-size:12px; color:#777;'>
-                © " . date('Y') . " CarSales - Sistema de gestión de vehículos
+            <div style='background:#f0f0f5;padding:12px 20px;text-align:center;
+                        font-size:12px;color:#777;'>
+                © " . date('Y') . " CarSales · Sistema de gestión de vehículos
             </div>
 
         </div>
+    </div>
     ";
+
+    // Texto plano (por si el cliente de correo no lee HTML)
+    $mail->AltBody =
+        "Nueva consulta recibida desde CarSales\n\n" .
+        "Nombre: $nombre\n" .
+        "Correo: $email\n" .
+        "Teléfono: $telefono\n" .
+        "Mensaje:\n$observaciones\n";
 
     $mail->send();
 
-    header('location: ../../index.php?page=form_contacto&mensaje=Formulario enviado con éxito!&status=success');
+    header('location: ../../index.php?page=form_contacto&mensaje=Formulario enviado con éxito.&status=success');
+    exit;
 } catch (Exception $e) {
+    error_log('Error PHPMailer (form_contacto): ' . $mail->ErrorInfo);
     header('location: ../../index.php?page=form_contacto&mensaje=Error al enviar el formulario.&status=error');
+    exit;
 }
-?>
 

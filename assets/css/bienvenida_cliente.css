@@ -1,0 +1,442 @@
+/* =========================================
+   Paleta base CarSales (modo cliente)
+========================================= */
+:root {
+    --cs-primary: #52658F;
+    --cs-primary-dark: #333A56;
+    --cs-accent: #B33030;
+    --cs-bg: #F4F5FB;
+    --cs-bg-soft: #E8E8E8;
+    --cs-border: #D0D4E0;
+    --cs-text: #222222;
+    --cs-muted: #777777;
+    --cs-radius-lg: 18px;
+    --cs-radius-md: 12px;
+    --cs-shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Contenedor general de bienvenida cliente */
+.cliente-dashboard {
+    padding: 1.5rem 0;
+}
+
+/* =========================================
+   HEADER CLIENTE (igual lógica que admin)
+========================================= */
+.cliente-dashboard .dashboard-header {
+    background: #003b73;
+    border-radius: var(--cs-radius-lg);
+    padding: 1.3rem 1.5rem;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+    border: 1px solid #021f40;
+    color: #ffffff;
+}
+
+.cliente-dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.cliente-dashboard-subtitle {
+    font-size: 0.95rem;
+    color: #e5e7eb;
+}
+
+.cliente-dashboard .dashboard-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(15,23,42,0.35);
+    border: 1px solid rgba(15,23,42,0.6);
+    color: #e5e7eb;
+    font-size: 0.8rem;
+}
+
+/* =========================================
+   TARJETAS RESUMEN (MISMO ESTILO OSCURO QUE ADMIN)
+========================================= */
+.cliente-dashboard .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.6rem;
+    margin-bottom: 2.2rem !important;
+}
+
+.cliente-dashboard .stat-item {
+    border-radius: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: #020617; /* igual que admin/empleado */
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* brillo suave igual que las otras */
+.cliente-dashboard .stat-item::after {
+    content: "";
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    right: -50px;
+    top: -60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.28), transparent 65%);
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.cliente-dashboard .stat-item.stat-item--clickable {
+    cursor: pointer;
+}
+
+.cliente-dashboard .stat-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.75);
+    border-color: rgba(59, 130, 246, 0.7);
+}
+
+/* textos de las tarjetas (mismos tonos que admin) */
+.cliente-dashboard .stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+}
+
+.cliente-dashboard .stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #f9fafb;
+    line-height: 1.2;
+}
+
+.cliente-dashboard .stat-footer {
+    font-size: 0.82rem;
+    color: #93c5fd;
+    margin-top: 0.15rem;
+}
+
+/* =========================================
+   BLOQUES / SECCIONES SIMULADOR
+========================================= */
+.simulador-section {
+    background: #f1f3f7; /* gris suave */
+    border-radius: var(--cs-radius-lg);
+    padding: 1.4rem 1.5rem;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.07);
+    border: 1px solid #d5d9e5;
+    margin-bottom: 1.9rem;
+}
+
+.simulador-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: 0.8rem;
+}
+
+.simulador-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d3a52;
+    margin: 0;
+}
+
+.simulador-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(82, 101, 143, 0.06);
+    border: 1px solid rgba(82, 101, 143, 0.28);
+    color: var(--cs-primary-dark);
+}
+
+.simulador-description {
+    font-size: 0.85rem;
+    color: var(--cs-muted);
+    margin-bottom: 1rem;
+}
+
+/* Inputs que resalten más sobre gris */
+.simulador-section .form-control,
+.simulador-section .form-select {
+    font-size: 0.9rem;
+    border-radius: var(--cs-radius-md);
+    border: 1px solid #d5d9e5;
+    padding: 0.35rem 0.55rem;
+    color: var(--cs-text);
+    background-color: #ffffff;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.simulador-section .form-control:focus,
+.simulador-section .form-select:focus {
+    border-color: var(--cs-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(82, 101, 143, 0.15);
+    background-color: #ffffff;
+}
+
+/* Textos pequeños muted */
+.simulador-section .text-muted {
+    font-size: 0.8rem;
+    color: var(--cs-muted) !important;
+}
+
+/* =========================================
+   GRID de campos dentro del simulador
+========================================= */
+.simulador-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+.simulador-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+.simulador-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+/* Labels */
+.simulador-section label.form-label,
+.simulador-section .form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--cs-primary-dark);
+    margin-bottom: 0.2rem;
+}
+
+/* =========================================
+   BOTONES simulador (MISMOS COLORES EN AMBOS)
+========================================= */
+.simulador-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.btn-simular-primary,
+.btn-simular-secondary {
+    background: linear-gradient(135deg, #0b2f6a, #2563eb);
+    border: none;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.45rem 1.35rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-position 0.15s ease;
+    background-size: 140% 140%;
+}
+
+.btn-simular-primary:hover,
+.btn-simular-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.55);
+}
+
+.btn-simular-primary:active,
+.btn-simular-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 10px rgba(37, 99, 235, 0.35);
+}
+
+/* =========================================
+   RESULTADOS
+========================================= */
+.simulador-result {
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.simulador-result .monto-principal {
+    color: var(--cs-primary-dark);
+    font-weight: 700;
+}
+
+.simulador-result .monto-cuota {
+    color: #1c8f4a;
+    font-weight: 700;
+}
+
+.simulador-result small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--cs-muted);
+}
+
+#resultado_cuotas,
+#resultado_toma {
+    font-size: 0.9rem;
+}
+
+/* UTILIDADES */
+.text-success-custom { color: #1c8f4a !important; }
+.text-danger-custom  { color: var(--cs-accent) !important; }
+.text-primary-custom { color: var(--cs-primary-dark) !important; }
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+@media (max-width: 992px) {
+    .cliente-dashboard .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .cliente-dashboard .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .simulador-grid,
+    .simulador-grid-3,
+    .simulador-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .simulador-actions {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+    }
+
+    .simulador-actions > * {
+        width: 100%;
+    }
+
+    .simulador-result {
+        text-align: left;
+    }
+}
+
+/* =========================================
+   SIMULADOR POR VEHÍCULO ESPECÍFICO
+========================================= */
+.vehiculo-sim-hero {
+    background: #003b73;
+    border-radius: 18px;
+    padding: 1.3rem 1.6rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+    border: 1px solid #021f40;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.vehiculo-sim-title {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin-bottom: .2rem;
+    color: #e5e7eb;
+}
+
+.vehiculo-sim-subtitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: .4rem;
+}
+
+.vehiculo-sim-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.vehiculo-sim-chip {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(15, 23, 42, 0.6);
+    color: #e5e7eb;
+}
+
+.vehiculo-sim-hero-price {
+    text-align: right;
+    min-width: 180px;
+}
+
+.vehiculo-sim-price-label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #cbd5f5;
+    margin-bottom: 0.15rem;
+}
+
+.vehiculo-sim-price-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* Caja informativa cuando elige "sí" en vehículo de entrega */
+.vehiculo-sim-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.75rem;
+    background: rgba(37, 99, 235, 0.06);
+    border: 1px solid rgba(37, 99, 235, 0.35);
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.vehiculo-sim-link {
+    color: #2563eb;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.vehiculo-sim-link:hover {
+    text-decoration: none;
+}
+
+/* Ajuste de la sección del simulador específico (un poco más compacta) */
+.simulador-section--vehiculo {
+    margin-top: 0.5rem;
+}
+
+/* Responsive hero */
+@media (max-width: 768px) {
+    .vehiculo-sim-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .vehiculo-sim-hero-price {
+        text-align: left;
+    }
+}

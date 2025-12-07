@@ -5,6 +5,7 @@ require_once('../../modelos/comprar_vehiculos.php');
 require_once('../../modelos/anular_operaciones.php');
 require_once('../../modelos/tablas_maestras/estado_vehiculo.php');
 require_once('../../modelos/conexion.php');
+require_once('../../modelos/vender_vehiculos.php'); // 👈 NUEVO
 
 if (isset($_POST['action']) && $_POST['action'] == 'anular_compra') {
     $controlador = new AnularCompraControlador();
@@ -66,6 +67,23 @@ class AnularCompraControlador {
             $idvehiculo = (int)$compraData['vehiculo_idvehiculo'];
 
             /* =====================================================
+            3.1 — VERIFICAR SI EL VEHÍCULO YA FUE VENDIDO
+            ===================================================== */
+
+            // Usamos la misma conexión de la transacción
+            $ventaModel = new VenderVehiculo(
+                '', '', '', '', '', '', '', '', '', // todos los params vacíos
+                $conn                               // 👈 la conexión compartida va al final
+            );
+
+            // Si existe una venta con estado_venta = 'Realizada', NO dejamos anular
+            if ($ventaModel->existeVentaActivaPorVehiculo($idvehiculo)) {
+                throw new Exception(
+                    "No se puede anular la consignación porque el vehículo ya fue vendido."
+                );
+            }
+
+            /* =====================================================
                4 — ANULAR ESTADO DE COMPRA
             ===================================================== */
             if (!$compraModel->anular_compra_estado($idcompra)) {
@@ -125,7 +143,7 @@ class AnularCompraControlador {
             $conn->rollback();
             error_log("Error en anular_compra: " . $e->getMessage());
 
-            header('Location: ../../index.php?page=anular_compras&mensaje=' . urlencode($e->getMessage()) . '&status=error&idcompra=' . $_POST['idcompra']);
+            header('Location: ../../index.php?page=anular_compra&mensaje=' . urlencode($e->getMessage()) . '&status=error&idcompra=' . $_POST['idcompra']);
             exit();
 
         } finally {
