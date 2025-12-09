@@ -311,4 +311,38 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </section>
 
+    <!-- ============================= -->
+    <!-- BLOQUE: TALLER / MANTENIMIENTO -->
+    <!-- ============================= -->
+    <section class="report-section mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="report-section-title">
+                <i class="fa-solid fa-screwdriver-wrench me-2"></i> Reportes de Taller
+            </h3>
+            <span class="badge bg-soft-warning text-warning">
+                Mantenimiento y reparaciones
+            </span>
+        </div>
+
+        <div class="row g-4">
+            <!-- Histórico de trabajos de taller -->
+            <div class="col-md-6 col-lg-4">
+                <div class="report-block h-100">
+                    <div class="report-icon bg-soft-warning text-warning mb-3">
+                        <i class="fa-solid fa-wrench"></i>
+                    </div>
+                    <div class="report-body">
+                        <h5>Histórico de trabajos de taller</h5>
+                        <p>
+                            Consulta todos los ingresos al taller, trabajos realizados y gastos asociados por período, patente o estado.
+                        </p>
+                        <a href="index.php?page=reporte_taller_trabajos" class="report-btn">
+                            Ver reporte
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </div>

@@ -770,6 +770,91 @@ class Vehiculos extends Paginacion{
         return $con->query($sql);
     }
 
+            /**
+         * Cambia el estado del vehículo a "taller"
+         * usando el idestado_vehiculo correspondiente en la tabla estado_vehiculo.
+         */
+        public function enviar_a_taller()
+        {
+            $con = $this->getConexion();
+            $id  = (int) $this->idvehiculos;
+
+            // Buscar el ID del estado 'taller'
+            $sqlEstado = "
+                SELECT idestado_vehiculo 
+                FROM estado_vehiculo 
+                WHERE estado_vehiculo = 'taller'
+                LIMIT 1
+            ";
+            $resEstado = $con->query($sqlEstado);
+
+            if (!$resEstado || $resEstado->num_rows === 0) {
+                $this->cerrarConexion($con);
+                return false; // no se encontró el estado "taller"
+            }
+
+            $row      = $resEstado->fetch_assoc();
+            $idEstado = (int) $row['idestado_vehiculo'];
+
+            // Actualizar el vehículo
+            $sql = "
+                UPDATE vehiculos
+                SET estado_vehiculo_idestado_vehiculo = $idEstado
+                WHERE idvehiculos = $id
+            ";
+
+            $ok = $con->query($sql);
+
+            $this->cerrarConexion($con);
+            return $ok;
+        }
+
+
+
+            /**
+         * Marca el estado del vehículo según un nombre lógico
+         * ('disponible', 'falta_documento', 'falta_digitalizacion', 'taller', etc.)
+         * buscando el idestado_vehiculo en la tabla estado_vehiculo.
+         */
+        public function marcar_estado_por_documentacion($estado_nombre)
+        {
+            $con = $this->getConexion();
+            $id  = (int) $this->idvehiculos;
+
+            // Sanitizo el nombre del estado
+            $estado_nombre = $con->real_escape_string($estado_nombre);
+
+            // Busco el ID del estado
+            $sqlEstado = "
+                SELECT idestado_vehiculo
+                FROM estado_vehiculo
+                WHERE estado_vehiculo = '$estado_nombre'
+                LIMIT 1
+            ";
+            $resEstado = $con->query($sqlEstado);
+
+            if (!$resEstado || $resEstado->num_rows === 0) {
+                $this->cerrarConexion($con);
+                return false; // estado no encontrado
+            }
+
+            $row      = $resEstado->fetch_assoc();
+            $idEstado = (int) $row['idestado_vehiculo'];
+
+            // Actualizo el vehículo
+            $sql = "
+                UPDATE vehiculos
+                SET estado_vehiculo_idestado_vehiculo = $idEstado
+                WHERE idvehiculos = $id
+            ";
+
+            $ok = $con->query($sql);
+
+            $this->cerrarConexion($con);
+            return $ok;
+        }
+
+
 
     /**
      * Get the value of idvehiculos

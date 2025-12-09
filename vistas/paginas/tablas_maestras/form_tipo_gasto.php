@@ -16,7 +16,8 @@ $aplica_en_opciones = [
     'manual'   => 'Manual',
     'venta'    => 'Venta',
     'vehiculo' => 'Vehículo',
-    'empleado' => 'Empleado'
+    'empleado' => 'Empleado',
+    'taller'   => 'Taller'
 ];
 
 $modo_calculo_opciones = [

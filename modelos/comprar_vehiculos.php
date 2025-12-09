@@ -172,7 +172,7 @@ class ComprarVehiculo {
         INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
         INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
         INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
-        WHERE estado_compra = 'Realizada' AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) 
+        WHERE estado_compra = 'Realizada' AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) ORDER BY compras.idcompras DESC
         LIMIT $inicio,$cantidad";
 
         $res = $con->query($query);

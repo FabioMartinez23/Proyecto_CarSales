@@ -477,7 +477,8 @@ $result_intereses = $intereses->traer_interes();
                             <th>Agregar</th>
                             <th>Ver Gastos</th>
                             <th>Costos</th>
-                            <th>Eliminar</th>
+                            <th>Enviar a Taller</th>
+                            <!-- <th>Eliminar</th> -->
                         <?php else: ?>
                             <th>Precio Público</th>
                             <th>Ficha Técnica</th>
@@ -610,6 +611,13 @@ $result_intereses = $intereses->traer_interes();
                                 </a>
                             </td>
                             <td>
+                                <a href="#" 
+                                class="btn btn-sm btn-warning"
+                                onclick="return confirmarEnviarTaller('controladores/taller/enviar_a_taller.controlador.php?idvehiculo=<?= $vehiculo_['idvehiculos']; ?>')">
+                                    <i class="bi bi-tools"></i> Taller
+                                </a>
+                            </td>
+                            <!-- <td>
                                 <form id="formulario-eliminar-<?= htmlspecialchars($vehiculo_['idvehiculos']); ?>" 
                                     method="POST" action="controladores/vehiculos/vehiculos.controlador.php">
                                     <input type="hidden" name="action" value="eliminar">
@@ -619,7 +627,7 @@ $result_intereses = $intereses->traer_interes();
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
-                            </td>
+                            </td> -->
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -1095,4 +1103,36 @@ function cerrarAmpliada() {
         }
 </script>
 
+<script>
+function confirmarEnviarTaller(url) {
+    Swal.fire({
+        title: "¿Enviar vehículo al taller?",
+        text: "El vehículo cambiará de estado y quedará registrado como ingresado al taller.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, enviarlo",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+        customClass: {
+            confirmButton: "btn btn-warning",
+            cancelButton: "btn btn-secondary"
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // animación mientras redirige
+            Swal.fire({
+                title: "Procesando...",
+                text: "Registrando ingreso al taller",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            window.location.href = url;
+        }
+    });
+
+    return false; // evita que se ejecute el link directo
+}
+</script>
 

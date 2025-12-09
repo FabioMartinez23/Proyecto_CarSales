@@ -178,6 +178,107 @@ class Documentacion{
         return $conexion->consultar($query);
     }
 
+        /**
+     * Verifica si el vehículo tiene TODA la documentación física completa.
+     * Considera todos los tipos de documentación excepto "imagen".
+     * Devuelve true si para cada tipo obligatorio existe un registro con estado_doc = 1.
+     */
+    public function tiene_documentacion_fisica_completa($vehiculo_id)
+    {
+        $vehiculo_id = (int)$vehiculo_id;
+        $conexion = new Conexion();
+
+        // 1) Cantidad de tipos de documentación obligatorios (excepto 'imagen')
+        $sqlReq = "
+            SELECT COUNT(*) AS total
+            FROM tipo_documentacion
+            WHERE descripcion != 'imagen'
+        ";
+        $resReq = $conexion->consultar($sqlReq);
+        $filaReq = $resReq->fetch_assoc();
+        $totalRequeridos = (int)($filaReq['total'] ?? 0);
+
+        if ($totalRequeridos === 0) {
+            // Si no hay tipos configurados, devolvemos false por seguridad
+            return false;
+        }
+
+        // 2) Cantidad de tipos que el vehículo tiene con estado_doc = 1
+        $sqlEnt = "
+            SELECT COUNT(DISTINCT d.tipo_documentacion_idtipo_documentacion) AS total
+            FROM Documentaciones d
+            INNER JOIN tipo_documentacion td 
+                ON d.tipo_documentacion_idtipo_documentacion = td.idtipo_documentacion
+            WHERE d.vehiculos_idvehiculos = $vehiculo_id
+              AND d.estado_doc = 1
+              AND td.descripcion != 'imagen'
+        ";
+        $resEnt = $conexion->consultar($sqlEnt);
+        $filaEnt = $resEnt->fetch_assoc();
+        $totalEntregado = (int)($filaEnt['total'] ?? 0);
+
+        // Si la cantidad de tipos entregados (estado_doc=1) es igual a los requeridos, está completo
+        return $totalEntregado >= $totalRequeridos;
+    }
+
+
+        /**
+     * Verifica si TODA la documentación física del vehículo
+     * que ya está marcada como presente (estado_doc = 1)
+     * está también digitalizada (digitalizado = 1),
+     * excluyendo el tipo 'imagen'.
+     */
+    public function tiene_digitalizacion_completa($vehiculo_id)
+    {
+        $vehiculo_id = (int)$vehiculo_id;
+        $conexion = new Conexion();
+
+        $sql = "
+            SELECT COUNT(*) AS total_no_digital
+            FROM Documentaciones d
+            INNER JOIN tipo_documentacion td 
+                ON d.tipo_documentacion_idtipo_documentacion = td.idtipo_documentacion
+            WHERE d.vehiculos_idvehiculos = $vehiculo_id
+              AND d.estado_doc = 1          -- la documentación existe físicamente
+              AND d.digitalizado = 0        -- pero no está digitalizada
+              AND td.descripcion != 'imagen'
+        ";
+
+        $res = $conexion->consultar($sql);
+        $fila = $res->fetch_assoc();
+        $noDigital = (int)($fila['total_no_digital'] ?? 0);
+
+        // Si no hay ninguna documentación física pendiente de digitalizar → está completo
+        return $noDigital === 0;
+    }
+
+
+        /**
+     * Devuelve el estado lógico del vehículo según su documentación:
+     *
+     * - 'falta_documento'      → le falta al menos un tipo de documentación física obligatoria
+     * - 'falta_digitalizacion'→ tiene toda la doc física, pero hay algo sin digitalizar
+     * - 'disponible'          → tiene todo físico y todo digitalizado
+     */
+    public function determinar_estado_para_vehiculo($vehiculo_id)
+    {
+        $vehiculo_id = (int)$vehiculo_id;
+
+        // 1) ¿Tiene toda la documentación física?
+        if (!$this->tiene_documentacion_fisica_completa($vehiculo_id)) {
+            return 'falta_documento';
+        }
+
+        // 2) Tiene toda la doc física, pero ¿está toda digitalizada?
+        if (!$this->tiene_digitalizacion_completa($vehiculo_id)) {
+            return 'falta_digitalizacion';
+        }
+
+        // 3) Si pasó las dos pruebas, está OK
+        return 'disponible';
+    }
+
+
     /**
      * Get the value of idDocumentaciones
      */ 

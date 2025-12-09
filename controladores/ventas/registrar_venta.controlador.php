@@ -2,7 +2,10 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
+require '../../vendor/autoload.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -238,6 +241,45 @@ class RegistrarVentaControlador {
             ]);
 
             /* ===============================================================
+            8.1 — ENVÍO DE CORREOS (CLIENTE + ADMIN)
+            NOTA: Si fallan, NO se revierte la venta.
+            =============================================================== */
+
+            try {
+                // Datos base para el correo
+                $idVehiculo   = (int) $_POST['vehiculos_idvehiculos'];
+                $precioVenta  = (float) $_POST['precio_publico_real'];
+                $formaPago    = $tipoPago;             // 1,2,3...
+                $observacion  = $_POST['observaciones'] ?? '';
+
+                // Correo al cliente
+                $this->enviarCorreoVentaCliente(
+                    $conn,
+                    $idventa,
+                    $_POST['id_usuario'],  // id del usuario cliente
+                    $idVehiculo,
+                    $precioVenta,
+                    $formaPago,
+                    $observacion
+                );
+
+                // Correo al administrador
+                $this->enviarCorreoVentaAdmin(
+                    $conn,
+                    $idventa,
+                    $_POST['id_usuario'],  // id del usuario cliente
+                    $idVehiculo,
+                    $precioVenta,
+                    $formaPago,
+                    $observacion
+                );
+
+            } catch (Exception $e) {
+                // No hacemos rollback por temas de email
+                error_log("Error al enviar correos de venta ID $idventa: " . $e->getMessage());
+            }
+
+            /* ===============================================================
                9 — COMMIT FINAL
             =============================================================== */
             $conn->commit();
@@ -257,4 +299,300 @@ class RegistrarVentaControlador {
             $db->desconectar();
         }
     }
+
+
+    /* ============================================================
+    📧 CORREO AL CLIENTE: CONFIRMACIÓN DE VENTA
+    ============================================================ */
+    private function enviarCorreoVentaCliente($conn, $idventa, $idUsuario, $idVehiculo, $precioVenta, $tipoPago, $observaciones = '')
+    {
+        // Base URL de tu sistema
+        $baseUrl   = 'http://localhost/2do_Cuatrimestre/PP_2/Proyecto_Septiembre_02';
+        $linkVenta = $baseUrl . "/index.php?page=listado_ventas&id=" . (int)$idventa;
+
+        // Traer datos del usuario/cliente
+        $usuarioModel = new Usuario('', '', '', '', '', '', $conn);
+        $usuarioData  = $usuarioModel->traer_usuario_por_id($idUsuario);
+
+        if (!$usuarioData || empty($usuarioData['email'])) {
+            throw new Exception("No se encontró email del cliente para enviar confirmación de venta.");
+        }
+
+        $emailCliente = $usuarioData['email'];
+        $nombreCliente = trim(($usuarioData['nombre'] ?? '') . ' ' . ($usuarioData['apellido'] ?? ''));
+
+        // Forma de pago descriptiva
+        switch ($tipoPago) {
+            case 1: $textoPago = 'Efectivo'; break;
+            case 2: $textoPago = 'Transferencia bancaria'; break;
+            case 3: $textoPago = 'Crédito bancario'; break;
+            default: $textoPago = 'Otro'; break;
+        }
+
+        $mail = new PHPMailer(true);
+
+        try {
+            // Config SMTP Brevo
+            $mail->isSMTP();
+            $mail->Host       = 'smtp-relay.brevo.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = '9d6f3f001@smtp-brevo.com';
+            $mail->Password   = 'mqA4CSBVnGxgDZLO';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            $mail->CharSet    = 'UTF-8';
+
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+
+            // Remitente y destinatario
+            $mail->setFrom('famartinez2611994@gmail.com', 'CarSales - Ventas');
+            $mail->addAddress($emailCliente, $nombreCliente ?: 'Cliente CarSales');
+
+            $mail->isHTML(true);
+            $mail->Subject = "Confirmación de operación - Venta N° $idventa";
+
+            $nombreEsc = htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8');
+            $obsEsc    = nl2br(htmlspecialchars($observaciones, ENT_QUOTES, 'UTF-8'));
+
+            $mail->Body = "
+            <div style='background:#f4f4f8;padding:20px;font-family:Arial,sans-serif;color:#333;'>
+                <div style='max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;
+                            box-shadow:0 4px 15px rgba(0,0,0,0.08);overflow:hidden;'>
+                    
+                    <div style='background:#333A56;padding:20px;text-align:center;'>
+                        <h2 style='color:#ffffff;margin:0;'>Gracias por tu confianza en CarSales</h2>
+                    </div>
+
+                    <div style='padding:25px;'>
+                        <p style='font-size:15px;margin-top:0;'>
+                            Hola <strong>{$nombreEsc}</strong>,
+                        </p>
+
+                        <p style='font-size:14px;line-height:1.6;'>
+                            Te confirmamos que hemos registrado tu operación de venta en <strong>CarSales</strong>.
+                        </p>
+
+                        <table style='font-size:13px;border-collapse:collapse;width:100%;margin-top:10px;'>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;width:150px;'>N° de operación:</td>
+                                <td style='padding:6px 4px;'>$idventa</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>ID Vehículo:</td>
+                                <td style='padding:6px 4px;'>$idVehiculo</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Importe de venta:</td>
+                                <td style='padding:6px 4px;'>$ " . number_format($precioVenta, 2, ',', '.') . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Forma de pago:</td>
+                                <td style='padding:6px 4px;'>$textoPago</td>
+                            </tr>
+                        </table>";
+
+            if (!empty($observaciones)) {
+                $mail->Body .= "
+                        <p style='font-size:13px;margin-top:15px;'>
+                            <strong>Observaciones:</strong><br>
+                            {$obsEsc}
+                        </p>";
+            }
+
+            $mail->Body .= "
+                        <p style='font-size:13px;margin-top:20px;'>
+                            Podés consultar el detalle de tu operación ingresando al sistema.
+                        </p>
+
+                        <div style='text-align:center;margin:30px 0;'>
+                            <a href='{$linkVenta}' 
+                            style='background:#52658F;color:#ffffff;text-decoration:none;
+                                    padding:12px 25px;border-radius:30px;font-size:14px;
+                                    display:inline-block;'>
+                                Ver detalle de la venta
+                            </a>
+                        </div>
+
+                        <p style='font-size:11px;color:#888;'>
+                            Este correo es solo informativo. No respondas a este mensaje.
+                        </p>
+                    </div>
+
+                    <div style='background:#f0f0f5;padding:10px 20px;text-align:center;font-size:11px;color:#777;'>
+                        © " . date('Y') . " CarSales · Sistema de gestión de vehículos
+                    </div>
+                </div>
+            </div>
+            ";
+
+            $mail->AltBody = "Hola {$nombreCliente},\n\n"
+                . "Te confirmamos que se ha registrado tu operación en CarSales.\n\n"
+                . "N° de operación: $idventa\n"
+                . "ID Vehículo: $idVehiculo\n"
+                . "Importe de venta: $ " . number_format($precioVenta, 2, ',', '.') . "\n"
+                . "Forma de pago: $textoPago\n\n"
+                . "Podés consultar el detalle ingresando al sistema.\n\n"
+                . "CarSales.";
+
+            $mail->send();
+            return true;
+
+        } catch (Exception $e) {
+            error_log('Error PHPMailer venta cliente: ' . $mail->ErrorInfo);
+            // No lanzamos excepción hacia arriba para no romper la venta
+            return false;
+        }
+    }
+
+    /* ============================================================
+    📧 CORREO AL ADMIN: AVISO NUEVA VENTA
+    ============================================================ */
+    private function enviarCorreoVentaAdmin($conn, $idventa, $idUsuario, $idVehiculo, $precioVenta, $tipoPago, $observaciones = '')
+    {
+        $adminEmail = 'famartinez2611994@gmail.com'; // podés parametrizarlo si querés
+
+        // Base URL de tu sistema
+        $baseUrl   = 'http://localhost/2do_Cuatrimestre/PP_2/Proyecto_Septiembre_02';
+        $linkVenta = $baseUrl . "/index.php?page=listado_ventas&id=" . (int)$idventa;
+
+        // Datos del cliente
+        $usuarioModel = new Usuario('', '', '', '', '', '', $conn);
+        $usuarioData  = $usuarioModel->traer_usuario_por_id($idUsuario);
+
+        $emailCliente  = $usuarioData['email'] ?? '';
+        $nombreCliente = trim(($usuarioData['nombre'] ?? '') . ' ' . ($usuarioData['apellido'] ?? ''));
+
+        switch ($tipoPago) {
+            case 1: $textoPago = 'Efectivo'; break;
+            case 2: $textoPago = 'Transferencia bancaria'; break;
+            case 3: $textoPago = 'Crédito bancario'; break;
+            default: $textoPago = 'Otro'; break;
+        }
+
+        $mail = new PHPMailer(true);
+
+        try {
+            // Config SMTP Brevo
+            $mail->isSMTP();
+            $mail->Host       = 'smtp-relay.brevo.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = '9d6f3f001@smtp-brevo.com';
+            $mail->Password   = 'mqA4CSBVnGxgDZLO';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            $mail->CharSet    = 'UTF-8';
+
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+
+            // Remitente y destinatario
+            $mail->setFrom('famartinez2611994@gmail.com', 'CarSales - Sistema');
+            $mail->addAddress($adminEmail, 'Administrador CarSales');
+
+            $mail->isHTML(true);
+            $mail->Subject = "Nueva venta registrada - ID $idventa";
+
+            $nombreCliEsc = htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8');
+            $emailCliEsc  = htmlspecialchars($emailCliente, ENT_QUOTES, 'UTF-8');
+            $obsEsc       = nl2br(htmlspecialchars($observaciones, ENT_QUOTES, 'UTF-8'));
+
+            $mail->Body = "
+            <div style='background:#f4f4f8;padding:20px;font-family:Arial,sans-serif;color:#333;'>
+                <div style='max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;
+                            box-shadow:0 4px 15px rgba(0,0,0,0.08);overflow:hidden;'>
+                    
+                    <div style='background:#333A56;padding:20px;text-align:center;'>
+                        <h2 style='color:#ffffff;margin:0;'>Nueva venta registrada</h2>
+                    </div>
+
+                    <div style='padding:25px;'>
+                        <p style='font-size:14px;line-height:1.6;'>
+                            Se ha registrado una nueva venta en <strong>CarSales</strong>.
+                        </p>
+
+                        <table style='font-size:13px;border-collapse:collapse;width:100%;margin-top:10px;'>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;width:150px;'>ID Venta:</td>
+                                <td style='padding:6px 4px;'>$idventa</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>ID Vehículo:</td>
+                                <td style='padding:6px 4px;'>$idVehiculo</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Importe de venta:</td>
+                                <td style='padding:6px 4px;'>$ " . number_format($precioVenta, 2, ',', '.') . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Forma de pago:</td>
+                                <td style='padding:6px 4px;'>$textoPago</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Cliente:</td>
+                                <td style='padding:6px 4px;'>{$nombreCliEsc}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Email cliente:</td>
+                                <td style='padding:6px 4px;'>{$emailCliEsc}</td>
+                            </tr>
+                        </table>";
+
+            if (!empty($observaciones)) {
+                $mail->Body .= "
+                        <p style='font-size:13px;margin-top:15px;'>
+                            <strong>Observaciones:</strong><br>
+                            {$obsEsc}
+                        </p>";
+            }
+
+            $mail->Body .= "
+                        <div style='text-align:center;margin:30px 0;'>
+                            <a href='{$linkVenta}' 
+                            style='background:#52658F;color:#ffffff;text-decoration:none;
+                                    padding:12px 25px;border-radius:30px;font-size:14px;
+                                    display:inline-block;'>
+                                Ver venta en el sistema
+                            </a>
+                        </div>
+
+                        <p style='font-size:11px;color:#888;'>
+                            Este correo es solo informativo.
+                        </p>
+                    </div>
+
+                    <div style='background:#f0f0f5;padding:10px 20px;text-align:center;font-size:11px;color:#777;'>
+                        © " . date('Y') . " CarSales · Sistema de gestión de vehículos
+                    </div>
+                </div>
+            </div>
+            ";
+
+            $mail->AltBody = "Nueva venta registrada en CarSales\n\n"
+                . "ID Venta: $idventa\n"
+                . "ID Vehículo: $idVehiculo\n"
+                . "Importe de venta: $ " . number_format($precioVenta, 2, ',', '.') . "\n"
+                . "Forma de pago: $textoPago\n"
+                . "Cliente: $nombreCliente\n"
+                . "Email cliente: $emailCliente\n";
+
+            $mail->send();
+            return true;
+
+        } catch (Exception $e) {
+            error_log('Error PHPMailer venta admin: ' . $mail->ErrorInfo);
+            return false;
+        }
+    }
+
 }

@@ -16,7 +16,7 @@
                 Vehiculos
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="index.php?page=registrar_vehiculos">Registro de Vehiculos</a></li>
+                <!-- <li><a class="dropdown-item" href="index.php?page=registrar_vehiculos">Registro de Vehiculos</a></li> -->
                 <li><a class="dropdown-item" href="index.php?page=listado_vehiculos">Listado de Vehiculos</a></li>
                 <li><a class="dropdown-item" href="index.php?page=listado_compras">Registrar Nuevo Ingreso</a></li>
                 <li><a class="dropdown-item" href="index.php?page=listado_ventas">Registro de Ventas</a></li>
