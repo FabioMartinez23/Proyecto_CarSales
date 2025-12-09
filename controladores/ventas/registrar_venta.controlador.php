@@ -44,6 +44,9 @@ class RegistrarVentaControlador {
 
         try {
 
+            // ⭐ Tipo de pago (1=Efectivo, 2=Transferencia, 3=Crédito Bancario, 4=Reverso/Ajuste)
+            $tipoPago = isset($_POST['tipo_pago']) ? (int) $_POST['tipo_pago'] : 1;
+
             /* ===============================================================
                2 — CLIENTE
             =============================================================== */
@@ -65,18 +68,53 @@ class RegistrarVentaControlador {
             =============================================================== */
             $venta = new VenderVehiculo('', '', '', '', '', '', '', '', $conn);
             $venta->setDescripcion($_POST['observaciones']);
-            $venta->setTipo_pago_idtipo_pago($_POST['tipo_pago']);
+            $venta->setTipo_pago_idtipo_pago($tipoPago); // ⭐ usamos $tipoPago
             $venta->setVehiculo_idvehiculo($_POST['vehiculos_idvehiculos']);
             $venta->setRegistro_clientes_idregistro_clientes($cliente_id);
             $venta->setEmpleados_idempleados($_POST['idempleado']);
             $venta->setTitular_vehiculo_idtitular_vehiculo($_POST['titular_vehiculo']);
             $venta->setPrecio_venta($_POST['precio_publico_real']);
 
+            if ($tipoPago === 3) { // 3 = Crédito Bancario
+                // Estado general de la venta
+                $venta->setEstado_venta('Pendiente crédito');
+                $venta->setEstado_venta_credito('pendiente');
+
+                // Datos de crédito
+                $venta->setBanco_credito($_POST['banco_credito'] ?? null);
+
+                // Podés usar el textarea de "nota_credito" como observación del crédito
+                $observacionCredito = $_POST['nota_credito'] ?? '';
+
+                // Si además querés incluir otras cosas (monto estimado, referencia, etc.)
+                if (!empty($_POST['monto_estimado_credito'])) {
+                    $observacionCredito .= "\nMonto estimado: " . $_POST['monto_estimado_credito'];
+                }
+                if (!empty($_POST['referencia_credito'])) {
+                    $observacionCredito .= "\nRef. gestión banco: " . $_POST['referencia_credito'];
+                }
+
+                $venta->setObservacion_credito($observacionCredito ?: null);
+
+                // Fecha de solicitud = ahora
+                $venta->setFecha_solicitud_credito(date('Y-m-d H:i:s'));
+
+                // La respuesta y el monto aprobado se llenarán después en otra pantalla
+            } else {
+                // Venta normal (efectivo / transferencia)
+                $venta->setEstado_venta('Realizada');
+                $venta->setEstado_venta_credito('ninguno');
+            }
+
+            // 🔹 Más adelante (otra etapa) acá podemos:
+            // - Si $tipoPago == 3 (Crédito Bancario), setear estado_venta = 'Pendiente crédito'
+            //   con algún método tipo $venta->setEstadoVenta('Pendiente crédito');
+
             $idventa = $venta->agregar_venta();
             if (!$idventa) throw new Exception("Error al registrar la venta.");
 
             /* ===============================================================
-               4 — COMISIONES
+               4 — COMISIONES (SE CALCULAN SIEMPRE)
             =============================================================== */
             $precio_tomado  = floatval($_POST['precio_tomado'] ?? 0);
             $precio_publico = floatval($_POST['precio_publico_real'] ?? 0);
@@ -104,7 +142,7 @@ class RegistrarVentaControlador {
             $monto_emp = ($ganancia * $porc_emp) / 100;
             $monto_conces = ($ganancia * $porc_conces) / 100;
 
-            // Registrar comisión
+            // Registrar comisión (teórica / esperada) ⭐
             $comision = new Comisiones_Ventas('', '', '', '', '', '', '', '', $conn);
             $comision->setPorcentaje_empleado($porc_emp);
             $comision->setPorcentaje_concesionaria($porc_conces);
@@ -118,56 +156,76 @@ class RegistrarVentaControlador {
 
             /* ===============================================================
                5 — CAJA
+               🔸 Efectivo / Transferencia: igual que siempre.
+               🔸 Crédito Bancario: NO MOVEMOS CAJA TODAVÍA.
             =============================================================== */
-            $caja = new Caja('', '', '', '', '', '', '', $conn);
-            $cajaActiva = $caja->verificar_o_abrir_caja_mensual($_SESSION['idusuarios']);
 
-            if (!$cajaActiva) throw new Exception("No hay caja activa.");
+            if ($tipoPago !== 3) { // ⭐ Solo si NO es Crédito Bancario
 
-            $datosCaja = $cajaActiva->fetch_assoc();
-            $idcaja = $datosCaja['idcaja'];
+                $caja = new Caja('', '', '', '', '', '', '', $conn);
+                $cajaActiva = $caja->verificar_o_abrir_caja_mensual($_SESSION['idusuarios']);
 
-            $idTipoVenta = $caja->obtener_id_tipo_movimiento('Venta vehículo');
-            $idTipoComision = $caja->obtener_id_tipo_movimiento('Comisión empleado');
+                if (!$cajaActiva) throw new Exception("No hay caja activa.");
 
-            // INGRESO de la concesionaria
-            $caja->registrar_movimiento(
-                'ingreso',
-                $monto_conces,
-                "Venta ID $idventa del vehiculo ID {$_POST['vehiculos_idvehiculos']}",
-                'ventas',
-                $idventa,
-                $idcaja,
-                $idTipoVenta,
-                $_POST['tipo_pago'],
-                $_SESSION['idusuarios']
-            );
+                $datosCaja = $cajaActiva->fetch_assoc();
+                $idcaja = $datosCaja['idcaja'];
 
-            // EGRESO comisión empleado
-            if ($monto_emp > 0) {
+                $idTipoVenta = $caja->obtener_id_tipo_movimiento('Venta vehículo');
+                $idTipoComision = $caja->obtener_id_tipo_movimiento('Comisión empleado');
+
+                // INGRESO de la concesionaria (comisión)
                 $caja->registrar_movimiento(
-                    'egreso',
-                    $monto_emp,
-                    "Comisión empleado ID {$_POST['idempleado']}",
-                    'comisiones_ventas',
+                    'ingreso',
+                    $monto_conces,
+                    "Venta ID $idventa del vehiculo ID {$_POST['vehiculos_idvehiculos']}",
+                    'ventas',
                     $idventa,
                     $idcaja,
-                    $idTipoComision,
-                    $_POST['tipo_pago'],
+                    $idTipoVenta,
+                    $tipoPago,           // ⭐ usamos $tipoPago
                     $_SESSION['idusuarios']
                 );
+
+                // EGRESO comisión empleado
+                if ($monto_emp > 0) {
+                    $caja->registrar_movimiento(
+                        'egreso',
+                        $monto_emp,
+                        "Comisión empleado ID {$_POST['idempleado']}",
+                        'comisiones_ventas',
+                        $idventa,
+                        $idcaja,
+                        $idTipoComision,
+                        $tipoPago,       // ⭐ usamos $tipoPago
+                        $_SESSION['idusuarios']
+                    );
+                }
             }
+            // Si es Crédito Bancario (3) no se hace ningún movimiento de caja aquí.
+            // Más adelante, cuando el banco confirme, registraremos esos movimientos
+            // en otro controlador o flujo (Aprobación de crédito).
 
             /* ===============================================================
                6 — GASTOS AUTOMÁTICOS DE VENTA (AQUÍ) - NO CORRESPONDE
             =============================================================== */
 
             /* ===============================================================
-               7 — VEHÍCULO VENDIDO
+            7 — VEHÍCULO VENDIDO / RESERVADO POR CRÉDITO
             =============================================================== */
             $vehiculo = new Vehiculos('', '', '', '', '', '', '', '', '', '', $conn);
             $vehiculo->setIdvehiculos($_POST['vehiculos_idvehiculos']);
-            $vehiculo->eliminar_vehiculo_venta();
+
+            if ($tipoPago === 3) {
+                // ⭐ Crédito bancario:
+                // No lo damos de baja, solo lo marcamos como RESERVADO CREDITO
+                if (!$vehiculo->marcar_reservado_credito()) {
+                    throw new Exception("No se pudo marcar el vehículo como 'Reservado Credito'.");
+                }
+            } else {
+                // 💵 Efectivo / Transferencia: comportamiento anterior (vendido / baja lógica)
+                $vehiculo->eliminar_vehiculo_venta();
+            }
+
 
             /* ===============================================================
                8 — NOTIFICACIÓN
@@ -200,4 +258,3 @@ class RegistrarVentaControlador {
         }
     }
 }
-

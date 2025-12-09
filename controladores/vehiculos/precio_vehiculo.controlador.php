@@ -10,18 +10,21 @@ require_once('../../modelos/tablas_maestras/interes.php');
 ============================================================ */
 function limpiarNumero($valor)
 {
-    if (!$valor) return 0;
+    if ($valor === null || $valor === '') {
+        return 0;
+    }
 
     // Quitar espacios normales, NBSP, THIN SPACE, etc.
     $valor = preg_replace('/[\x{00A0}\x{202F}\s]+/u', '', $valor);
 
-    // Si tiene coma y punto → los puntos son miles → se eliminan
-    if (strpos($valor, ',') !== false && strpos($valor, '.') !== false) {
-        $valor = str_replace('.', '', $valor);
-    }
+    // Eliminar puntos (separadores de miles)
+    $valor = str_replace('.', '', $valor);
 
-    // Convertir coma en punto para formato numérico
+    // Convertir coma en punto (decimales estilo AR/ES)
     $valor = str_replace(',', '.', $valor);
+
+    // Dejar solo dígitos, punto y signo menos, por seguridad extra
+    $valor = preg_replace('/[^0-9\.\-]/', '', $valor);
 
     return floatval($valor);
 }

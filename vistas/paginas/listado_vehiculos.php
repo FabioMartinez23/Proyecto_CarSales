@@ -1028,18 +1028,13 @@ function cerrarAmpliada() {
     function limpiarNumero(valor) {
         if (!valor) return 0;
 
-        // Quitar NBSP, THIN SPACE, ESPACIOS NORMALES y otros invisibles
+        // Quitar espacios raros
         valor = valor.replace(/[\u00A0\u202F\s]/g, '');
 
-        // Quitar todo lo que NO sea dígitos, coma o punto
-        valor = valor.replace(/[^\d,.,-]/g, '');
+        // Quitar puntos (separador de miles)
+        valor = valor.replace(/\./g, '');
 
-        // Si tiene coma y punto → los puntos son miles → se eliminan
-        if (valor.indexOf(',') !== -1 && valor.indexOf('.') !== -1) {
-            valor = valor.replace(/\./g, '');
-        }
-
-        // Convertir coma a punto
+        // Cambiar coma por punto (si alguna vez tenés decimales)
         valor = valor.replace(',', '.');
 
         const n = parseFloat(valor);

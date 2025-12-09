@@ -142,7 +142,7 @@ class ComprarVehiculo {
         INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
         INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
         INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
-        WHERE (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' 
+        WHERE estado_compra = 'Realizada' AND (patente LIKE '%$buscador%' OR marcas.nombre LIKE '%$buscador%' 
            OR modelos.nombre LIKE '%$buscador%' OR anio LIKE '%$buscador%' 
            OR personas.nombre LIKE '%$buscador%' OR personas.apellido LIKE '%$buscador%')
         AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio)";
@@ -172,7 +172,7 @@ class ComprarVehiculo {
         INNER JOIN precios_vehiculos ON precios_vehiculos.vehiculos_idvehiculos = vehiculos.idvehiculos 
         INNER JOIN titular_vehiculo ON compras.titular_vehiculo_idtitular_vehiculo = titular_vehiculo.idtitular_vehiculo 
         INNER JOIN personas ON titular_vehiculo.Personas_idpersonas = personas.idpersonas 
-        WHERE DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) 
+        WHERE estado_compra = 'Realizada' AND DATE(compras.fecha_compra) = DATE(precios_vehiculos.fecha_precio) 
         LIMIT $inicio,$cantidad";
 
         $res = $con->query($query);

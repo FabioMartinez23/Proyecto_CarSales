@@ -473,10 +473,10 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                                 <div class="input-group mx-auto" style="max-width: 350px;">
                                     <input type="text" id="buscar_patente" name="buscar_patente" class="form-control" placeholder="Buscar patente...">
                                     <button type="button" id="btn_buscar_patente" class="btn btn-success">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                        <i class="fa-solid fa-magnifying-glass"></i>
                                     </button>
                                     <button type="button" id="btn_limpiar_busqueda" class="btn btn-outline-danger" title="Limpiar búsqueda">
-                                    <i class="fa-solid fa-xmark"></i>
+                                        <i class="fa-solid fa-xmark"></i>
                                     </button>
                                     <input type="hidden" id="idvehiculo_parte_pago" name="idvehiculo_parte_pago">
                                     <input type="hidden" id="idcompras" name="idcompras">
@@ -506,7 +506,9 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                                 <label for="tipoPago" class="form-label">Tipo de Pago:</label>
                                 <select class="form-select" id="tipoPago" name="tipo_pago">
                                     <?php foreach($resulta_tipo_pago as $tipo_pagos): ?>
-                                        <option value="<?php echo $tipo_pagos['idtipo_pago']; ?>"><?php echo $tipo_pagos['descripcion']; ?></option>
+                                        <option value="<?php echo $tipo_pagos['idtipo_pago']; ?>">
+                                            <?php echo $tipo_pagos['descripcion']; ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -515,22 +517,107 @@ $resulta_tipo_pago = $tipo_pago->traer_tipo_pago();
                             <div class="col-md-4 mb-3">
                                 <input type="hidden" name="precio_tomado" id="id_precio_tomado">
                                 <input type="hidden" name="precio_publico_real" id="precio_publico_real">
-                                <label for="id_precio_publico" class="form-label">Monto:</label>
+                                <label for="id_precio_publico" class="form-label">Monto de la operación:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
                                     <input type="text" class="form-control text-end" id="id_precio_publico" name="precio_publico" readonly>
                                 </div>
+                                <small class="form-text text-muted">
+                                    Monto total del vehículo, antes de gastos o comisiones.
+                                </small>
                             </div>
 
-                            <!-- Observaciones -->
-                            <div class="col-md-6 mb-3">
+                            <!-- Observaciones generales -->
+                            <div class="col-md-4 mb-3">
                                 <label for="observaciones" class="form-label">Observaciones:</label>
                                 <textarea class="form-control" id="observaciones" name="observaciones"></textarea>
                             </div>
+
+                            <!-- 🔹 Bloque específico para TRANSFERENCIA -->
+                            <div class="col-12" id="bloque_transferencia" style="display:none;">
+                                <div class="bloque-pago-secundario bloque-transferencia">
+                                    <h5>
+                                        <i class="fa-solid fa-receipt"></i>
+                                        Datos de la Transferencia
+                                    </h5>
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-4">
+                                            <label for="banco_transferencia" class="form-label">Banco / Entidad:</label>
+                                            <input type="text" class="form-control" id="banco_transferencia" name="banco_transferencia">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="nro_comprobante_transferencia" class="form-label">N° de comprobante:</label>
+                                            <input type="text" class="form-control" id="nro_comprobante_transferencia" name="nro_comprobante_transferencia">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="fecha_transferencia" class="form-label">Fecha de transferencia:</label>
+                                            <input type="date" class="form-control" id="fecha_transferencia" name="fecha_transferencia">
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted d-block mt-2">
+                                        Verifique que el comprobante corresponda al monto total o al anticipo acordado.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- 🔹 Bloque específico para CRÉDITO BANCARIO -->
+                            <div class="col-12" id="bloque_credito" style="display:none;">
+                                <div class="bloque-pago-secundario bloque-credito">
+                                    <h5>
+                                        <i class="fa-solid fa-building-columns"></i>
+                                        Datos del Crédito Bancario
+                                    </h5>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="banco_credito" class="form-label">Banco / Entidad:</label>
+                                            <input type="text" class="form-control" id="banco_credito" name="banco_credito" placeholder="Ej: Banco Nación">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="monto_estimado_credito" class="form-label">Monto estimado a financiar:</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    min="0" 
+                                                    class="form-control text-end" 
+                                                    id="monto_estimado_credito" 
+                                                    name="monto_estimado_credito"
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="observacion_credito" class="form-label">Referencia / N° de gestión (opcional):</label>
+                                            <input type="text" class="form-control" id="observacion_credito" name="referencia_credito" placeholder="Ref. del banco / legajo">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label for="nota_credito" class="form-label">Notas internas sobre el crédito:</label>
+                                            <textarea 
+                                                class="form-control" 
+                                                id="nota_credito" 
+                                                name="nota_credito" 
+                                                rows="2" 
+                                                placeholder="Ej: Se envió documentación al banco, a la espera de aprobación.">
+                                            </textarea>
+                                        </div>
+                                    </div>
+
+                                    <small class="form-text text-muted d-block mt-2">
+                                        Esta venta quedará registrada como <strong>Pendiente por crédito</strong> hasta cargar la respuesta del banco.
+                                    </small>
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Botones finales -->
             <div class="d-flex justify-content-center mt-4">
@@ -750,6 +837,36 @@ document.getElementById('ventaForm').addEventListener('submit', function(e) {
     }
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectTipoPago      = document.getElementById('tipoPago');
+    const bloqueTransferencia = document.getElementById('bloque_transferencia');
+    const bloqueCredito       = document.getElementById('bloque_credito');
+
+    function actualizarBloquesPago() {
+        const valor = selectTipoPago.value;
+
+        // Ocultar todo por defecto
+        bloqueTransferencia.style.display = 'none';
+        bloqueCredito.style.display       = 'none';
+
+        // 2 = Transferencia, 3 = Crédito Bancario (según tu tabla tipo_pago)
+        if (valor === '2') {
+            bloqueTransferencia.style.display = 'block';
+        } else if (valor === '3') {
+            bloqueCredito.style.display = 'block';
+        }
+    }
+
+    // Al cambiar el select
+    selectTipoPago.addEventListener('change', actualizarBloquesPago);
+
+    // Al cargar la página, por si viene con un valor preseleccionado
+    actualizarBloquesPago();
+});
+</script>
+
 
 <script src="assets/js/json/traer_datos_cliente.js"></script>
 <script src="assets/js/json/traer_datos_vehiculo.js"></script>

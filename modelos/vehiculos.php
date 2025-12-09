@@ -734,6 +734,43 @@ class Vehiculos extends Paginacion{
     }
 
 
+    public function marcar_reservado_credito()
+    {
+        $con = $this->getConexion();
+
+        $id = (int)$this->idvehiculos;
+
+        // 7 = Reservado Credito
+        $sql = "
+            UPDATE vehiculos
+            SET 
+                estado_vehiculo_idestado_vehiculo = 7,
+                activo_vehiculo = 1
+            WHERE idvehiculos = $id
+        ";
+
+        return $con->query($sql);
+    }
+
+    public function marcar_disponible()
+    {
+        $con = $this->getConexion();
+
+        $id = (int)$this->idvehiculos;
+
+        // 1 = disponible
+        $sql = "
+            UPDATE vehiculos
+            SET 
+                estado_vehiculo_idestado_vehiculo = 1,
+                activo_vehiculo = 1
+            WHERE idvehiculos = $id
+        ";
+
+        return $con->query($sql);
+    }
+
+
     /**
      * Get the value of idvehiculos
      */ 

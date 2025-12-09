@@ -45,6 +45,7 @@
                             <a class="dropdown-item dropdown-toggle" href="#">Gestión de Ventas</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="index.php?page=listado_ventas">Registrar Ventas</a></li>
+                                <li><a class="dropdown-item" href="index.php?page=listado_creditos">Gestionar Créditos Bancarios</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -96,7 +97,7 @@
 
                         <!-- Tipos de gasto (CRUD) -->
                         <li>
-                            <a class="dropdown-item" href="index.php?page=tipo_gasto">
+                            <a class="dropdown-item" href="index.php?page=tablas_maestras/form_tipo_gasto">
                                 <i class="fa-solid fa-tags me-2 text-warning"></i>
                                 Administrar Tipos de Gasto
                             </a>

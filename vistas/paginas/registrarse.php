@@ -91,6 +91,16 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
 <script src="assets/js/validaciones/usuarios.js"></script>
 <script src="assets/js/validaciones/email.js"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formRegis = document.getElementById("id_form");
+    const loader = document.getElementById("loader-overlay");
+
+    formRegis.addEventListener("submit", function () {
+        loader.style.display = "flex";  // Mostrar loader
+    });
+});
+</script>
 
 <script>
 function validarEmail() {

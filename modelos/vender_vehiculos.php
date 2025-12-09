@@ -15,6 +15,14 @@ class VenderVehiculo {
     private $registro_clientes_idregistro_clientes;
     private $empleados_idempleados;
     private $titular_vehiculo_idtitular_vehiculo;
+    private $estado_venta;                // Realizada / Anulada / Pendiente crédito
+    private $estado_venta_credito;        // ninguno / pendiente / aprobado / rechazado
+
+    private $banco_credito;
+    private $observacion_credito;
+    private $fecha_solicitud_credito;
+    private $fecha_respuesta_credito;
+    private $monto_aprobado_credito;
 
     // ===========================================================
     // 🔹 CONSTRUCTOR — recibe conexión externa si viene de transacción
@@ -67,25 +75,78 @@ class VenderVehiculo {
     public function agregar_venta() {
         $con = $this->getConexion();
 
+        // Defaults para no romper nada si no se setean desde afuera
+        $estado_venta         = $this->estado_venta ?: 'Realizada';
+        $estado_venta_credito = $this->estado_venta_credito ?: 'ninguno';
+
+        $descripcion  = $con->real_escape_string($this->descripcion);
+        $precio_venta = floatval($this->precio_venta);
+
+        // Campos de crédito opcionales (pueden ser NULL)
+        $banco_credito = $this->banco_credito 
+            ? "'" . $con->real_escape_string($this->banco_credito) . "'" 
+            : "NULL";
+
+        $observacion_credito = $this->observacion_credito 
+            ? "'" . $con->real_escape_string($this->observacion_credito) . "'" 
+            : "NULL";
+
+        // Fecha solicitud (solo tendrá valor si la seteamos, ej. en crédito)
+        $fecha_solicitud_credito = $this->fecha_solicitud_credito
+            ? "'" . $con->real_escape_string($this->fecha_solicitud_credito) . "'"
+            : "NULL";
+
+        // Estos se completan después cuando el banco responda
+        $fecha_respuesta_credito = $this->fecha_respuesta_credito
+            ? "'" . $con->real_escape_string($this->fecha_respuesta_credito) . "'"
+            : "NULL";
+
+        $monto_aprobado_credito = ($this->monto_aprobado_credito !== null && $this->monto_aprobado_credito !== '')
+            ? floatval($this->monto_aprobado_credito)
+            : "NULL";
+
         $query = "
             INSERT INTO ventas 
-            (descripcion,  precio_venta, fecha_venta, tipo_pago_idtipo_pago, vehiculo_idvehiculo, 
-             registro_clientes_idregistro_clientes, empleados_idempleados, titular_vehiculo_idtitular_vehiculo)
+            (
+                descripcion,
+                precio_venta,
+                fecha_venta,
+                tipo_pago_idtipo_pago,
+                vehiculo_idvehiculo,
+                registro_clientes_idregistro_clientes,
+                empleados_idempleados,
+                titular_vehiculo_idtitular_vehiculo,
+                estado_venta,
+                estado_venta_credito,
+                banco_credito,
+                observacion_credito,
+                fecha_solicitud_credito,
+                fecha_respuesta_credito,
+                monto_aprobado_credito
+            )
             VALUES (
-                '$this->descripcion',
-                '$this->precio_venta',
-                CURDATE(),
+                '$descripcion',
+                '$precio_venta',
+                NOW(),
                 '$this->tipo_pago_idtipo_pago',
                 '$this->vehiculo_idvehiculo',
                 '$this->registro_clientes_idregistro_clientes',
                 '$this->empleados_idempleados',
-                '$this->titular_vehiculo_idtitular_vehiculo'
+                '$this->titular_vehiculo_idtitular_vehiculo',
+                '$estado_venta',
+                '$estado_venta_credito',
+                $banco_credito,
+                $observacion_credito,
+                $fecha_solicitud_credito,
+                $fecha_respuesta_credito,
+                $monto_aprobado_credito
             )
         ";
 
         $ok = $con->query($query);
         return $ok ? $con->insert_id : null;
     }
+
 
 
     public function traer_ventas() {
@@ -121,17 +182,64 @@ public function buscar_ventas($buscador){
     }
 
 
-    public function traer_ventas_paginacion($inicio, $cantidad){
+    public function traer_ventas_paginacion($inicio, $cantidad)
+    {
         $con = $this->getConexion();
-        $query = "SELECT *,ventas.idventas, marcas.nombre as nombre_marca, modelos.nombre as nombre_modelo, ventas.descripcion as observacion, tipo_pago.descripcion as nombre_pago, MAX(pv.precio) as precio_actual, personas.nombre, personas.apellido FROM ventas INNER JOIN tipo_pago ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago INNER JOIN vehiculos ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos INNER JOIN modelos ON vehiculos.modelos_idmodelos = modelos.idmodelos INNER JOIN marcas ON modelos.marcas_idmarcas = marcas.idmarcas INNER JOIN precios_vehiculos pv ON pv.vehiculos_idvehiculos = vehiculos.idvehiculos AND pv.activo_precio = 1 INNER JOIN registro_clientes ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes INNER JOIN usuarios ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios INNER JOIN personas ON usuarios.personas_idpersonas = personas.idpersonas WHERE estado_venta = 'Realizada' GROUP BY ventas.idventas LIMIT $inicio,$cantidad";
+
+        // Por seguridad, casteamos a int
+        $inicio   = (int)$inicio;
+        $cantidad = (int)$cantidad;
+
+        $query = "
+            SELECT 
+                ventas.*, vehiculos.*,                               -- incluye estado_venta y estado_venta_credito
+                marcas.nombre              AS nombre_marca,
+                modelos.nombre             AS nombre_modelo,
+                ventas.descripcion         AS observacion,
+                tipo_pago.descripcion      AS nombre_pago,
+                MAX(pv.precio)             AS precio_actual,
+                personas.nombre,
+                personas.apellido
+            FROM ventas
+            INNER JOIN tipo_pago 
+                ON ventas.tipo_pago_idtipo_pago = tipo_pago.idtipo_pago
+            INNER JOIN vehiculos 
+                ON ventas.vehiculo_idvehiculo = vehiculos.idvehiculos
+            INNER JOIN modelos 
+                ON vehiculos.modelos_idmodelos = modelos.idmodelos
+            INNER JOIN marcas 
+                ON modelos.marcas_idmarcas = marcas.idmarcas
+            INNER JOIN precios_vehiculos pv 
+                ON pv.vehiculos_idvehiculos = vehiculos.idvehiculos
+            AND pv.activo_precio = 1
+            INNER JOIN registro_clientes 
+                ON ventas.registro_clientes_idregistro_clientes = registro_clientes.idregistro_clientes
+            INNER JOIN usuarios 
+                ON registro_clientes.Usuarios_idusuarios = usuarios.idusuarios
+            INNER JOIN personas 
+                ON usuarios.personas_idpersonas = personas.idpersonas
+            WHERE ventas.estado_venta IN ('Realizada', 'Pendiente crédito')
+            GROUP BY ventas.idventas
+            ORDER BY ventas.fecha_venta DESC, ventas.idventas DESC
+            LIMIT $inicio, $cantidad
+        ";
+
         $res = $con->query($query);
         $this->cerrarConexion($con);
         return $res;
     }
 
-    public function traer_cantidad_ventas(){
+
+    public function traer_cantidad_ventas()
+    {
         $con = $this->getConexion();
-        $query = "SELECT count(*) as total FROM ventas WHERE estado_venta = 'Realizada'";
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM ventas
+            WHERE estado_venta IN ('Realizada', 'Pendiente crédito')
+        ";
+
         $res = $con->query($query);
         $this->cerrarConexion($con);
         return $res;
@@ -257,34 +365,49 @@ public function buscar_ventas($buscador){
 
     /* ===========================================================
     REPORTE: VENTAS POR PERÍODO (AGRUPADAS POR MES/AÑO)
+    -> Basado en las comisiones de la concesionaria
     =========================================================== */
     public function reporte_ventas_por_periodo($desde = null, $hasta = null) {
         $con = $this->getConexion();
 
-        $filtro = " WHERE 1=1 ";
+        // Filtro base: solo ventas realizadas
+        $filtro = " WHERE v.estado_venta = 'Realizada' ";
+
+        // Opcional: excluir comisiones anuladas
+        $filtro .= " AND (cv.estado_comision IS NULL OR cv.estado_comision <> 'anulada') ";
 
         if (!empty($desde)) {
-            $filtro .= " AND DATE(ventas.fecha_venta) >= '$desde'";
+            $desde = $con->real_escape_string($desde);
+            $filtro .= " AND DATE(v.fecha_venta) >= '$desde'";
         }
 
         if (!empty($hasta)) {
-            $filtro .= " AND DATE(ventas.fecha_venta) <= '$hasta'";
+            $hasta = $con->real_escape_string($hasta);
+            $filtro .= " AND DATE(v.fecha_venta) <= '$hasta'";
         }
 
         $query = "
             SELECT 
-                DATE_FORMAT(ventas.fecha_venta, '%Y-%m')   AS periodo,
-                DATE_FORMAT(ventas.fecha_venta, '%m/%Y')   AS periodo_legible,
-                COUNT(*)                                   AS cantidad_ventas,
-                SUM(precios_vehiculos.precio)              AS total_vendido,
-                AVG(precios_vehiculos.precio)              AS ticket_promedio
-            FROM ventas
-            INNER JOIN precios_vehiculos 
-                ON precios_vehiculos.vehiculos_idvehiculos = ventas.vehiculo_idvehiculo
-            AND DATE(precios_vehiculos.fecha_precio) = DATE(ventas.fecha_venta)
+                DATE_FORMAT(v.fecha_venta, '%Y-%m') AS periodo,
+                DATE_FORMAT(v.fecha_venta, '%m/%Y') AS periodo_legible,
+                COUNT(*) AS cantidad_ventas,
+
+                -- 👇 TOTAL QUE GANA LA CONCESIONARIA EN EL PERÍODO
+                SUM(cv.monto_concesionaria) AS total_vendido,
+
+                -- 👇 TICKET PROMEDIO DE COMISIÓN POR VENTA
+                CASE 
+                    WHEN COUNT(*) > 0 
+                    THEN SUM(cv.monto_concesionaria) / COUNT(*) 
+                    ELSE 0 
+                END AS ticket_promedio
+
+            FROM ventas v
+            INNER JOIN comisiones_ventas cv
+                ON cv.ventas_idventas = v.idventas
             $filtro
-            GROUP BY DATE_FORMAT(ventas.fecha_venta, '%Y-%m')
-            ORDER BY DATE_FORMAT(ventas.fecha_venta, '%Y-%m') ASC
+            GROUP BY DATE_FORMAT(v.fecha_venta, '%Y-%m')
+            ORDER BY DATE_FORMAT(v.fecha_venta, '%Y-%m') ASC
         ";
 
         $res = $con->query($query);
@@ -297,9 +420,11 @@ public function buscar_ventas($buscador){
     }
 
 
+
+
+
     public function reporte_ventas_por_vendedor($desde, $hasta)
     {
-        // Usamos la misma conexión que el resto de la clase
         $con = $this->getConexion();
 
         // Sanitizar mínimamente
@@ -311,9 +436,20 @@ public function buscar_ventas($buscador){
                 e.idempleados,
                 CONCAT(p.apellido, ' ', p.nombre) AS vendedor,
                 COUNT(v.idventas) AS cantidad_ventas,
-                SUM(v.precio_venta) AS total_vendido,
-                AVG(v.precio_venta) AS ticket_promedio
+
+                -- 👇 TOTAL COMISIONES DE LA CONCESIONARIA POR VENDEDOR
+                SUM(cv.monto_concesionaria) AS total_vendido,
+
+                -- 👇 TICKET PROMEDIO DE COMISIÓN POR VENTA
+                CASE 
+                    WHEN COUNT(v.idventas) > 0 
+                    THEN SUM(cv.monto_concesionaria) / COUNT(v.idventas)
+                    ELSE 0
+                END AS ticket_promedio
+
             FROM ventas v
+            INNER JOIN comisiones_ventas cv
+                ON cv.ventas_idventas = v.idventas
             INNER JOIN empleados e 
                 ON e.idempleados = v.empleados_idempleados
             INNER JOIN usuarios u
@@ -322,6 +458,8 @@ public function buscar_ventas($buscador){
                 ON p.idpersonas = u.personas_idpersonas
             WHERE DATE(v.fecha_venta) BETWEEN '$desde' AND '$hasta'
             AND v.estado_venta = 'Realizada'
+            -- opcional: excluir comisiones anuladas
+            AND (cv.estado_comision IS NULL OR cv.estado_comision <> 'anulada')
             GROUP BY e.idempleados, p.apellido, p.nombre
             ORDER BY total_vendido DESC
         ";
@@ -335,6 +473,7 @@ public function buscar_ventas($buscador){
         return $res;
     }
 
+
     
     public function reporte_ventas_anuladas_detalle($desde, $hasta)
     {
@@ -345,8 +484,12 @@ public function buscar_ventas($buscador){
                 v.idventas,
                 v.fecha_venta,
                 v.fecha_anulacion,
+
+                -- Precio de venta original (por si querés mostrarlo)
                 v.precio_venta,
-                v.descripcion AS observacion,
+
+                -- 👇 Comisión de la concesionaria asociada a la venta
+                COALESCE(cv.monto_concesionaria, 0) AS comision_concesionaria,
 
                 -- Datos del vendedor
                 ev.idempleados,
@@ -361,6 +504,11 @@ public function buscar_ventas($buscador){
                 m.nombre  AS marca
 
             FROM ventas v
+
+            -- LEFT JOIN por si hubiera alguna venta anulada sin comisión cargada
+            LEFT JOIN comisiones_ventas cv 
+                ON cv.ventas_idventas = v.idventas
+
             INNER JOIN empleados ev 
                 ON ev.idempleados = v.empleados_idempleados
             INNER JOIN Usuarios uv
@@ -389,6 +537,7 @@ public function buscar_ventas($buscador){
 
         return $conexion->consultar($query);
     }
+
 
 
     public function reporte_clientes_frecuentes($desde, $hasta)
@@ -424,8 +573,8 @@ public function buscar_ventas($buscador){
     {
         $conexion = new Conexion();
 
-        // Armamos filtro por fecha
-        $filtro = " WHERE 1=1 ";
+        // Filtro base: solo ventas realizadas
+        $filtro = " WHERE v.estado_venta = 'Realizada' ";
 
         if (!empty($desde)) {
             $filtro .= " AND DATE(v.fecha_venta) >= '$desde'";
@@ -435,24 +584,38 @@ public function buscar_ventas($buscador){
             $filtro .= " AND DATE(v.fecha_venta) <= '$hasta'";
         }
 
+        // Opcional: excluir comisiones anuladas
+        $filtro .= " AND (cv.estado_comision IS NULL OR cv.estado_comision <> 'anulada') ";
+
         $query = "
             SELECT 
                 tp.idtipo_pago,
                 tp.descripcion AS metodo_pago,
-                COUNT(v.idventas)        AS cantidad_ventas,
-                SUM(v.precio_venta)      AS total_vendido,
-                AVG(v.precio_venta)      AS ticket_promedio
+                COUNT(v.idventas) AS cantidad_ventas,
+
+                -- 👇 TOTAL DE COMISIONES DE LA CONCESIONARIA POR MÉTODO DE PAGO
+                SUM(cv.monto_concesionaria) AS total_vendido,
+
+                -- 👇 TICKET PROMEDIO DE COMISIÓN
+                CASE 
+                    WHEN COUNT(v.idventas) > 0 
+                    THEN SUM(cv.monto_concesionaria) / COUNT(v.idventas)
+                    ELSE 0
+                END AS ticket_promedio
+
             FROM ventas v
+            INNER JOIN comisiones_ventas cv
+                ON cv.ventas_idventas = v.idventas
             INNER JOIN tipo_pago tp 
                 ON tp.idtipo_pago = v.tipo_pago_idtipo_pago
             $filtro
-            AND v.estado_venta = 'Realizada'
             GROUP BY tp.idtipo_pago, tp.descripcion
             ORDER BY total_vendido DESC
         ";
 
         return $conexion->consultar($query);
     }
+
 
 
     public function existeVentaActivaPorVehiculo($idvehiculo)
@@ -538,6 +701,222 @@ public function buscar_ventas($buscador){
 
         return $res;
     }
+
+
+    public function actualizar_estado_credito($idventa)
+    {
+        $con = $this->getConexion();
+
+        $estado_venta         = $con->real_escape_string($this->estado_venta);
+        $estado_venta_credito = $con->real_escape_string($this->estado_venta_credito);
+
+        $fecha_respuesta = $this->fecha_respuesta_credito
+            ? "'" . $con->real_escape_string($this->fecha_respuesta_credito) . "'"
+            : "NULL";
+
+        $monto_aprobado = ($this->monto_aprobado_credito !== null && $this->monto_aprobado_credito !== '')
+            ? floatval($this->monto_aprobado_credito)
+            : "NULL";
+
+        $observacion = $this->observacion_credito
+            ? "'" . $con->real_escape_string($this->observacion_credito) . "'"
+            : "observacion_credito"; // para no pisar con NULL si no querés actualizar
+
+        // Si NO querés sobreescribir observacion_credito cuando viene null,
+        // podés armar el SET condicionalmente. Acá hago una versión simple:
+        $setObservacion = "";
+        if ($this->observacion_credito !== null) {
+            $setObservacion = ", observacion_credito = $observacion";
+        }
+
+        $query = "
+            UPDATE ventas
+            SET 
+                estado_venta = '$estado_venta',
+                estado_venta_credito = '$estado_venta_credito',
+                fecha_respuesta_credito = $fecha_respuesta,
+                monto_aprobado_credito = $monto_aprobado
+                $setObservacion
+            WHERE idventas = ".(int)$idventa."
+        ";
+
+        $ok = $con->query($query);
+
+        if (!$this->conexion_externa) {
+            $this->cerrarConexion($con);
+        }
+
+        return $ok;
+    }
+
+
+        /* ===========================================================
+       LISTADO / GESTIÓN DE CRÉDITOS BANCARIOS
+       =========================================================== */
+
+        public function contar_creditos($estadoCredito = null)
+        {
+            $con = $this->getConexion();
+
+            $estadoCredito = $estadoCredito ? $con->real_escape_string($estadoCredito) : null;
+
+            $whereEstado = "";
+            if ($estadoCredito && $estadoCredito !== 'todos') {
+                $whereEstado = " AND v.estado_venta_credito = '$estadoCredito' ";
+            }
+
+            $query = "
+                SELECT COUNT(*) AS total
+                FROM ventas v
+                WHERE v.tipo_pago_idtipo_pago = 3
+                $whereEstado
+            ";
+
+            $res = $con->query($query);
+            $total = 0;
+
+            if ($res && $row = $res->fetch_assoc()) {
+                $total = (int)$row['total'];
+            }
+
+            if (!$this->conexion_externa) {
+                $this->cerrarConexion($con);
+            }
+
+            return $total;
+        }
+
+
+        public function traer_creditos($estadoCredito = null, $inicio = 0, $cantidad = 20)
+        {
+            $con = $this->getConexion();
+
+            $estadoCredito = $estadoCredito ? $con->real_escape_string($estadoCredito) : null;
+
+            $whereEstado = "";
+            if ($estadoCredito && $estadoCredito !== 'todos') {
+                $whereEstado = " AND v.estado_venta_credito = '$estadoCredito' ";
+            }
+
+            $query = "
+                SELECT 
+                    v.*,
+                    v.descripcion AS observacion,
+                    tp.descripcion AS nombre_pago,
+                    
+                    ve.patente,
+                    ve.anio,
+                    mo.nombre AS nombre_modelo,
+                    ma.nombre AS nombre_marca,
+
+                    per.nombre,
+                    per.apellido
+
+                FROM ventas v
+                INNER JOIN tipo_pago tp 
+                    ON tp.idtipo_pago = v.tipo_pago_idtipo_pago
+
+                INNER JOIN vehiculos ve
+                    ON ve.idvehiculos = v.vehiculo_idvehiculo
+                INNER JOIN modelos mo
+                    ON mo.idmodelos = ve.modelos_idmodelos
+                INNER JOIN marcas ma
+                    ON ma.idmarcas = mo.marcas_idmarcas
+
+                INNER JOIN registro_clientes rc
+                    ON rc.idregistro_clientes = v.registro_clientes_idregistro_clientes
+                INNER JOIN usuarios u
+                    ON u.idusuarios = rc.Usuarios_idusuarios
+                INNER JOIN personas per
+                    ON per.idpersonas = u.personas_idpersonas
+
+                WHERE v.tipo_pago_idtipo_pago = 3
+                $whereEstado
+
+                ORDER BY 
+                    COALESCE(v.fecha_solicitud_credito, v.fecha_venta) DESC,
+                    v.idventas DESC
+
+                LIMIT $inicio, $cantidad
+            ";
+
+            $res = $con->query($query);
+
+            if (!$this->conexion_externa) {
+                $this->cerrarConexion($con);
+            }
+
+            return $res;
+        }
+
+
+        public function buscar_creditos($buscador, $estadoCredito = null)
+        {
+            $con = $this->getConexion();
+
+            $buscador = $con->real_escape_string($buscador);
+            $estadoCredito = $estadoCredito ? $con->real_escape_string($estadoCredito) : null;
+
+            $whereEstado = "";
+            if ($estadoCredito && $estadoCredito !== 'todos') {
+                $whereEstado = " AND v.estado_venta_credito = '$estadoCredito' ";
+            }
+
+            $query = "
+                SELECT 
+                    v.*,
+                    v.descripcion AS observacion,
+                    tp.descripcion AS nombre_pago,
+                    
+                    ve.patente,
+                    ve.anio,
+                    mo.nombre AS nombre_modelo,
+                    ma.nombre AS nombre_marca,
+
+                    per.nombre,
+                    per.apellido
+
+                FROM ventas v
+                INNER JOIN tipo_pago tp 
+                    ON tp.idtipo_pago = v.tipo_pago_idtipo_pago
+
+                INNER JOIN vehiculos ve
+                    ON ve.idvehiculos = v.vehiculo_idvehiculo
+                INNER JOIN modelos mo
+                    ON mo.idmodelos = ve.modelos_idmodelos
+                INNER JOIN marcas ma
+                    ON ma.idmarcas = mo.marcas_idmarcas
+
+                INNER JOIN registro_clientes rc
+                    ON rc.idregistro_clientes = v.registro_clientes_idregistro_clientes
+                INNER JOIN usuarios u
+                    ON u.idusuarios = rc.Usuarios_idusuarios
+                INNER JOIN personas per
+                    ON per.idpersonas = u.personas_idpersonas
+
+                WHERE v.tipo_pago_idtipo_pago = 3
+                $whereEstado
+                AND (
+                    ve.patente       LIKE '%$buscador%'
+                    OR ma.nombre     LIKE '%$buscador%'
+                    OR mo.nombre     LIKE '%$buscador%'
+                    OR per.nombre    LIKE '%$buscador%'
+                    OR per.apellido  LIKE '%$buscador%'
+                )
+
+                ORDER BY 
+                    COALESCE(v.fecha_solicitud_credito, v.fecha_venta) DESC,
+                    v.idventas DESC
+            ";
+
+            $res = $con->query($query);
+
+            if (!$this->conexion_externa) {
+                $this->cerrarConexion($con);
+            }
+
+            return $res;
+        }
 
 
     /**
@@ -721,5 +1100,87 @@ public function buscar_ventas($buscador){
 
         return $this;
     }
+
+    // ================= ESTADO VENTA =================
+
+public function getEstado_venta()
+{
+    return $this->estado_venta;
+}
+
+public function setEstado_venta($estado_venta)
+{
+    $this->estado_venta = $estado_venta;
+    return $this;
+}
+
+public function getEstado_venta_credito()
+{
+    return $this->estado_venta_credito;
+}
+
+public function setEstado_venta_credito($estado_venta_credito)
+{
+    $this->estado_venta_credito = $estado_venta_credito;
+    return $this;
+}
+
+    // ================= CAMPOS CRÉDITO =================
+
+    public function getBanco_credito()
+    {
+        return $this->banco_credito;
+    }
+
+    public function setBanco_credito($banco_credito)
+    {
+        $this->banco_credito = $banco_credito;
+        return $this;
+    }
+
+    public function getObservacion_credito()
+    {
+        return $this->observacion_credito;
+    }
+
+    public function setObservacion_credito($observacion_credito)
+    {
+        $this->observacion_credito = $observacion_credito;
+        return $this;
+    }
+
+    public function getFecha_solicitud_credito()
+    {
+        return $this->fecha_solicitud_credito;
+    }
+
+    public function setFecha_solicitud_credito($fecha_solicitud_credito)
+    {
+        $this->fecha_solicitud_credito = $fecha_solicitud_credito;
+        return $this;
+    }
+
+    public function getFecha_respuesta_credito()
+    {
+        return $this->fecha_respuesta_credito;
+    }
+
+    public function setFecha_respuesta_credito($fecha_respuesta_credito)
+    {
+        $this->fecha_respuesta_credito = $fecha_respuesta_credito;
+        return $this;
+    }
+
+    public function getMonto_aprobado_credito()
+    {
+        return $this->monto_aprobado_credito;
+    }
+
+    public function setMonto_aprobado_credito($monto_aprobado_credito)
+    {
+        $this->monto_aprobado_credito = $monto_aprobado_credito;
+        return $this;
+    }
+
 }
 ?>

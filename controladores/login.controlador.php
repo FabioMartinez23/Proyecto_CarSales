@@ -177,7 +177,17 @@ class LoginControlador
         $pusher->trigger('notificaciones', 'nuevo-evento', $data);
         // ------------------------------------------------
 
-        // Enviar correo de verificación
+        // Enviar correo al administrador avisando nuevo usuario
+        $this->enviarCorreoAdminNuevoUsuario(
+            $id_usuario,
+            $_POST['username'],
+            $_POST['email'],
+            $_POST['nombre'],
+            $_POST['apellido'],
+            $_POST['perfiles_idperfiles']
+        );
+
+        // Enviar correo de verificación al usuario
         $okMail = $this->enviarCorreoVerificacion(
             $id_usuario,
             $_POST['email'],
@@ -305,4 +315,114 @@ class LoginControlador
             return false;
         }
     }
+
+        /* ============================
+       AVISO AL ADMINISTRADOR
+    ============================ */
+    private function enviarCorreoAdminNuevoUsuario($id_usuario, $username, $email, $nombre, $apellido, $id_perfil)
+    {
+        $adminEmail = 'famartinez2611994@gmail.com'; // Email del administrador
+
+        $mail = new PHPMailer(true);
+
+        try {
+            // Config SMTP Brevo (misma que usás en enviarCorreoVerificacion)
+            $mail->isSMTP();
+            $mail->Host       = 'smtp-relay.brevo.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = '9d6f3f001@smtp-brevo.com';  // TU usuario SMTP Brevo
+            $mail->Password   = 'mqA4CSBVnGxgDZLO';          // TU contraseña SMTP Brevo
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            $mail->CharSet    = 'UTF-8';
+
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+
+            // Remitente y destinatario (igual que en enviarCorreoVerificacion)
+            $mail->setFrom('famartinez2611994@gmail.com', 'CarSales - Sistema');
+            $mail->addAddress($adminEmail, 'Administrador CarSales');
+
+            // Contenido
+            $mail->isHTML(true);
+            $mail->Subject = 'Nuevo usuario registrado en CarSales';
+
+            $nombreCompleto = htmlspecialchars($nombre . ' ' . $apellido, ENT_QUOTES, 'UTF-8');
+            $usernameEsc    = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+            $emailEsc       = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+
+            $mail->Body = "
+            <div style='background:#f4f4f8;padding:20px;font-family:Arial,sans-serif;color:#333;'>
+                <div style='max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;
+                            box-shadow:0 4px 15px rgba(0,0,0,0.08);overflow:hidden;'>
+                    
+                    <div style='background:#333A56;padding:20px;text-align:center;'>
+                        <h2 style='color:#ffffff;margin:0;'>Nuevo usuario registrado</h2>
+                    </div>
+
+                    <div style='padding:25px;'>
+                        <p style='font-size:14px;line-height:1.6;'>
+                            Se ha registrado un nuevo usuario en <strong>CarSales</strong>.
+                        </p>
+
+                        <table style='font-size:13px;border-collapse:collapse;width:100%;margin-top:10px;'>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;width:120px;'>ID Usuario:</td>
+                                <td style='padding:6px 4px;'>" . (int)$id_usuario . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Nombre:</td>
+                                <td style='padding:6px 4px;'>" . $nombreCompleto . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Username:</td>
+                                <td style='padding:6px 4px;'>" . $usernameEsc . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Email:</td>
+                                <td style='padding:6px 4px;'>" . $emailEsc . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Perfil ID:</td>
+                                <td style='padding:6px 4px;'>" . (int)$id_perfil . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding:6px 4px;font-weight:bold;'>Fecha alta:</td>
+                                <td style='padding:6px 4px;'>" . date('Y-m-d H:i:s') . "</td>
+                            </tr>
+                        </table>
+
+                        <p style='font-size:12px;color:#999;margin-top:20px;'>
+                            Este correo es solo informativo. También podés visualizar el alta desde el panel de notificaciones del sistema.
+                        </p>
+                    </div>
+
+                    <div style='background:#f0f0f5;padding:10px 20px;text-align:center;font-size:11px;color:#777;'>
+                        © " . date('Y') . " CarSales · Sistema de gestión de vehículos
+                    </div>
+                </div>
+            </div>
+            ";
+
+            $mail->AltBody = "Nuevo usuario registrado en CarSales\n\n"
+                . "ID Usuario: $id_usuario\n"
+                . "Nombre: $nombre $apellido\n"
+                . "Username: $username\n"
+                . "Email: $email\n"
+                . "Perfil ID: $id_perfil\n"
+                . "Fecha alta: " . date('Y-m-d H:i:s') . "\n";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('Error PHPMailer aviso admin nuevo usuario: ' . $mail->ErrorInfo);
+            return false;
+        }
+    }
+
 }

@@ -38,6 +38,7 @@ require_once('modelos/tablas_maestras/tipo_precio.php');
 require_once('modelos/tablas_maestras/estado_vehiculo.php');
 require_once('modelos/tablas_maestras/interes.php');
 require_once('modelos/tablas_maestras/tipo_comision.php');
+require_once('modelos/tablas_maestras/tipo_gasto.php');
 require_once('modelos/comision_venta.php');
 require_once('modelos/documentos.php');
 require_once('modelos/tablas_maestras/pais.php');

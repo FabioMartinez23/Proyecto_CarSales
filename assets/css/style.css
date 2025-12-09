@@ -853,6 +853,72 @@ div.contenido-tarjeta p{
     margin-top: 0.75rem;
 }
 
+/* ============================================================
+   BLOQUES DE PAGO (TRANSFERENCIA / CRÉDITO) - CarSales Style
+   ============================================================ */
+.bloque-pago-secundario {
+    background: #f8fafc;               /* fondo claro */
+    border-left: 4px solid #cbd5e1;     /* línea suave */
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    animation: fadeInDown 0.2s ease-out;
+}
+
+.bloque-pago-secundario h5 {
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+}
+
+.bloque-pago-secundario .form-label {
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.bloque-pago-secundario input,
+.bloque-pago-secundario textarea,
+.bloque-pago-secundario select {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+/* Variantes por tipo */
+.bloque-transferencia {
+    border-left-color: #0d6efd;   /* azul */
+}
+
+.bloque-transferencia h5 {
+    color: #0d6efd;
+}
+
+.bloque-credito {
+    border-left-color: #ffc107;   /* amarillo */
+}
+
+.bloque-credito h5 {
+    color: #b08900;
+}
+
+/* Animación suave reutilizable */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
 
 
 /* =========================================================

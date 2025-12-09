@@ -68,6 +68,10 @@ if (isset($_POST['action'])) {
             $caja_controlador->traer_balance_diario();
             break;
 
+        case 'traer_balance_mensual_por_tipo_pago':
+            $caja_controlador->traer_balance_mensual_por_tipo_pago();
+            break;
+
             /* ===========================================================
                GRAFICOS (MENSUAL Y DIARIO)
                =========================================================== */
@@ -375,6 +379,21 @@ class CajaControlador {
             'egresos' => $egresos,
             'balance' => $balance
         ]);
+    }
+
+    public function traer_balance_mensual_por_tipo_pago() {
+        $caja = new Caja();
+        $anio = $_POST['anio'] ?? date('Y');
+        $mes  = $_POST['mes'] ?? date('m');
+
+        $resultado = $caja->traer_balance_mensual_por_tipo_pago($anio, $mes);
+
+        $data = [];
+        while ($fila = $resultado->fetch_assoc()) {
+            $data[] = $fila;
+        }
+
+        echo json_encode($data);
     }
 
 

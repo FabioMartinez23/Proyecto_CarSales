@@ -153,6 +153,7 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                 <th>Modificar</th>
                 <th>Resetear Contraseña</th>
                 <th>Eliminar</th>
+                <th>Ver Usuario</th>
                 </tr>
             </thead>
             <tbody>
@@ -182,6 +183,11 @@ $result_tipo_sexo = $tipo_sexo->traer_tipo_sexo();
                         <input type="hidden" name="perfil" value="<?= $usuario_['descripcion'] ?>">
                         <button onclick="confirmarAccion(event, 'eliminar', 'formulario-eliminar-<?= $usuario_['idusuarios']; ?>')" class="btn btn-danger" type="button" title="Eliminar Usuario"><i class="fa-solid fa-trash"></i></button>
                     </form>
+                </td>
+                <td>
+                    <a href="index.php?page=ver_usuario&accion=ver_cliente&usuario=<?=$usuario_['idusuarios']; ?>" class="btn btn-info" type="button" title="Ver Usuario">
+                        <i class="fa-regular fa-eye"></i>
+                    </a>
                 </td>
                 </tr>
                         <?php

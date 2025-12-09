@@ -28,7 +28,7 @@ if ($result && $result->num_rows > 0) {
     while ($r = $result->fetch_assoc()) {
         $filas[] = $r;
         $total_anuladas++;
-        $total_monto += (float)$r['precio_venta'];
+        $total_monto += (float)$r['comision_concesionaria'];
     }
 }
 
@@ -69,7 +69,7 @@ $data_totales = [];
 foreach ($agrupado as $p) {
     $labels[]         = $p['label'];
     $data_cantidades[] = (int)$p['cantidad'];
-    $data_totales[]   = round($p['total_monto'], 2);
+    $data_totales[] = round($p['total_monto'], 2);
 }
 ?>
 
@@ -202,7 +202,7 @@ foreach ($agrupado as $p) {
                             <td><?= htmlspecialchars($f['cliente']); ?></td>
                             <td><?= htmlspecialchars($f['vendedor']); ?></td>
                             <td class="text-end">
-                                $<?= number_format((float)$f['precio_venta'], 2, ',', '.'); ?>
+                                $<?= number_format((float)$f['comision_concesionaria'], 2, ',', '.'); ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

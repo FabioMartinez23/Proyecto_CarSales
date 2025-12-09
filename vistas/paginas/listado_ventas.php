@@ -75,62 +75,100 @@ $total_paginas = $total_registros > 0 ? ceil($total_registros / $filas_por_pagin
                 <?php if ($result_ventas): ?>
                     <?php foreach ($result_ventas as $venta): ?>
                         <?php
-                            // Si tu consulta trae estado_venta, lo usamos. Si no, asumimos Realizada.
-                            $estado = $venta['estado_venta'] ?? 'Realizada';
-                            $esRealizada = ($estado === 'Realizada');
-                            $esAdmin = isset($_SESSION['descripcion']) && $_SESSION['descripcion'] === "Administrador";
+                            // 🔹 Estado de la venta y del crédito
+                            $estadoVenta    = $venta['estado_venta'] ?? 'Realizada';
+                            $estadoCredito  = $venta['estado_venta_credito'] ?? 'ninguno';
+                            $tipoPagoId     = isset($venta['tipo_pago_idtipo_pago']) ? (int)$venta['tipo_pago_idtipo_pago'] : 0;
+                            $esAdmin        = isset($_SESSION['descripcion']) && $_SESSION['descripcion'] === "Administrador";
+
+                            $esRealizada    = ($estadoVenta === 'Realizada');
+                            $esAnulada      = ($estadoVenta === 'Anulada');
+                            $esCredito      = ($tipoPagoId === 3); // 3 = Crédito Bancario
+
+                            // 🔹 Determinar texto y clase del badge
+                            $textoEstado = 'Realizada';
+                            $claseBadge  = 'badge bg-success-subtle text-success';
+
+                            if ($esAnulada) {
+                                $textoEstado = 'Anulada';
+                                $claseBadge  = 'badge bg-danger-subtle text-danger';
+                            } elseif ($esCredito) {
+                                switch ($estadoCredito) {
+                                    case 'pendiente':
+                                        $textoEstado = 'Pendiente crédito';
+                                        $claseBadge  = 'badge bg-warning-subtle text-warning';
+                                        break;
+                                    case 'aprobado':
+                                        $textoEstado = 'Realizada (crédito)';
+                                        $claseBadge  = 'badge bg-success-subtle text-success';
+                                        break;
+                                    case 'rechazado':
+                                        $textoEstado = 'Crédito rechazado';
+                                        $claseBadge  = 'badge bg-danger-subtle text-danger';
+                                        break;
+                                    default:
+                                        $textoEstado = 'Crédito (sin estado)';
+                                        $claseBadge  = 'badge bg-secondary-subtle text-secondary';
+                                        break;
+                                }
+                            }
                         ?>
                         <tr>
                             <td><?= $venta['idventas']; ?></td>
-                            <td>$<?= number_format($venta['precio'], 0, ',', '.'); ?></td>
+                            <td>$<?= number_format($venta['precio_venta'], 0, ',', '.'); ?></td>
                             <td><?= $venta['nombre'] . " " . $venta['apellido']; ?></td>
                             <td><?= $venta['nombre_marca'] . " " . $venta['nombre_modelo']; ?></td>
                             <td><?= $venta['patente']; ?></td>
                             <td><?= $venta['nombre_pago']; ?></td>
                             <td><?= date('d-m-Y', strtotime($venta['fecha_venta'])); ?></td>
 
-                            <!-- Columna ESTADO con badge -->
+                            <!-- Columna ESTADO con badge combinada -->
                             <td>
-                                <?php if ($esRealizada): ?>
-                                    <span class="badge bg-success-subtle text-success">Realizada</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger-subtle text-danger">Anulada</span>
-                                <?php endif; ?>
+                                <span class="<?= $claseBadge; ?>"><?= $textoEstado; ?></span>
                             </td>
 
                             <td>
-                                <!-- Botón ANULAR (solo si la venta está Realizada) -->
-                                <?php if ($esRealizada): ?>
+                                <!-- Botón ANULAR (solo si está realizada y no es crédito pendiente) -->
+                                <?php if ($esRealizada && !$esAnulada && (!$esCredito || $estadoCredito !== 'pendiente')): ?>
                                     <?php if ($esAdmin): ?>
                                         <a href="index.php?page=anular_ventas&idventa=<?= $venta['idventas']; ?>"
-                                           class="text-danger me-2"
-                                           title="Anular venta">
+                                        class="text-danger me-2"
+                                        title="Anular venta">
                                             <i class="fa-solid fa-ban"></i>
                                         </a>
                                     <?php else: ?>
                                         <a href="javascript:void(0);"
-                                           class="text-muted me-2 btn-no-permiso"
-                                           title="No autorizado">
+                                        class="text-muted me-2 btn-no-permiso"
+                                        title="No autorizado">
                                             <i class="fa-solid fa-ban"></i>
                                         </a>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <!-- Venta anulada: icono gris sin acción -->
-                                    <span class="text-muted me-2" title="Venta anulada">
+                                    <!-- Venta anulada o con crédito pendiente: icono gris sin acción -->
+                                    <span class="text-muted me-2" title="Operación no anulable en este estado">
                                         <i class="fa-solid fa-ban"></i>
                                     </span>
                                 <?php endif; ?>
 
+                                <!-- Si es crédito pendiente, botón especial para gestionarlo -->
+                                <?php if ($esCredito && $estadoCredito === 'pendiente'): ?>
+                                    <a href="index.php?page=gestionar_credito&idventa=<?= $venta['idventas']; ?>"
+                                    class="btn btn-sm btn-outline-warning me-1"
+                                    title="Gestionar crédito bancario">
+                                        <i class="fa-solid fa-building-columns"></i>
+                                    </a>
+                                <?php endif; ?>
+
                                 <!-- Botón Costos del Vehículo -->
-                                <a href="index.php?page=costo_vehiculo&idvehiculo=<?= $venta['vehiculos_idvehiculos']; ?>"
-                                   class="btn btn-sm btn-outline-primary me-1"
-                                   title="Costos del Vehículo">
+                                <a href="index.php?page=costo_vehiculo&e=lvn&idvehiculo=<?= $venta['vehiculo_idvehiculo']; ?>"
+                                class="btn btn-sm btn-outline-primary me-1"
+                                title="Costos del Vehículo">
                                     <i class="fa-solid fa-coins"></i>
                                 </a>
 
                                 <!-- Ver detalle -->
                                 <a href="index.php?page=detalle_ventas&idventa=<?= $venta['idventas']; ?>"
-                                   class="text-primary" title="Ver más">
+                                class="text-primary" title="Ver más">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>
@@ -144,6 +182,7 @@ $total_paginas = $total_registros > 0 ? ceil($total_registros / $filas_por_pagin
                     </tr>
                 <?php endif; ?>
             </tbody>
+
         </table>
 
         <!-- Paginación centrada (solo cuando no hay búsqueda) -->

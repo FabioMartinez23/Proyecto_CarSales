@@ -1,0 +1,133 @@
+/* =============================
+   CONTENEDOR CENTRAL
+   ============================= */
+
+.view-container-centered {
+    max-width: 850px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* =============================
+   HEADER CENTRADO
+   ============================= */
+
+.view-header {
+    text-align: center !important;
+}
+
+.view-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: .3rem;
+}
+
+.view-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/* =============================
+   TARJETAS CENTRADAS
+   ============================= */
+
+.user-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.detail-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.8rem;
+    box-shadow: 0 2px 14px rgba(0,0,0,.08);
+    border: 1px solid #e6e6e6;
+    text-align: left;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.detail-card.full-width {
+    width: 100%;
+}
+
+/* =============================
+   LISTA ESTILO PROFESIONAL
+   ============================= */
+
+.detail-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detail-list li {
+    padding: .55rem 0;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.detail-list li span {
+    font-weight: 600;
+    color: #444;
+}
+
+/* =============================
+   BOTONES CENTRADOS
+   ============================= */
+
+.detail-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.detail-actions .btn {
+    padding: .65rem 1.4rem;
+    font-size: .95rem;
+    border-radius: 8px;
+}
+
+
+/* BADGE DE PERFIL EN VER_USUARIO */
+
+.user-role-wrapper {
+    margin-top: 0.75rem;
+}
+
+.user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid transparent;
+}
+
+/* Colores por perfil (por slug: administrador, empleado, cliente) */
+.user-role-administrador {
+    background: rgba(220, 53, 69, 0.08);
+    color: #b02a37;
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.user-role-empleado {
+    background: rgba(13, 110, 253, 0.08);
+    color: #0b5ed7;
+    border-color: rgba(13, 110, 253, 0.3);
+}
+
+.user-role-cliente {
+    background: rgba(25, 135, 84, 0.08);
+    color: #157347;
+    border-color: rgba(25, 135, 84, 0.3);
+}

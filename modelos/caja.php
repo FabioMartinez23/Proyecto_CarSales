@@ -148,33 +148,52 @@ class Caja {
     // 🔹 Verificar / abrir caja mensual (ajustada)
     // ================================================
     public function verificar_o_abrir_caja_mensual($Usuarios_idusuarios) {
-        $con = $this->getConexion();
-        $mes_actual = date('Y-m');
+        $con         = $this->getConexion();
+        $mes_actual  = date('Y-m');
         $hora_actual = date('H:i:s');
 
+        // 1) ¿Ya hay caja abierta este mes?
         $resultado = $con->query("
             SELECT * FROM caja
             WHERE DATE_FORMAT(fecha_apertura, '%Y-%m') = '$mes_actual'
-            AND estado='abierta'
+            AND estado = 'abierta'
             LIMIT 1
         ");
 
-        if ($resultado->num_rows > 0) {
-            return $resultado;
+        if ($resultado && $resultado->num_rows > 0) {
+            return $resultado; // ya existe, la devolvés tal cual
         }
 
-        if ($hora_actual >= '06:00:00') {
-            $con->query("
-                INSERT INTO caja (fecha_apertura, saldo_inicial, saldo_actual, estado, Usuarios_idusuarios)
-                VALUES (NOW(), 0.00, 0.00, 'abierta', '$Usuarios_idusuarios')
-            ");
-
-            $idcaja = $con->insert_id;
-            return $con->query("SELECT * FROM caja WHERE idcaja='$idcaja' LIMIT 1");
+        // 2) Si todavía no son las 6 AM, no abrimos nada
+        if ($hora_actual < '06:00:00') {
+            return $resultado; // vacío
         }
 
-        return $resultado;
+        // 3) Tomar saldo final del último cierre (si existe)
+        $saldo_inicial = 0.00;
+
+        $resCierre = $con->query("
+            SELECT saldo_final 
+            FROM cierres_caja
+            ORDER BY fecha_cierre DESC
+            LIMIT 1
+        ");
+        if ($resCierre && $resCierre->num_rows > 0) {
+            $row = $resCierre->fetch_assoc();
+            $saldo_inicial = (float)$row['saldo_final'];
+        }
+
+        // 4) Abrir nueva caja mensual con ese saldo inicial
+        $con->query("
+            INSERT INTO caja (fecha_apertura, saldo_inicial, saldo_actual, estado, Usuarios_idusuarios)
+            VALUES (NOW(), '$saldo_inicial', '$saldo_inicial', 'abierta', '$Usuarios_idusuarios')
+        ");
+
+        $idcaja = $con->insert_id;
+
+        return $con->query("SELECT * FROM caja WHERE idcaja = '$idcaja' LIMIT 1");
     }
+
 
     /* ===========================================================
        MOVIMIENTOS DE CAJA
@@ -435,10 +454,10 @@ class Caja {
         $conexion = new Conexion();
 
         $anio = $anio ?? date('Y');
-        $mes = $mes ?? date('m');
+        $mes  = $mes  ?? date('m');
         $Usuarios_idusuarios = $_SESSION['idusuarios'] ?? 1;
 
-        // Buscar caja abierta del mes actual
+        // 1) Buscar caja abierta del mes
         $query_caja = "
             SELECT * FROM caja
             WHERE estado = 'abierta'
@@ -452,55 +471,71 @@ class Caja {
             return ['status' => 'error', 'mensaje' => 'No existe una caja abierta para este mes.'];
         }
 
-        $caja = $resultado_caja->fetch_assoc();
+        $caja   = $resultado_caja->fetch_assoc();
         $idcaja = $caja['idcaja'];
 
-        // Calcular totales del mes desde caja_movimientos
+        // 2) Totales del mes
         $query_totales = "
             SELECT 
                 SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS total_ingresos,
-                SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) AS total_egresos
+                SUM(CASE WHEN tipo = 'egreso'  THEN monto ELSE 0 END) AS total_egresos
             FROM caja_movimientos
             WHERE caja_idcaja = '$idcaja'
             AND MONTH(fecha_movimiento) = '$mes'
-            AND YEAR(fecha_movimiento) = '$anio'
+            AND YEAR(fecha_movimiento)  = '$anio'
             AND activo_movimiento = 1
         ";
         $totales = $conexion->consultar($query_totales)->fetch_assoc();
 
-        $total_ingresos = $totales['total_ingresos'] ?? 0;
-        $total_egresos  = $totales['total_egresos'] ?? 0;
-        $balance_final  = $total_ingresos - $total_egresos;
+        $total_ingresos = (float)($totales['total_ingresos'] ?? 0);
+        $total_egresos  = (float)($totales['total_egresos']  ?? 0);
+        $balance_final  = $total_ingresos - $total_egresos;         // resultado del mes
 
-        // Registrar cierre en cierres_caja
+        $saldo_inicial_mes = (float)$caja['saldo_inicial'];         // lo que tenías al abrir
+        $saldo_final_mes   = $saldo_inicial_mes + $balance_final;   // saldo real luego del mes
+
+        // 3) Registrar cierre
         $query_insert = "
             INSERT INTO cierres_caja 
             (fecha_cierre, saldo_final, observaciones, caja_idcaja, Usuarios_idusuarios, 
             total_ingresos, total_egresos, balance_final)
-            VALUES (NOW(), '$balance_final', '$observaciones', '$idcaja', '$Usuarios_idusuarios',
-                    '$total_ingresos', '$total_egresos', '$balance_final')
+            VALUES (
+                NOW(),
+                '$saldo_final_mes',
+                '$observaciones',
+                '$idcaja',
+                '$Usuarios_idusuarios',
+                '$total_ingresos',
+                '$total_egresos',
+                '$balance_final'
+            )
         ";
         $conexion->insertar($query_insert);
 
-        // Actualizar estado de caja
+        // 4) Actualizar caja
         $query_update = "
             UPDATE caja 
-            SET estado = 'cerrada', observaciones = '$observaciones', saldo_actual = '$balance_final'
+            SET estado = 'cerrada',
+                observaciones = '$observaciones',
+                saldo_actual = '$saldo_final_mes'
             WHERE idcaja = '$idcaja'
         ";
         $conexion->actualizar($query_update);
 
         return [
-            'status' => 'success',
+            'status'  => 'success',
             'mensaje' => 'Caja mensual cerrada correctamente.',
-            'datos' => [
+            'datos'   => [
+                'saldo_inicial' => $saldo_inicial_mes,
                 'total_ingresos' => $total_ingresos,
-                'total_egresos' => $total_egresos,
-                'balance_final' => $balance_final,
-                'idcaja' => $idcaja
+                'total_egresos'  => $total_egresos,
+                'balance_final'  => $balance_final,
+                'saldo_final'    => $saldo_final_mes,
+                'idcaja'         => $idcaja
             ]
         ];
     }
+
 
     /* ===========================================================
     TRAER HISTORIAL DE CIERRES DE CAJA
@@ -691,6 +726,34 @@ class Caja {
         }
 
         return $res;
+    }
+
+
+    public function traer_balance_mensual_por_tipo_pago($anio, $mes) {
+        $conexion = new Conexion();
+
+        $anio = (int)$anio;
+        $mes  = (int)$mes;
+        $filtro = sprintf('%04d-%02d', $anio, $mes);
+
+        $query = "
+            SELECT 
+                tp.idtipo_pago,
+                tp.descripcion AS metodo_pago,
+                SUM(CASE WHEN cm.tipo = 'ingreso' THEN cm.monto ELSE 0 END) AS total_ingresos,
+                SUM(CASE WHEN cm.tipo = 'egreso'  THEN cm.monto ELSE 0 END) AS total_egresos,
+                (SUM(CASE WHEN cm.tipo = 'ingreso' THEN cm.monto ELSE 0 END) -
+                SUM(CASE WHEN cm.tipo = 'egreso'  THEN cm.monto ELSE 0 END)) AS balance
+            FROM caja_movimientos cm
+            LEFT JOIN tipo_pago tp 
+                ON tp.idtipo_pago = cm.tipo_pago_idtipo_pago
+            WHERE cm.activo_movimiento = 1
+            AND DATE_FORMAT(cm.fecha_movimiento, '%Y-%m') = '$filtro'
+            GROUP BY tp.idtipo_pago, tp.descripcion
+            ORDER BY tp.descripcion
+        ";
+
+        return $conexion->consultar($query);
     }
 
 

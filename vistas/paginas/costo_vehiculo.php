@@ -31,7 +31,10 @@ $det = $datos_costos['detalle_venta'] ?? null;
                 echo '<li class="breadcrumb-item"><a href="index.php?page=listado_vehiculos">Listado Vehiculos</a></li>';
             } elseif ($_GET['e'] == 'lfc') {
                 echo '<li class="breadcrumb-item"><a href="index.php?page=listado_falta_documentacion">Listado Falta Documentacion</a></li>';
-            } else {
+            } elseif ($_GET['e'] == 'lvn') {
+                echo '<li class="breadcrumb-item"><a href="index.php?page=listado_ventas">Listado Ventas</a></li>';
+            }
+             else {
                 echo '<li class="breadcrumb-item"><a href="#">Costos</a></li>';
             }
             ?>

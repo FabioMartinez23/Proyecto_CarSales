@@ -34,7 +34,6 @@ session_start();
                         <i class="fa-solid fa-car"></i>
                     </div>
                     <div>
-                        <h3>2050</h3>
                         <p>Vehículos Disponibles</p>
                     </div>
                 </div>
@@ -47,7 +46,6 @@ session_start();
                         <i class="fa-solid fa-file-circle-exclamation"></i>
                     </div>
                     <div>
-                        <h3>3250</h3>
                         <p>Documentación Faltante</p>
                     </div>
                 </div>
@@ -60,7 +58,6 @@ session_start();
                         <i class="fa-solid fa-screwdriver-wrench"></i>
                     </div>
                     <div>
-                        <h3>87.5%</h3>
                         <p>Vehículos en Reparación</p>
                     </div>
                 </div>
@@ -73,7 +70,6 @@ session_start();
                         <i class="fa-solid fa-handshake"></i>
                     </div>
                     <div>
-                        <h3>2550</h3>
                         <p>Vehículos Vendidos</p>
                     </div>
                 </div>

@@ -107,15 +107,94 @@ public function guardar(){
     }
 
 
-    public function traer_usuario_por_id($idusuarios){
+        public function traer_usuario_por_id($idusuarios)
+        {
         $conexion = new Conexion();
-        $query = "SELECT usuarios.*, personas.*,tipo_sexo.*, tipo_sexo.descripcion as nombre_tipo_sexo, documentos.*, documentos.valor as valor_documento, Tipo_documento.*, Tipo_documento.descripcion as nombre_tipo_documento, contactos.*, contactos.valor as valor_contacto, tipo_contacto.*, tipo_contacto.descripcion as nombre_tipo_contacto, tipo_domicilio.*, tipo_domicilio.descripcion as nombre_tipo_domicilio, domicilios.*, domicilios.descripcion as nombre_domicilio, barrios.*, barrios.descripcion as nombre_barrio, localidades.*, localidades.descripcion as nombre_localidad, provincias.*, provincias.descripcion as nombre_provincia, paises.*, paises.descripcion as nombre_pais FROM usuarios INNER JOIN personas on usuarios.personas_idpersonas = personas.idpersonas INNER JOIN tipo_sexo on personas.tipo_sexo_idtipo_sexo = tipo_sexo.idtipo_sexo INNER JOIN documentos on documentos.Personas_idPersonas = personas.idpersonas INNER JOIN Tipo_documento on documentos.Tipo_documento_idTipo_documento = Tipo_documento.idTipo_documento INNER JOIN contactos on contactos.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_contacto on contactos.tipo_contactos_idtipo_contactos = tipo_contacto.idtipo_contacto INNER JOIN domicilios on domicilios.Personas_idPersonas = personas.idpersonas INNER JOIN tipo_domicilio on domicilios.tipo_domicilio_idtipo_domicilio = tipo_domicilio.idtipo_domicilio INNER JOIN barrios on domicilios.barrios_idbarrios = barrios.idbarrios INNER JOIN localidades on barrios.localidades_idlocalidades = localidades.idlocalidades INNER JOIN provincias on localidades.provincias_idprovincias = provincias.idprovincias INNER JOIN paises on provincias.paises_idpaises = paises.idpaises WHERE idusuarios = $idusuarios";
+
+        // Sanear por las dudas (si no usás prepared statements)
+        $idusuarios = (int)$idusuarios;
+
+        $query = "
+                SELECT 
+                u.*,
+                personas.*,
+                tipo_sexo.*,
+                tipo_sexo.descripcion AS nombre_tipo_sexo,
+                
+                documentos.*,
+                documentos.valor AS valor_documento,
+                Tipo_documento.*,
+                Tipo_documento.descripcion AS nombre_tipo_documento,
+                
+                contactos.*,
+                contactos.valor AS valor_contacto,
+                tipo_contacto.*,
+                tipo_contacto.descripcion AS nombre_tipo_contacto,
+                
+                tipo_domicilio.*,
+                tipo_domicilio.descripcion AS nombre_tipo_domicilio,
+                domicilios.*,
+                domicilios.descripcion AS nombre_domicilio,
+                
+                barrios.*,
+                barrios.descripcion AS nombre_barrio,
+                localidades.*,
+                localidades.descripcion AS nombre_localidad,
+                provincias.*,
+                provincias.descripcion AS nombre_provincia,
+                paises.*,
+                paises.descripcion AS nombre_pais,
+                
+                perfiles.descripcion AS nombre_perfil,
+                
+                empleados.legajo AS legajo,
+                tipo_de_puestos.descripcion AS nombre_puesto
+                
+                FROM usuarios u
+                INNER JOIN personas 
+                ON u.personas_idpersonas = personas.idpersonas
+                INNER JOIN tipo_sexo 
+                ON personas.tipo_sexo_idtipo_sexo = tipo_sexo.idtipo_sexo
+                INNER JOIN documentos 
+                ON documentos.Personas_idPersonas = personas.idpersonas
+                INNER JOIN Tipo_documento 
+                ON documentos.Tipo_documento_idTipo_documento = Tipo_documento.idTipo_documento
+                INNER JOIN contactos 
+                ON contactos.Personas_idPersonas = personas.idpersonas
+                INNER JOIN tipo_contacto 
+                ON contactos.tipo_contactos_idtipo_contactos = tipo_contacto.idtipo_contacto
+                INNER JOIN domicilios 
+                ON domicilios.Personas_idPersonas = personas.idpersonas
+                INNER JOIN tipo_domicilio 
+                ON domicilios.tipo_domicilio_idtipo_domicilio = tipo_domicilio.idtipo_domicilio
+                INNER JOIN barrios 
+                ON domicilios.barrios_idbarrios = barrios.idbarrios
+                INNER JOIN localidades 
+                ON barrios.localidades_idlocalidades = localidades.idlocalidades
+                INNER JOIN provincias 
+                ON localidades.provincias_idprovincias = provincias.idprovincias
+                INNER JOIN paises 
+                ON provincias.paises_idpaises = paises.idpaises
+                INNER JOIN perfiles 
+                ON perfiles.idperfiles = u.perfiles_idperfiles
+                
+                LEFT JOIN empleados 
+                ON empleados.Usuarios_idUsuarios = u.idusuarios
+                LEFT JOIN tipo_de_puestos 
+                ON tipo_de_puestos.idtipo_de_puestos = empleados.tipo_de_puestos_idtipo_de_puestos
+                
+                WHERE u.idusuarios = $idusuarios
+        ";
+
         $resultado = $conexion->consultar($query);
-        if ($resultado->num_rows > 0) {
-            return $resultado->fetch_assoc();
+
+        if ($resultado && $resultado->num_rows > 0) {
+                return $resultado->fetch_assoc();
         }
-        return null; 
-    }
+
+        return null;
+        }
+
 
 public function traer_usuario_por_idpersona_json($personas_idpersonas){
         $conexion = new Conexion();
